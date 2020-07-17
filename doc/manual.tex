@@ -787,6 +787,9 @@ The specified topography file is expected to be an ascii specification of the gr
 
 Note that inclusion of topography can significantly increase computation time due to the additional evaluations of the ground interpolation for ground intercept checks and boundary layer no-slip condition.   Additionally, the eigenray methods are very slow to converge (if they converge at all) and require a significantly smaller \verb=incl_step_max= when including topography in order to identify an approximate eigenray.  
 
+Use of ETOPO1 should be cited using: Amante, C. \& Eakins, B.W. (2009). ``ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis."  \textit{NOAA Technical Memorandum NESDIS NGDC-24}. National Geophysical Data Center, NOAA. doi:10.7289/V5C8276M
+
+
 \subsection{Computing waveforms along ray paths}
 \label{Sect:AdditionalParams:wvfrms}
 
@@ -836,11 +839,13 @@ For all non-accel methods, a method, \verb=-wnl_wvfrm=, is available to compute 
  \right.
  \end{align*}
 
-Generation of high frequency energy near the Nyquist causes instabilities in the solution that are often not entirely damped out by inclusion of Sutherland \& Bass absorption losses.  A pair of filters are utilized in suppressing Gibbs phenomenon in the non-linear waveform analysis to prevent excess energy from building up at the Nyquist frequency and causing errors.  One filter is applied to the non-linear correction added to the FFT of the signal, and a second is applied to the waveform itself at each analysis step.  Varying these filter parameters as well as the step size in \verb=wvfrm_ds= for the solver are often needed to obtain usable waveform predictions.  The form of the filters are below,
+Generation of high frequency energy near the Nyquist causes instabilities in the solution that are often not entirely damped out by inclusion of Sutherland \& Bass absorption losses for overly energetic sources.  A pair of filters are utilized in suppressing the resulting Gibbs phenomenon in the non-linear waveform analysis to prevent excess energy from building up at the Nyquist frequency and causing errors.  One filter is applied to the non-linear correction added to the FFT of the signal, and a second is applied to the waveform itself at each analysis step.  Varying these filter parameters as well as the step size in \verb=wvfrm_ds= for the solver are often needed to obtain usable waveform predictions.  The form of the filters are below,
 
 \begin{align*}
  \mathcal{F} \left( f; \gamma, n_1, n_2  \right) = \frac{1}{\left( 1 + \left( \frac{f}{\gamma f_\text{nyq}} \right)^{n_1} \right)^{n_2}}
 \end{align*}
+
+The optimal parameters for this filter pair or a more robust method of suppressing the Gibbs phenomenon is needed to make waveform calculation robust for large amplitude sources so that caution should be exercised in use of the waveform methods.
 
 \newpage
 \section{Plotting the Results}
@@ -1130,10 +1135,10 @@ that will identify the changes in ray launch angles, \(\delta \vec{\vartheta}\) 
 
 The reflection conditions for including topography are modified so that the eikonal vector components along the ground surface are conserved and the normal component to the ground changes sign,
 \begin{equation}
- \vec{\psi}_\text{refl} \cdot \hat{n}_\text{grnd} = - \vec{\psi} \cdot \hat{n}_\text{grnd}, \quad
- \vec{\psi}_\text{refl} \times \hat{n}_\text{grnd} = \vec{\psi} \times \hat{n}_\text{grnd}.
+ \vec{\psi}_\text{refl} \cdot \hat{n}_\text{grnd} = - \vec{\psi}_0 \cdot \hat{n}_\text{grnd}, \quad
+ \vec{\psi}_\text{refl} \times \hat{n}_\text{grnd} = \vec{\psi}_0 \times \hat{n}_\text{grnd}.
 \end{equation}
-The resulting reflection conditions are then defined by relating the ground normal to the surface derivative,
+where \(\vec{\psi}_0\) denotes the incident eikonal vector.  The resulting reflection conditions can then be defined by relating the ground normal to the derivative of the functional ground surface specification, \(z_g \left( x, y \right)\),
 \begin{subequations}
  \begin{align}
   \psi_x \left( s_0 + 0^+, \vartheta, \varphi \right) & = \mathcal{C}_1^{(x)}  \psi_{x,0} + \mathcal{C}_2^{(x)} \left( \psi_{z,0} - \psi_{y,0} \frac{\partial z_g}{\partial y} \right), \\
@@ -1167,6 +1172,29 @@ where subscript zeros denote evaluation at some reference point, \(s = s_0\), al
 
 In cases for which little energy is expected hear the Nyquist frequency, a value of \(ds_0 \sim1.0\) can be used; however, for source waveforms with high frequency content (e.g., a blast wave) or propagation paths extending into the upper atmosphere where rarefaction leads to strong relatively strong non-linear effects and generation of high frequency energy, a value of \(\sim0.1\) might be required.  Best practice is to vary the value of \verb=wvfrm_ds= to be sure your analysis has converged.
 
+
+\newpage
+\section{Acknowledgement of Use}
+The algorithms included in \verb=infraGA/GeoAc= have been documented in a number of peer reviewed publications and the authors request that others acknowledge of the use of the methods in published research by citing the appropriate manuscript(s) below for the various methodologies.
+\begin{itemize}
+  \item Blom, P. \& Waxler, R. (2012). ``Impulse propagation in the nocturnal boundary layer: Analysis of the geometric component". \textit{J. Acoust. Soc. Am.}, \textbf{131}(5), 3680 -- 3690 .
+  \item Blom, P. \& Waxler, R. (2017). ``Modeling and observations of an elevated, moving infrasonic source: eigenray methods". \textit{J. Acoust. Soc. Am.}, \textbf{141}(4), 2681--2692.
+  \item Blom, P. (2019). ``Modeling infrasonic propagation through a spherical atmospheric layer: Analysis of the stratospheric pair." \textit{J. Acoust. Soc. Am.}, \textbf{145}(4), 2198--2208.	
+  \item Blom, P. \& Waxler, R. (2020). ``Characteristics of thermospheric infrasound predicted using ray tracing and weakly non-linear waveform analysis" \textit{J. Acoust. Soc. Am.}, in peer review.	
+  \item Blom, P. (2020). ``The influence of irregular terrain on infrasonic propagation in the troposphere" \textit{J. Acoust. Soc. Am.}, in peer review.	
+\end{itemize}
+
+\section{Citations}
+The ray tracing methods developed as well as many of the other underlying methods in \verb=infraGA/GeoAc= leveraged work by many researchers including those below.
+\begin{itemize}
+  \item Brekhovskikh, L. M., \& Godin, O. (2013).  \textit{Acoustics of layered media II: point sources and bounded beams} (Vol. 10). Springer Science \& Business Media.
+  \item Keys, R. G. (1981). ``Cubic convolution interpolation for digital image processing." \textit{Acoustics, Speech and Signal Processing, IEEE Transactions on}, \textbf{29}(6), pp. 1153-1160.
+  \item Lonzaga, J. B., Waxler, R. M., Assink, J. D., \& Talmadge, C. L. (2015). ``Modelling waveforms of infrasound arrivals from impulsive sources using weakly non-linear ray theory." \textit{Geophysical Journal International}, \textbf{200}(3), 1347-1361.
+  \item Pierce, A. D. (1980).  \textit{Acoustics: An introduction to its physical principles and applications.}  McGraw-Hill Inc. 
+
+  \item Sutherland, L. C., \& Bass, H. E., (2004). Atmospheric absorption in the atmosphere up to 160 km. \textit{The Journal of the Acoustical Society of America}, \textbf{115}(3), pp.1012-1032.
+
+ \end{itemize}
 
 
 

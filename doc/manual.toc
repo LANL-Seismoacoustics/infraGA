@@ -17,11 +17,13 @@
 \contentsline {subsection}{\numberline {4.6}Modifying the Propagation Region}{14}{subsection.4.6}
 \contentsline {subsection}{\numberline {4.7}Incorporating Ground Topography}{14}{subsection.4.7}
 \contentsline {subsection}{\numberline {4.8}Computing waveforms along ray paths}{15}{subsection.4.8}
-\contentsline {section}{\numberline {5}Plotting the Results}{16}{section.5}
-\contentsline {section}{\numberline {6}Mathematical Background - What Does infraGA Do?}{18}{section.6}
-\contentsline {subsection}{\numberline {6.1}Propagation in two-dimensions using the effective sound speed}{20}{subsection.6.1}
-\contentsline {subsection}{\numberline {6.2}Propagation in three-dimensions using an inhomogeneous moving medium}{20}{subsection.6.2}
-\contentsline {subsection}{\numberline {6.3}Propagation in spherical coordinates}{20}{subsection.6.3}
-\contentsline {subsection}{\numberline {6.4}Eigenray methods}{20}{subsection.6.4}
-\contentsline {subsection}{\numberline {6.5}Ground reflections and topography}{21}{subsection.6.5}
-\contentsline {subsection}{\numberline {6.6}Weakly non-linear waveform calculation}{21}{subsection.6.6}
+\contentsline {section}{\numberline {5}Plotting the Results}{17}{section.5}
+\contentsline {section}{\numberline {6}Mathematical Background - What Does infraGA Do?}{19}{section.6}
+\contentsline {subsection}{\numberline {6.1}Propagation in two-dimensions using the effective sound speed}{21}{subsection.6.1}
+\contentsline {subsection}{\numberline {6.2}Propagation in three-dimensions using an inhomogeneous moving medium}{21}{subsection.6.2}
+\contentsline {subsection}{\numberline {6.3}Propagation in spherical coordinates}{21}{subsection.6.3}
+\contentsline {subsection}{\numberline {6.4}Eigenray methods}{21}{subsection.6.4}
+\contentsline {subsection}{\numberline {6.5}Ground reflections and topography}{22}{subsection.6.5}
+\contentsline {subsection}{\numberline {6.6}Weakly non-linear waveform calculation}{22}{subsection.6.6}
+\contentsline {section}{\numberline {7}Acknowledgement of Use}{24}{section.7}
+\contentsline {section}{\numberline {8}Citations}{24}{section.8}
