@@ -1,0 +1,16 @@
+.DS_Store
+*.o
+*.a
+._*
+.vscode/
+<<<<<<< HEAD
+bin/*
+*.dat
+examples/*.dat
+examples/*/*.dat
+dev_tests/*
+scripts/grid/
+scripts/*.grd
+=======
+
+>>>>>>> 9e7a29d15bd033ce16b72a9447ca93debf150550

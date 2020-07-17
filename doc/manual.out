@@ -1,0 +1,27 @@
+\BOOKMARK [1][-]{section.1}{Introduction and Installation}{}% 1
+\BOOKMARK [1][-]{section.2}{Using infraGA}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{2D Stratified Cartesian Propagation}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{3D Stratified Cartesian Propagation}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{3D Stratified Spherical Propagation}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Range Dependent Propagation}{section.2}% 6
+\BOOKMARK [1][-]{section.3}{Clarifications}{}% 7
+\BOOKMARK [2][-]{subsection.3.1}{Amplitude Format}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.2}{Range Dependent Profile Interpolation}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.3}{Running the Accelerated Methods}{section.3}% 10
+\BOOKMARK [1][-]{section.4}{Additional Parameters}{}% 11
+\BOOKMARK [2][-]{subsection.4.1}{Propagating Specific Frequencies and Modifying Absorption}{section.4}% 12
+\BOOKMARK [2][-]{subsection.4.2}{Modifying the Ground Elevation}{section.4}% 13
+\BOOKMARK [2][-]{subsection.4.3}{Modifying the Profile Format}{section.4}% 14
+\BOOKMARK [2][-]{subsection.4.4}{Writing the Caustic Points to File}{section.4}% 15
+\BOOKMARK [2][-]{subsection.4.5}{Disabling the Calculation of Amplitudes}{section.4}% 16
+\BOOKMARK [2][-]{subsection.4.6}{Modifying the Propagation Region}{section.4}% 17
+\BOOKMARK [2][-]{subsection.4.7}{Incorporating Ground Topography}{section.4}% 18
+\BOOKMARK [2][-]{subsection.4.8}{Computing waveforms along ray paths}{section.4}% 19
+\BOOKMARK [1][-]{section.5}{Plotting the Results}{}% 20
+\BOOKMARK [1][-]{section.6}{Mathematical Background - What Does infraGA Do?}{}% 21
+\BOOKMARK [2][-]{subsection.6.1}{Propagation in two-dimensions using the effective sound speed}{section.6}% 22
+\BOOKMARK [2][-]{subsection.6.2}{Propagation in three-dimensions using an inhomogeneous moving medium}{section.6}% 23
+\BOOKMARK [2][-]{subsection.6.3}{Propagation in spherical coordinates}{section.6}% 24
+\BOOKMARK [2][-]{subsection.6.4}{Eigenray methods}{section.6}% 25
+\BOOKMARK [2][-]{subsection.6.5}{Ground reflections and topography}{section.6}% 26
+\BOOKMARK [2][-]{subsection.6.6}{Weakly non-linear waveform calculation}{section.6}% 27
