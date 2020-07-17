@@ -11,6 +11,12 @@ examples/*/*.dat
 dev_tests/*
 scripts/grid/
 scripts/*.grd
+doc/*.aux
+doc/*.log
+doc/*.out
+doc/*.gz
+doc/*.toc
+
 =======
 
 >>>>>>> 9e7a29d15bd033ce16b72a9447ca93debf150550
