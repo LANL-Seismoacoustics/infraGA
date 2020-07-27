@@ -403,7 +403,7 @@ void run_prop(char* inputs[], int count){
             attenuation = 0.0;
             r_max = 0.0;
 
-            if((abs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo){
+            if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo){
                 topo_out.open("topography.dat");
             }
 
@@ -456,7 +456,7 @@ void run_prop(char* inputs[], int count){
                     attenuation+= geoac::atten(solution,k,freq);
                 }
 
-                if((abs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo){
+                if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo){
                     for(int m = 1; m < k ; m+=10){                        
                         topo_out << setprecision(8) << solution[m][1] * (180.0 / Pi);
                         topo_out << '\t' << setprecision(8) << solution[m][2] * (180.0 / Pi);
@@ -501,7 +501,7 @@ void run_prop(char* inputs[], int count){
             if(write_rays){raypath << '\n';}
             geoac::clear_solution(solution,k);
 
-            if((abs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo){
+            if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo){
                 topo_out.close();
             }
 
