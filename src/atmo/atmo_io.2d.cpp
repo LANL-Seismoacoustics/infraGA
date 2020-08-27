@@ -20,10 +20,14 @@ using namespace std;
 //------------For 2D Planar Propgation-----------//
 //-----------------------------------------------//
 void geoac::set_limits(){
-    if(geoac::is_topo){ rng_max = topo::spline.x_vals[topo::spline.length - 1];}
-    else{               rng_max = 2000.0;}
+    if(geoac::is_topo){
+        rng_max = topo::spline.x_vals[topo::spline.length - 1];
+    } else {
+       rng_max = 2000.0;
+    }
     
-    alt_max  =	atmo::c_spline.x_vals[atmo::c_spline.length - 1];
+    topo::z0 = atmo::c_spline.x_vals[0];
+    alt_max  = atmo::c_spline.x_vals[atmo::c_spline.length - 1];
 }
 
 //-----------------------------------//
@@ -116,11 +120,9 @@ void set_region(char* atmo_file, char* atmo_format, bool invert_winds){
     geoac::set_limits();
     cout << '\t' << "Propagation region limits:" << '\n';
     cout << '\t' << '\t' << "r = 0.0, " << geoac::rng_max << '\n';
-    cout << '\t' << '\t' << "z = 0.0, " << geoac::alt_max << '\n';
-    
+    cout << '\t' << '\t' << "z = " << topo::z0 << ", " << geoac::alt_max << '\n';
+
     topo::set_bndlyr();
-    // cout << '\t' << "Maximum topography height: " << topo::z_max << '\n';
-    // cout << '\t' << "Boundary layer height: " << topo::z_bndlyr << '\n';
 }
 
 
@@ -217,7 +219,10 @@ void set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert
 
 
 void clear_region(){
-    if(geoac::is_topo){                 interp::clear(topo::spline);}
+    if(geoac::is_topo){
+        interp::clear(topo::spline);
+    }
+    
     interp::clear(atmo::c_spline);      interp::clear(atmo::u_spline);
     interp::clear(atmo::rho_spline);    interp::clear(atmo::v_spline);
 }

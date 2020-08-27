@@ -229,12 +229,18 @@ double geoac::eval_eikonal(double ** solution, int k){
 //-------Check if ray has left propagation region or returned to ground-----//
 //--------------------------------------------------------------------------//
 bool geoac::break_check(double ** & solution, int k){
-    if(solution[k][0] > rng_max){ return true;}
-    if(solution[k][1] > alt_max){ return true;}
+    if((solution[k][0] > rng_max) || (solution[k][1] > alt_max)){
+        return true;
+    }
 	return false;
 }
+
 bool geoac::ground_check(double ** solution, int k){
-    if (solution[k][1] < topo::z_max){ if(solution[k][1] < topo::z(solution[k][0])){ return true;}}
+    if (solution[k][1] <= topo::z_max){
+        if(solution[k][1] < topo::z(solution[k][0])){
+            return true;
+        }
+    }
     return false;
 }
 
