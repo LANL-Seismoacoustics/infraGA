@@ -34,7 +34,8 @@ void geoac::set_limits(){
             cout << '\n' << '\n' << "WARNING!!!  Specified atmosphere grid and topogrpahy grid have no overlap.  Check grid definitions." << '\n' << '\n';
         }
     }
-    
+
+    topo::z0 = atmo::c_spline.z_vals[0];
     alt_max = atmo::c_spline.z_vals[atmo::c_spline.length_z - 1];
 }
 
@@ -166,11 +167,9 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* a
     cout << '\t' << "Propagation region limits:" << '\n';
     cout << '\t' << '\t' << "x = " << geoac::x_min << ", " << geoac::x_max << '\n';
     cout << '\t' << '\t' << "y = " << geoac::y_min << ", " << geoac::y_max << '\n';
-    cout << '\t' << '\t' << "z = 0.0, " << geoac::alt_max << '\n';
+    cout << '\t' << '\t' << "z = " << topo::z0 << ", " << geoac::alt_max << '\n';
     
     topo::set_bndlyr();
-    // cout << '\t' << "Maximum topography height: " << topo::z_max << '\n';
-    // cout << '\t' << "Boundary layer height: " << topo::z_bndlyr << '\n';
 }
 
 
@@ -309,7 +308,10 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* t
 
 
 void clear_region(){
-    if(geoac::is_topo){                 interp::clear(topo::spline);}
+    if(geoac::is_topo){
+        interp::clear(topo::spline);
+    }
+    
     interp::clear(atmo::c_spline);      interp::clear(atmo::u_spline);
     interp::clear(atmo::rho_spline);    interp::clear(atmo::v_spline);
 }

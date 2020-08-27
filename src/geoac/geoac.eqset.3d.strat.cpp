@@ -446,7 +446,7 @@ bool geoac::break_check(double ** & solution, int k){
 }
 
 bool geoac::ground_check(double ** solution, int k){
-    if (solution[k][2] < topo::z_max){
+    if (solution[k][2] <= topo::z_max){
         if(solution[k][2] < topo::z(solution[k][0], solution[k][1])){ return true;}
     }
     return false;

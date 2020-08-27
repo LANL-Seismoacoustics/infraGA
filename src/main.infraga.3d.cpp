@@ -267,7 +267,13 @@ void run_prop(char* inputs[], int count){
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
-        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    topo::z0 = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
+                                                                                                                topo::z0 = atof(inputs[i] + 7);
+                                                                                                                topo::z_max = topo::z0;
+                                                                                                                topo::z_bndlyr = topo::z0 + 2.0;
+                                                                                                            } else {
+                                                                                                                cout << '\t' << "Note: cannot adjust ground elevation with topography." << '\n';
+                                                                                                            }}
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){                                                topo_file = inputs[i] + 10; geoac::is_topo=true;}
         else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){                                             topo::use_BLw = string2bool(inputs[i] + 13);}
         else{
@@ -302,7 +308,12 @@ void run_prop(char* inputs[], int count){
     // Extract the file name from the input and use it to distinguish the resulting output
     char output_buffer [512];
     char* file_id = inputs[2];
-    for(int m = strlen(file_id); m >= 0; m--){ if(file_id[m]=='.'){ file_id[m] = '\0'; break;}}
+    for(int m = strlen(file_id); m >= 0; m--){
+        if(file_id[m]=='.'){
+            file_id[m] = '\0';
+            break;
+        }
+    }
     
     // Define variables used for analysis
 	double D, D_prev, travel_time_sum, attenuation, z_max, inclination, back_az;
@@ -390,12 +401,12 @@ void run_prop(char* inputs[], int count){
             geoac::set_initial(solution, x_src, y_src, z_src);
             travel_time_sum = 0.0;
             attenuation = 0.0;
-            z_max = 0.0;
+            z_max = topo::z0;
         
     		cout << "Calculating ray path: " << theta << " degrees inclination, " << phi << " degrees azimuth." << '\n';
             for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){
                 k = geoac::prop_rk4(solution, break_check);
-
+                
                 if(write_rays || write_caustics){
                     if(write_caustics){
                         sprintf(output_buffer, "%s.caustics-%i.dat", file_id, bnc_cnt);
@@ -448,7 +459,7 @@ void run_prop(char* inputs[], int count){
                 }
                 
                 for(int m = 0; m < k ; m++){
-                    z_max = max (z_max, solution[m][2]);
+                    z_max = max(z_max, solution[m][2]);
                 }
                 
                 inclination = - asin(atmo::c(solution[k][0], solution[k][1], topo::z(solution[k][0], solution[k][1])) / atmo::c(x_src, y_src, z_src) * solution[k][5]) * 180.0 / Pi;
@@ -556,7 +567,13 @@ void run_back_proj(char* inputs[], int count){
         
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
-        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    topo::z0 = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
+                                                                                                                topo::z0 = atof(inputs[i] + 7);
+                                                                                                                topo::z_max = topo::z0;
+                                                                                                                topo::z_bndlyr = topo::z0 + 2.0;
+                                                                                                            } else {
+                                                                                                                cout << '\t' << "Note: cannot adjust ground elevation with topography." << '\n';
+                                                                                                            }}
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){                                                topo_file = inputs[i] + 10; geoac::is_topo=true;}
         else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){                                             topo::use_BLw = string2bool(inputs[i] + 13);}
         else {
@@ -759,7 +776,13 @@ void run_eig_search(char* inputs[], int count){
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                                           write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                                          prof_format = inputs[i]+15;}
-        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                                topo::z0 = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                                if(!geoac::is_topo){
+                                                                                                                            topo::z0 = atof(inputs[i] + 7);
+                                                                                                                            topo::z_max = topo::z0;
+                                                                                                                            topo::z_bndlyr = topo::z0 + 2.0;
+                                                                                                                        } else {
+                                                                                                                            cout << '\t' << "Note: cannot adjust ground elevation with topography." << '\n';
+                                                                                                                        }}
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){                                                            topo_file = inputs[i] + 10; geoac::is_topo=true;}
         else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){                                                         topo::use_BLw = string2bool(inputs[i] + 13);}
         else{
@@ -911,7 +934,13 @@ void run_eig_direct(char* inputs[], int count){
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
-        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    topo::z0 = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
+                                                                                                                topo::z0 = atof(inputs[i] + 7);
+                                                                                                                topo::z_max = topo::z0;
+                                                                                                                topo::z_bndlyr = topo::z0 + 2.0;
+                                                                                                            } else {
+                                                                                                                cout << '\t' << "Note: cannot adjust ground elevation with topography." << '\n';
+                                                                                                            }}
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){                                                topo_file = inputs[i] + 10; geoac::is_topo=true;}
         else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){                                             topo::use_BLw = string2bool(inputs[i] + 13);}       
         else{
@@ -1041,7 +1070,13 @@ void run_wnl_wvfrm(char* inputs[], int count){
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
-        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    topo::z0 = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
+                                                                                                                topo::z0 = atof(inputs[i] + 7);
+                                                                                                                topo::z_max = topo::z0;
+                                                                                                                topo::z_bndlyr = topo::z0 + 2.0;
+                                                                                                            } else {
+                                                                                                                cout << '\t' << "Note: cannot adjust ground elevation with topography." << '\n';
+                                                                                                            }}
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){                                                topo_file = inputs[i] + 10; geoac::is_topo=true;}
         else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){                                             topo::use_BLw = string2bool(inputs[i] + 13);}
         else {
