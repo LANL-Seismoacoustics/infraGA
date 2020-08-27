@@ -20,7 +20,7 @@ from netCDF4 import Dataset
 
 sph_proj = Geod(ellps='sphere')
 
-etopo_file = "ETOPO1_Ice_g_gmt4.grd"
+etopo_file = "/path/to/ETOPO1_Ice_g_gmt4.grd"
 
 ##############################
 ##  US standard atmosphere  ##
@@ -157,7 +157,6 @@ def extract_single(ecmwf_file, lat, lon, output):
     print("Extracting profile at " + str(lat) + ", " + str(lon) + " into " + output + " with ground elevation " + str(z_gl))
     
     z_vals = ecmwf.variables['height'][:].data / 1000.0 + z_gl
-    print(z_vals)
 
     atmo = z_vals
     atmo = np.vstack((atmo, ecmwf.variables['T'][:, n_lat, n_lon].data))   

@@ -21,26 +21,27 @@ import warnings
 warnings.filterwarnings('ignore', 'loadtxt: Empty input file')
 
 
-# Additional ray tracing parameters
-cpu_cnt = 6
+# Eigenray parameters
+cpu_cnt = None
 incl_min, incl_max = 0.5, 45.0
-incl_step_max = 0.02
+incl_step_max = 0.05
 iterations = 25
 damping = 1.0e-3
 tolerance = 0.1
 
 # Waveform calculation parameters
 wvfrm_ref = 2.0
-wvfrm_ds = 0.5
+wvfrm_ds = 0.05
 wvfrm_sps = 100
 
 wvfrm_opt = "impulse"
-wvfrm_p0 = 1000.0
-wvfrm_t0 = 0.01
-wvfrm_alpha = 0.5
+wvfrm_p0 = 500.0
+wvfrm_t0 = 0.2
+wvfrm_alpha = 4.0
 
 # Option: Kinney & Graham overpressure and positive phase for given yield (in kg)
-wvfrm_yld = 25.0e3
+# If this is set to "None", then values above are used
+wvfrm_yld = 50e3
 
 
 def kg_op(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
@@ -265,6 +266,7 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0], rcvr_loc=[30.0, -114.0, 1
     command = command + " incl_min=" + str(incl_min) + " incl_max=" + str(incl_max)
     command = command + " iterations=" + str(iterations) + " damping=" + str(damping)
     command = command + " tolerance=" + str(tolerance) + " incl_step_max=" + str(incl_step_max)
+    command = command + " verbose=true"
 
     print(command)
     os.system(command)
@@ -370,8 +372,8 @@ def print_usage():
     print('\t\t' + "bnc_max" + '\t\t\t\t' + "-")
 
     print('\n' + "Examples:")
-    print('\t' + "python multipath_wvfrm.py -3d  ../examples/ToyAtmo.met -475.0 25.0 0.0 1")
-    print('\t' + "python multipath_wvfrm.py -sph ../examples/ToyAtmo.met 30.0 -110.0 30.0 -115.0 1.0 1" + '\n')
+    print('\t' + "python multipath_wvfrm.py -3d  ../examples/ToyAtmo.met -400.0 25.0 0.0 1")
+    print('\t' + "python multipath_wvfrm.py -sph ../examples/ToyAtmo.met 30.0 -110.0 30.0 -114.0 1.0 1" + '\n')
 
 
 if __name__ == '__main__':
@@ -379,8 +381,8 @@ if __name__ == '__main__':
         print_usage()
     else:
         if sys.argv[1] == "-3d":
-            compute_3d_wvfrm(sys.argv[2],rcvr_loc=(float(sys.argv[3]), float(sys.argv[4])), bnc_max=int(sys.argv[5]))
+            compute_3d_wvfrm(sys.argv[2],rcvr_loc=(float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5])), bnc_max=int(sys.argv[6]))
         elif sys.argv[1] == "-sph":
-            compute_sph_wvfrm(sys.argv[2], src_loc=(float(sys.argv[3]), float(sys.argv[4])), rcvr_loc=(float(sys.argv[5]), float(sys.argv[6])), bnc_max=int(sys.argv[7]))
+            compute_sph_wvfrm(sys.argv[2], src_loc=(float(sys.argv[3]), float(sys.argv[4])), rcvr_loc=(float(sys.argv[5]), float(sys.argv[6]), float(sys.argv[7])), bnc_max=int(sys.argv[8]))
         else:
             print_usage()

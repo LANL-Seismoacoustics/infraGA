@@ -21,7 +21,7 @@ from netCDF4 import Dataset
 
 sph_proj = Geod(ellps='sphere')
 
-etopo_file = "ETOPO1_Ice_g_gmt4.grd"
+etopo_file = "/path/to/ETOPO1_Ice_g_gmt4.grd"
 
 def interp_etopo(ll_corner, ur_corner):
     """
