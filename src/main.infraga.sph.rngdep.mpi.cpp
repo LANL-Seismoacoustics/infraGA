@@ -129,7 +129,7 @@ void usage(){
     
     cout << "Output (see output files or manual for units):" << '\n';
     cout << '\t' << "atmo.dat -> z[km] : c [m/s]  : u (zonal winds) [m/s] : v (meridional winds) [m/s] : density[g/cm^3] : ceff [km/s]" << '\n';
-    cout << '\t' << "{...}.raypath.dat -> lat : lon : z : geo atten : absorption : time " << '\n';
+    cout << '\t' << "{...}.raypaths.dat -> lat : lon : z : geo atten : absorption : time " << '\n';
     cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : lat : lon : time : cel : z_max : arrival incl : back az : geo atten : absorption" << '\n' << '\n';
     
     cout << "Examples:" << '\n';

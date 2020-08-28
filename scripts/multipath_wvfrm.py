@@ -190,6 +190,7 @@ def compute_3d_wvfrm(profile, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1):
             command = "infraga-3d -wnl_wvfrm " + profile
             command = command + " inclination=" + str(line[0]) + " azimuth=" + str(line[1])
             command = command + " z_grnd=" + str(rcvr_loc[2]) + " bounces=" + str(int(line[2]))
+            command = command + " write_ray=true"
 
             if wvfrm_yld:
                 p0, t0 = kg_op(wvfrm_yld, wvfrm_ref), kg_ppd(wvfrm_yld, wvfrm_ref)
@@ -298,6 +299,7 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0], rcvr_loc=[30.0, -114.0, 1
             command = command + " src_lat=" + str(src_lat) + " src_lon=" + str(src_lon)
             command = command + " inclination=" + str(line[0]) + " azimuth=" + str(line[1])
             command = command + " z_grnd=" + str(rcvr_loc[2]) + " bounces=" + str(int(line[2]))
+            command = command + " write_ray=true"
 
             if wvfrm_yld:
                 p0, t0 = kg_op(wvfrm_yld, wvfrm_ref), kg_ppd(wvfrm_yld, wvfrm_ref)

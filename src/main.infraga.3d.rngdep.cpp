@@ -137,6 +137,8 @@ void usage(){
     cout << '\t' << '\t' << "src_x"             << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
     cout << '\t' << '\t' << "src_y"             << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
     cout << '\t' << '\t' << "src_alt"           << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
+    cout << '\t' << '\t' << "write_ray"         << '\t' << "true/false"         << '\t' << "false" << '\n';
+
     cout << '\t' << '\t' << "wvfrm_file"        << '\t' << "see manual"         << '\t' << "none" << '\n';
     cout << '\t' << '\t' << "wvfrm_opt"         << '\t' << "see manual"         << '\t' << "impulse" << '\n';
     cout << '\t' << '\t' << "wvfrm_p0"          << '\t' << "Pa"                 << '\t' << '\t' << "10.0" << '\n';
@@ -178,7 +180,7 @@ void usage(){
 
     cout << "Output (see output files or manual for units):" << '\n';
     cout << '\t' << "atmo.dat -> z[km] : c [m/s]  : u (zonal winds) [m/s] : v (meridional winds) [m/s] : density[g/cm^3] : ceff [km/s]" << '\n';
-    cout << '\t' << "{...}.raypath.dat -> x : y : z : geo atten : absorption : time " << '\n';
+    cout << '\t' << "{...}.raypaths.dat -> x : y : z : geo atten : absorption : time " << '\n';
     cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : x : y : time : cel : z_max : arrival incl : back az : geo atten : absorption" << '\n' << '\n';
     // cout << '\t' << "{...}.projection.dat -> x : y : z : t : X_incl : Y_incl : Z_incl : T_incl : X_az : Y_az : Z_az : T_az" << '\n' << '\n';
 
@@ -962,7 +964,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
     double x_src = 0.0, y_src = 0.0, z_src = 0.0;
     double freq = 0.1, D, D_prev;
     int bounces = 0;
-    bool write_atmo = false;
+    bool write_atmo = false, write_rays=false;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
     char input_check;
@@ -1006,6 +1008,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         else if ((strncmp(inputs[i], "src_x=", 6) == 0) || (strncmp(inputs[i], "x_src=", 6) == 0)){         x_src = atof(inputs[i] + 6);}
         else if ((strncmp(inputs[i], "src_y=", 6) == 0) || (strncmp(inputs[i], "y_src_y=", 6) == 0)){       y_src = atof(inputs[i] + 6);}
         else if ((strncmp(inputs[i], "src_alt=", 8) == 0) || (strncmp(inputs[i], "alt_src=", 8) == 0)){     z_src = atof(inputs[i] + 8);}
+        else if (strncmp(inputs[i], "write_ray=", 10) == 0){                                                write_rays=string2bool(inputs[i] + 10);}
 
         else if (strncmp(inputs[i], "wvfrm_file=", 11) == 0){                                               wvfrm_file = inputs[i] + 11;}
         else if (strncmp(inputs[i], "wvfrm_opt=", 10) == 0){                                                wvfrm_opt = inputs[i] + 10;}
@@ -1084,20 +1087,22 @@ void run_wnl_wvfrm(char* inputs[], int count){
     double travel_time_sum, attenuation, z_max, inclination, back_az;
 	int k, length = geoac::s_max * int(1.0 / (geoac::ds_min * 10));
     bool break_check;
-    ofstream raypath;
     
     double** solution;
     geoac::build_solution(solution,length);
 
-    sprintf(output_buffer, "%s.raypaths.dat", file_id);
-    raypath.open(output_buffer);
-    raypath << "# x [km]";
-    raypath << '\t' << "y [km]";
-    raypath << '\t' << "z [km]";
-    raypath << '\t' << "geo. atten. [dB]";
-    raypath << '\t' << "absorption [dB]";
-    raypath << '\t' << "time [s]";
-    raypath << '\n';
+    ofstream raypath;
+    if(write_rays){
+        sprintf(output_buffer, "%s.raypaths.dat", file_id);
+        raypath.open(output_buffer);
+        raypath << "# x [km]";
+        raypath << '\t' << "y [km]";
+        raypath << '\t' << "z [km]";
+        raypath << '\t' << "geo. atten. [dB]";
+        raypath << '\t' << "absorption [dB]";
+        raypath << '\t' << "time [s]";
+        raypath << '\n';
+    }
 
     cout << "Calculating ray path geometry and weakly non-linear waveform evoluation..." << '\n';
     if (strncmp(wvfrm_file, "none", 4) != 0){   wvfrm::load_wvfrm(wvfrm_array, wvfrm_file);}
@@ -1116,7 +1121,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
             geoac::atten(attenuation, solution, m - 1, m, freq);
             z_max = max (z_max, solution[m][2]);
 
-            if(m == 1 || m % 15 == 0){
+            if(write_rays && (m == 1 || m % 15 == 0)){
                 raypath << solution[m][0];
                 raypath << '\t' << solution[m][1];
                 raypath << '\t' << max(solution[m][2], topo::z(solution[m][0], solution[m][1]));
@@ -1231,7 +1236,10 @@ void run_wnl_wvfrm(char* inputs[], int count){
         wvfrm_out << '\n';
     }
 
-    raypath.close();
+    if(write_rays){
+        raypath.close();
+    }
+    
     wvfrm_out.close();
     wvfrm::delete_wvfrm(wvfrm_array);
 
