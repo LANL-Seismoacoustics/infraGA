@@ -74,7 +74,8 @@ void usage(){
     cout << '\t' << '\t' << "src_lat"           << '\t' << '\t' << "degrees"    << '\t' << '\t' << "30.0" << '\n';
     cout << '\t' << '\t' << "src_lon"           << '\t' << '\t' << "degrees"    << '\t' << '\t' << "0.0" << '\n';
     cout << '\t' << '\t' << "src_alt"           << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
-    cout << '\t' << '\t' << "write_rays"        << '\t' << "true/false"         << '\t' << "true" << '\n' << '\n';
+    cout << '\t' << '\t' << "write_rays"        << '\t' << "true/false"         << '\t' << "true" << '\n';
+    cout << '\t' << '\t' << "write_topo"        << '\t' << "true/false"         << '\t' << "false" << '\n' << '\n';
     /*
     cout << '\t' << "-back_proj (back project from a receiver towards a potential source)" << '\n';
     cout << '\t' << '\t' << "Parameter"  << '\t' << "Units/Options" << '\t' << "Default Value" << '\n';
@@ -172,8 +173,7 @@ void usage(){
     cout << '\t' << "min_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.001" << '\n';
     cout << '\t' << "max_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.05" << '\n';
     cout << '\t' << "topo_file"         << '\t' << '\t' << "see manual"         << '\t' << "none" << '\n';
-    cout << '\t' << "topo_use_BLw"      << '\t' << '\t' << "see manual"         << '\t' << "false" << '\n';
-    cout << '\t' << "write_topo"        << '\t' << '\t' << "true/false"         << '\t' << "false" << '\n' << '\n';
+    cout << '\t' << "topo_use_BLw"      << '\t' << '\t' << "see manual"         << '\t' << "false" << '\n' << '\n';
 
     cout << "Output (see output files or manual for units):" << '\n';
     cout << '\t' << "atmo.dat -> z[km] : c [m/s]  : u (zonal winds) [m/s] : v (meridional winds) [m/s] : density[g/cm^3] : ceff [km/s]" << '\n';
@@ -284,6 +284,7 @@ void run_prop(char* inputs[], int count){
             if(input_check!='y' && input_check!='Y') return;
         }
     }
+
     lat_src *= Pi / 180.0;
     lon_src *= Pi / 180.0;
     z_src = max(z_src, topo::z(lat_src, lon_src) - globe::r0);
@@ -304,6 +305,7 @@ void run_prop(char* inputs[], int count){
     
     if (write_atmo){        cout << '\t' << "write_atmo: true" << '\n';}        else { cout << '\t' << "write_atmo: false" << '\n';}
     if (write_rays){        cout << '\t' << "write_rays: true" << '\n';}        else { cout << '\t' << "write_rays: false" << '\n';}
+    if (write_topo){        cout << '\t' << "write_topo: true" << '\n';}        else { cout << '\t' << "write_topo: false" << '\n';}
     if (write_caustics){    cout << '\t' << "write_caustics: true" << '\n';}    else { cout << '\t' << "write_caustics: false" << '\n';}
     if (geoac::calc_amp){   cout << '\t' << "calc_amp: true" << '\n';}          else { cout << '\t' << "calc_amp: false" << '\n';}
     cout << '\n';

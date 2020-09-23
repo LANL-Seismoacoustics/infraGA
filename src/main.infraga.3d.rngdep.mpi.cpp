@@ -79,7 +79,9 @@ void usage(){
     cout << '\t' << '\t' << "src_x"             << '\t' << '\t' << "km"         << '\t' << '\t' << "midpoint of loc-x file" << '\n';
     cout << '\t' << '\t' << "src_y"             << '\t' << '\t' << "km"         << '\t' << '\t' << "midpoint of loc-y file" << '\n';
     cout << '\t' << '\t' << "src_alt"           << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
-    cout << '\t' << '\t' << "write_rays"        << '\t' << "true/false"         << '\t' << "false" << '\n' << '\n';
+
+    cout << '\t' << '\t' << "write_rays"        << '\t' << "true/false"         << '\t' << "false" << '\n';
+    cout << '\t' << '\t' << "write_topo"        << '\t' << "true/false"         << '\t' << "false" << '\n' << '\n';
     
     cout << '\t' << "-eig_search (Search for all eigenrays connecting a source at (src_x, src_y, src_alt) to a receiver " << '\n';
     cout << '\t' << '\t' << '\t' << "at (rcvr_x, rcvr_y, z_grnd) which have inclinations and ground reflections within specified limits)" << '\n';
@@ -160,7 +162,7 @@ void run_prop(char* inputs[], int count){
     double phi_min=-90.0, phi_max=-90.0, phi_step=1.0;
     int bounces=2;
     double  x_src, y_src, z_src = 0.0;
-    bool write_atmo=false, write_rays=false;
+    bool write_atmo=false, write_rays=false, write_topo=false;
     double freq=0.1;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
@@ -233,10 +235,13 @@ void run_prop(char* inputs[], int count){
                                                                                                             }}
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){                                                topo_file = inputs[i] + 10; geoac::is_topo=true;}
         else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){                                             topo::use_BLw = string2bool(inputs[i] + 13);}
+        else if (strncmp(inputs[i], "write_topo=", 11) == 0){                                               write_topo = string2bool(inputs[i] + 11);}
+
         else{
             if (world_size == 0){
                 cout << "***WARNING*** Unrecognized parameter entry: " << inputs[i] << '\n';
             }
+            mpi_error = MPI_Barrier(MPI_COMM_WORLD);
             MPI_Finalize();
             return;
         }
@@ -258,6 +263,7 @@ void run_prop(char* inputs[], int count){
     
         if (write_atmo){        cout << '\t' << "write_atmo: true" << '\n';} else {     cout << '\t' << "write_atmo: false" << '\n';}
         if (write_rays){        cout << '\t' << "write_rays: true" << '\n';} else {     cout << '\t' << "write_rays: false" << '\n';}
+        if (write_topo){        cout << '\t' << "write_topo: true" << '\n';}        else { cout << '\t' << "write_topo: false" << '\n';}
         if (geoac::calc_amp){   cout << '\t' << "calc_amp: true" << '\n';} else {       cout << '\t' << "calc_amp: false" << '\n';}
         cout << '\t' << "threads: " << world_size << '\n' << '\n';
     }
@@ -270,7 +276,7 @@ void run_prop(char* inputs[], int count){
 	int k, length = geoac::s_max * int(1.0 / (geoac::ds_min * 10)), break_check_int;
 	bool break_check;
     
-    ofstream results, raypath, caustics;
+    ofstream results, raypath, caustics, topo_out;
 
     if(world_rank==0){
         if(write_atmo){
@@ -361,6 +367,10 @@ void run_prop(char* inputs[], int count){
                 cout << "Calculating ray paths: (" << theta << ", " << theta + (world_size - 1) * theta_step;
                 cout << ") degrees inclination range, " << phi << " degrees azimuth." << '\n';
             }
+
+            if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo && world_rank == 0){
+                topo_out.open("topography.dat");
+            }
         
             for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){
                 if(!mpi_break_check[world_rank]){
@@ -425,7 +435,19 @@ void run_prop(char* inputs[], int count){
                     travel_time_sum += geoac::travel_time(solution, k);
                     attenuation += geoac::atten(solution, k, freq);
                 }
-            
+
+                if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo && world_rank == 0){
+                    for(int m = 1; m < k ; m+=10){                        
+                        topo_out << solution[m][0];
+                        topo_out << '\t' << solution[m][1];
+                        topo_out << '\t' << topo::z(solution[m][0], solution[m][1]) << '\n';
+                    }
+                }
+
+                if(k < 2){
+                    break_check = true;
+                } 
+
                 break_check_int = int(break_check);
                 MPI_Allgather(&break_check_int, 1, MPI_INT, mpi_break_check, 1, MPI_INT, MPI_COMM_WORLD);
             
@@ -488,6 +510,11 @@ void run_prop(char* inputs[], int count){
             mpi_error = MPI_Barrier(MPI_COMM_WORLD);
             if(world_rank == 0 && write_rays){
                 raypath << '\n';
+            }
+            geoac::clear_solution(solution,k);
+
+            if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo && world_rank == 0){
+                topo_out.close();
             }
         }
     }
