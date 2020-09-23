@@ -21,7 +21,7 @@ from netCDF4 import Dataset
 
 sph_proj = Geod(ellps='sphere')
 
-etopo_file = "/path/to/ETOPO1_Ice_g_gmt4.grd"
+etopo_file = "ETOPO1_Ice_g_gmt4.grd"
 
 def interp_etopo(ll_corner, ur_corner):
     """
@@ -327,8 +327,6 @@ def print_usage():
     print('\n\t' + "-latlon_grid (extract a latitude/longitude grid)")
     print('\t\t' + "Parameter" + '\t\t\t' + "Units")
     print('\t\t' + "-" * 50)
-    print('\t\t' + "source latitude" + '\t\t\t' + "degrees")
-    print('\t\t' + "source longitude" + '\t\t' + "degrees")
     print('\t\t' + "lower-left corner latitude" + '\t' + "degrees")
     print('\t\t' + "lower-left corner longitude" + '\t' + "degrees")
     print('\t\t' + "upper-right corner latitude" + '\t' + "degrees")
