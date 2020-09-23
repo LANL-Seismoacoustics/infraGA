@@ -364,7 +364,7 @@ void run_prop(char* inputs[], int count){
             mpi_error = MPI_Barrier(MPI_COMM_WORLD);
         
             if(world_rank == 0){
-                cout << "Calculating ray paths: (" << theta << ", " << theta + (world_size - 1) * theta_step;
+                cout << "Calculating ray paths: (" << theta << ", " << min(theta + (world_size - 1) * theta_step, theta_max);
                 cout << ") degrees inclination range, " << phi << " degrees azimuth." << '\n';
             }
 
