@@ -251,7 +251,7 @@ bool geoac::find_eigenray(double src[3], double rcvr[2], double & th_est, double
     build_solution(solution, length);
 
     theta =	th_est;
-    phi = 	ph_est;
+    phi = ph_est;
     
     if(verbose && verbose_opt == rcvr_id){
         cout << '\t' << '\t' << "Searching for exact eigenray using auxiliary parameters." << '\n';
@@ -264,81 +264,70 @@ bool geoac::find_eigenray(double src[3], double rcvr[2], double & th_est, double
             break;
         }
         
-		set_initial(solution, src[0], src[1], src[2]);
         if(verbose && verbose_opt == rcvr_id){
             cout << '\t' << '\t' << "Calculating ray path: " << theta * (180.0 / Pi) << " degrees inclination, ";
             cout << 90.0 - phi * (180.0 / Pi) << " degrees azimuth";
         }
         
+		set_initial(solution, src[0], src[1], src[2]);
         k = prop_rk4(solution, break_check);
         if(break_check){
-            if(verbose && verbose_opt == rcvr_id ){
-                cout << '\t' << "Ray path left propagation region." << '\n';
+            if(verbose&& verbose_opt == rcvr_id){
+                cout << '\t' << "Ray path left propagation region, reversing step and adjusting step scaling." << '\n';
             }
-            break;
-        }
-        for(int n_bnc = 1; n_bnc <= bnc_cnt; n_bnc++){
-            set_refl(solution, k); k = prop_rk4(solution, break_check);
-            if(break_check){
-                if(verbose && verbose_opt == rcvr_id){
-                    cout << '\t' << "Ray path left propagation region." << '\n';
-                }
-                break;
-            }
-        }
-        if(break_check){
-            break;
-        }
-        
-		// Determine arrival location and check if it's within the defined tolerance
-        dr = globe::gc_dist(solution[k][1], solution[k][2], rcvr[0], rcvr[1]);
-        if(verbose && verbose_opt == rcvr_id){
-            cout << '\t' << '\t' << "Arrival at (" << setprecision(8) << solution[k][1] * (180.0 / Pi);
-            cout << ", " << solution[k][2] * (180.0 / Pi) << "), distance to receiver = " << dr << " km." << '\n';
-        }
-        
-        if(dr < tolerance) {
-            sprintf(output_buffer, "%s%i.dat", title, eigenray_cnt);
-            raypath.open(output_buffer);
 
-            raypath << "# lat [deg]";
-            raypath << '\t' << "lon [deg]";
-            raypath << '\t' << "z [km]";
-            raypath << '\t' << "geo. atten. [dB]";
-            raypath << '\t' << "absorption [dB]";
-            raypath << '\t' << "time [s]";
-            raypath << '\n';
-                
-            attenuation = 0.0;
-            travel_time_sum = 0.0;
-            r_max = 0.0;
-            
-            set_initial(solution, src[0], src[1], src[2]);
-            k = prop_rk4(solution, break_check);
-
-            for(int m = 1; m < k; m++){
-                travel_time(travel_time_sum, solution, m - 1, m);
-                atten(attenuation, solution, m - 1, m, freq);
-                r_max = max (r_max, solution[m][0] - globe::r0);
-                
-                if(m == 1 || m % 15 == 0){
-                    raypath << setprecision(8) << solution[m][1] * (180.0 / Pi);
-                    raypath << '\t' << setprecision(8) << solution[m][2] * (180.0 / Pi);
-                    raypath << '\t' << solution[m][0] - globe::r0;
-                    raypath << '\t' << 10.0 * log10(amp(solution, m));
-                    raypath << '\t' << -attenuation;
-                    raypath << '\t' << travel_time_sum << '\n';
-                }
-            }
+            theta -= dth * step_sc;
+            phi -= dph * step_sc;
+            step_sc /= 2.0;
+        } else {
             for(int n_bnc = 1; n_bnc <= bnc_cnt; n_bnc++){
                 set_refl(solution, k);
-                
                 k = prop_rk4(solution, break_check);
+                if(break_check){
+                    if(verbose && verbose_opt == rcvr_id){
+                        cout << '\t' << "Ray path left propagation region, reversing step and adjusting step scaling." << '\n';
+                    }
+
+                    theta -= dth * step_sc;
+                    phi -= dph * step_sc;
+                    step_sc /= 2.0;
+                    break;
+                }
+            } 
+        }
+
+        if(!break_check){
+    		// Determine arrival location and check if it's within the defined tolerance
+            dr = globe::gc_dist(solution[k][1], solution[k][2], rcvr[0], rcvr[1]);
+            if(verbose && verbose_opt == rcvr_id){
+                cout << '\t' << '\t' << "Arrival at (" << setprecision(8) << solution[k][1] * (180.0 / Pi);
+                cout << ", " << solution[k][2] * (180.0 / Pi) << "), distance to receiver = " << dr << " km." << '\n';
+            }
+        
+            if(dr < tolerance) {
+                sprintf(output_buffer, "%s%i.dat", title, eigenray_cnt);
+                raypath.open(output_buffer);
+
+                raypath << "# lat [deg]";
+                raypath << '\t' << "lon [deg]";
+                raypath << '\t' << "z [km]";
+                raypath << '\t' << "geo. atten. [dB]";
+                raypath << '\t' << "absorption [dB]";
+                raypath << '\t' << "time [s]";
+                raypath << '\n';
+                
+                attenuation = 0.0;
+                travel_time_sum = 0.0;
+                r_max = 0.0;
+            
+                set_initial(solution, src[0], src[1], src[2]);
+                k = prop_rk4(solution, break_check);
+
                 for(int m = 1; m < k; m++){
                     travel_time(travel_time_sum, solution, m - 1, m);
                     atten(attenuation, solution, m - 1, m, freq);
-                    r_max = max(r_max, solution[m][0] - globe::r0);
-                    
+                    r_max = max (r_max, solution[m][0] - globe::r0);
+                
                     if(m == 1 || m % 15 == 0){
                         raypath << setprecision(8) << solution[m][1] * (180.0 / Pi);
                         raypath << '\t' << setprecision(8) << solution[m][2] * (180.0 / Pi);
@@ -348,93 +337,118 @@ bool geoac::find_eigenray(double src[3], double rcvr[2], double & th_est, double
                         raypath << '\t' << travel_time_sum << '\n';
                     }
                 }
-            }
-            raypath.close();
-                        
-            inclination = - asin(atmo::c(solution[k][0], solution[k][1], solution[k][2]) / atmo::c(src[0], src[1], src[2]) * solution[k][3]) * 180.0 / Pi;
-            back_az = 90.0 - atan2(-solution[k][4], -solution[k][5]) * 180.0 / Pi;
-            while(back_az < -180.0) back_az += 360.0;
-            while(back_az >  180.0) back_az -= 360.0;
-            
-            back_az_dev = ((Pi / 2.0 - atan2(-solution[k][4], -solution[k][5]) ) - globe::bearing(rcvr[0], rcvr[1], src[1], src[2]) ) * (180.0 / Pi);
-            if(back_az_dev >  180.0) back_az_dev -= 360.0;
-            if(back_az_dev < -180.0) back_az_dev += 360.0;
-            
-            if(verbose && verbose_opt == rcvr_id){
-                cout << '\t' << '\t' << "Eigenray-" << eigenray_cnt << ":" << '\n';
-                cout << '\t' << '\t' << '\t' << "inclination [deg] = " << theta * (180.0 / Pi) << '\n';
-                cout << '\t' << '\t' << '\t' << "azimuth [deg] = " << 90.0 - phi * (180.0 / Pi) << '\n';
-                cout << '\t' << '\t' << '\t' << "bounces [-] = " << bnc_cnt << '\n';
-                cout << '\t' << '\t' << '\t' << "latitude [deg] = " << setprecision(8) << solution[k][1] * 180.0 / Pi << '\n';
-                cout << '\t' << '\t' << '\t' << "longitude [deg] = " << setprecision(8) << solution[k][2] * 180.0 / Pi << '\n';
-                cout << '\t' << '\t' << '\t' << "time [s] = " << travel_time_sum << '\n';
-                cout << '\t' << '\t' << '\t' << "celerity [km/s] = " << globe::gc_dist(solution[k][1], solution[k][2], src[1], src[2]) / travel_time_sum << '\n';
-                cout << '\t' << '\t' << '\t' << "turning height [km] = " << r_max << '\n';
-                cout << '\t' << '\t' << '\t' << "arrival inclination [deg] = " << inclination << '\n';
-                cout << '\t' << '\t' << '\t' << "back azimuth [deg] = " << back_az << '\n';
-                cout << '\t' << '\t' << '\t' << "attenuation (geometric) [dB] = " << 10.0 * log10(geoac::amp(solution,k)) << '\n';
-                cout << '\t' << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
-            }
-                       
-            eig_results << setprecision(8) << theta * (180.0 / Pi);
-            eig_results << '\t' << setprecision(8) << 90.0 - phi * (180.0 / Pi);
-            eig_results << '\t' << bnc_cnt;
-            eig_results << '\t' << setprecision(8) << solution[k][1] * 180.0 / Pi;
-            eig_results << '\t' << setprecision(8) << solution[k][2] * 180.0 / Pi;
-            eig_results << '\t' << travel_time_sum;
-            eig_results << '\t' << globe::gc_dist(solution[k][1], solution[k][2], src[1], src[2]) / travel_time_sum;
-            eig_results << '\t' << r_max;
-            eig_results << '\t' << inclination;
-            eig_results << '\t' << back_az;
-            eig_results << '\t' << 10.0 * log10(geoac::amp(solution,k));
-            eig_results << '\t' << -attenuation;
-            eig_results << '\n';
-
-            th_est = theta;
-            ph_est = phi;
-
-            eigenray_cnt++;
-            success = true;
-            break;
-        } else if (n > 0 && dr > dr_prev){
-            theta -= dth * step_sc; phi -= dph * step_sc; step_sc /= 2.0;
-            if(sqrt(dth * dth + dph * dph) * step_sc < 1.0e-12){
-                if (verbose && verbose_opt == rcvr_id){
-                    cout << '\t' << '\t' <<  '\t' << "Step size too small, near-critical ray path likely." << '\n' << '\n';
-                    break;
+                for(int n_bnc = 1; n_bnc <= bnc_cnt; n_bnc++){
+                    set_refl(solution, k);
+                
+                    k = prop_rk4(solution, break_check);
+                    for(int m = 1; m < k; m++){
+                        travel_time(travel_time_sum, solution, m - 1, m);
+                        atten(attenuation, solution, m - 1, m, freq);
+                        r_max = max(r_max, solution[m][0] - globe::r0);
+                    
+                        if(m == 1 || m % 15 == 0){
+                            raypath << setprecision(8) << solution[m][1] * (180.0 / Pi);
+                            raypath << '\t' << setprecision(8) << solution[m][2] * (180.0 / Pi);
+                            raypath << '\t' << solution[m][0] - globe::r0;
+                            raypath << '\t' << 10.0 * log10(amp(solution, m));
+                            raypath << '\t' << -attenuation;
+                            raypath << '\t' << travel_time_sum << '\n';
+                        }
+                    }
                 }
-            }
-        } else {
-            step_sc = min(1.0, step_sc * 1.25);
-            
-            dlat = rcvr[0] - solution[k][1];
-            dlon = rcvr[1] - solution[k][2];
-            
-            r_grnd = topo::z(solution[k][1], solution[k][2]);
-            c_grnd = atmo::c(r_grnd, solution[k][1], solution[k][2]);
-            c_src = atmo::c(src[0] + globe::r0, src[1], src[2]);
-            
-            dzg_dlat = topo::dz(solution[k][1], solution[k][2], 0) / r_grnd;
-            dzg_dlon = topo::dz(solution[k][1], solution[k][2], 1) / (r_grnd * cos(solution[k][1]));
-            ds_norm = solution[k][3] - dzg_dlat * solution[k][4] -  dzg_dlon  * solution[k][5];
-            
-            ds_dth = - c_src / c_grnd * (solution[k][6] -  dzg_dlat * r_grnd * solution[k][7] -  dzg_dlon * (r_grnd * cos(solution[k][1])) * solution[k][8])  / ds_norm;
-            ds_dph = - c_src / c_grnd * (solution[k][12] - dzg_dlat * r_grnd * solution[k][13] - dzg_dlon * (r_grnd * cos(solution[k][1])) * solution[k][14]) / ds_norm;
-
-            dlat_dth = solution[k][7]  + solution[k][4] / r_grnd * ds_dth;  dlon_dth = solution[k][8]  + solution[k][5] / (r_grnd * cos(solution[k][1])) * ds_dth;
-            dlat_dph = solution[k][13] + solution[k][4] / r_grnd * ds_dph;  dlon_dph = solution[k][14] + solution[k][5] / (r_grnd * cos(solution[k][1])) * ds_dph;
-
-            det = pow(1.0 + damping, 2) * dlat_dth * dlon_dph - dlat_dph * dlon_dth;
-            
-            dth = ((1.0 + damping) * dlon_dph * dlat - dlat_dph * dlon) / det;
-            dph = ((1.0 + damping) * dlat_dth * dlon - dlon_dth * dlat) / det;
-            
-            theta += dth * step_sc;
-            phi += dph * step_sc;
+                raypath.close();
                         
-            dr_prev = dr;
+                inclination = - asin(atmo::c(solution[k][0], solution[k][1], solution[k][2]) / atmo::c(src[0], src[1], src[2]) * solution[k][3]) * 180.0 / Pi;
+                back_az = 90.0 - atan2(-solution[k][4], -solution[k][5]) * 180.0 / Pi;
+                while(back_az < -180.0) back_az += 360.0;
+                while(back_az >  180.0) back_az -= 360.0;
+            
+                back_az_dev = ((Pi / 2.0 - atan2(-solution[k][4], -solution[k][5]) ) - globe::bearing(rcvr[0], rcvr[1], src[1], src[2]) ) * (180.0 / Pi);
+                if(back_az_dev >  180.0) back_az_dev -= 360.0;
+                if(back_az_dev < -180.0) back_az_dev += 360.0;
+            
+                if(verbose && verbose_opt == rcvr_id){
+                    cout << '\t' << '\t' << "Eigenray-" << eigenray_cnt << ":" << '\n';
+                    cout << '\t' << '\t' << '\t' << "inclination [deg] = " << theta * (180.0 / Pi) << '\n';
+                    cout << '\t' << '\t' << '\t' << "azimuth [deg] = " << 90.0 - phi * (180.0 / Pi) << '\n';
+                    cout << '\t' << '\t' << '\t' << "bounces [-] = " << bnc_cnt << '\n';
+                    cout << '\t' << '\t' << '\t' << "latitude [deg] = " << setprecision(8) << solution[k][1] * 180.0 / Pi << '\n';
+                    cout << '\t' << '\t' << '\t' << "longitude [deg] = " << setprecision(8) << solution[k][2] * 180.0 / Pi << '\n';
+                    cout << '\t' << '\t' << '\t' << "time [s] = " << travel_time_sum << '\n';
+                    cout << '\t' << '\t' << '\t' << "celerity [km/s] = " << globe::gc_dist(solution[k][1], solution[k][2], src[1], src[2]) / travel_time_sum << '\n';
+                    cout << '\t' << '\t' << '\t' << "turning height [km] = " << r_max << '\n';
+                    cout << '\t' << '\t' << '\t' << "arrival inclination [deg] = " << inclination << '\n';
+                    cout << '\t' << '\t' << '\t' << "back azimuth [deg] = " << back_az << '\n';
+                    cout << '\t' << '\t' << '\t' << "attenuation (geometric) [dB] = " << 10.0 * log10(geoac::amp(solution,k)) << '\n';
+                    cout << '\t' << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
+                }
+
+                eig_results << setprecision(8) << theta * (180.0 / Pi);
+                eig_results << '\t' << setprecision(8) << 90.0 - phi * (180.0 / Pi);
+                eig_results << '\t' << bnc_cnt;
+                eig_results << '\t' << setprecision(8) << solution[k][1] * 180.0 / Pi;
+                eig_results << '\t' << setprecision(8) << solution[k][2] * 180.0 / Pi;
+                eig_results << '\t' << travel_time_sum;
+                eig_results << '\t' << globe::gc_dist(solution[k][1], solution[k][2], src[1], src[2]) / travel_time_sum;
+                eig_results << '\t' << r_max;
+                eig_results << '\t' << inclination;
+                eig_results << '\t' << back_az;
+                eig_results << '\t' << 10.0 * log10(geoac::amp(solution,k));
+                eig_results << '\t' << -attenuation;
+                eig_results << '\n';
+
+                th_est = theta;
+                ph_est = phi;
+
+                eigenray_cnt++;
+                success = true;
+                break;
+            } else if (n > 0 && dr > dr_prev){
+                if(verbose && verbose_opt == rcvr_id){
+                    cout << '\t' << '\t' <<  '\t' << "Distance to receiver increased, reversing step and adjusting step scaling." << '\n';
+                }
+
+                theta -= dth * step_sc;
+                phi -= dph * step_sc;
+                step_sc /= 2.0;
+            } else {
+                step_sc = min(1.0, step_sc * 1.25);
+            
+                dlat = rcvr[0] - solution[k][1];
+                dlon = rcvr[1] - solution[k][2];
+            
+                r_grnd = topo::z(solution[k][1], solution[k][2]);
+                c_grnd = atmo::c(r_grnd, solution[k][1], solution[k][2]);
+                c_src = atmo::c(src[0] + globe::r0, src[1], src[2]);
+            
+                dzg_dlat = topo::dz(solution[k][1], solution[k][2], 0) / r_grnd;
+                dzg_dlon = topo::dz(solution[k][1], solution[k][2], 1) / (r_grnd * cos(solution[k][1]));
+                ds_norm = solution[k][3] - dzg_dlat * solution[k][4] -  dzg_dlon  * solution[k][5];
+            
+                ds_dth = - c_src / c_grnd * (solution[k][6] -  dzg_dlat * r_grnd * solution[k][7] -  dzg_dlon * (r_grnd * cos(solution[k][1])) * solution[k][8])  / ds_norm;
+                ds_dph = - c_src / c_grnd * (solution[k][12] - dzg_dlat * r_grnd * solution[k][13] - dzg_dlon * (r_grnd * cos(solution[k][1])) * solution[k][14]) / ds_norm;
+
+                dlat_dth = solution[k][7]  + solution[k][4] / r_grnd * ds_dth;  dlon_dth = solution[k][8]  + solution[k][5] / (r_grnd * cos(solution[k][1])) * ds_dth;
+                dlat_dph = solution[k][13] + solution[k][4] / r_grnd * ds_dph;  dlon_dph = solution[k][14] + solution[k][5] / (r_grnd * cos(solution[k][1])) * ds_dph;
+
+                det = pow(1.0 + damping, 2) * dlat_dth * dlon_dph - dlat_dph * dlon_dth;
+            
+                dth = ((1.0 + damping) * dlon_dph * dlat - dlat_dph * dlon) / det;
+                dph = ((1.0 + damping) * dlat_dth * dlon - dlon_dth * dlat) / det;
+            
+                theta += dth * step_sc;
+                phi += dph * step_sc;
+
+                dr_prev = dr;
+            }
+            clear_solution(solution, k);
         }
-        clear_solution(solution, k);
+        if(sqrt(dth * dth + dph * dph) * step_sc < 1.0e-12){
+            if (verbose && verbose_opt == rcvr_id){
+                cout << '\t' << '\t' <<  '\t' << "Step size too small, near-critical ray path likely." << '\n' << '\n';
+            }
+            break;
+        }
 	}
     delete_solution(solution, length);
     return success;
