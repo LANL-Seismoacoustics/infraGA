@@ -761,7 +761,7 @@ void run_eig_search(char* inputs[], int count){
         if (srcs_cnt > 10){ cout << '\t' << '\t' << "..." << '\n';}
         cout << '\t' << "receiver location(s) (x, y, alt):" << '\n';
         for(int n = 0; n < min(rcvrs_cnt, 10); n++){
-            cout << '\t' << '\t' << "(" << rcvrs[n][0] << ", " << rcvrs[n][1] << ", " << topo::z(rcvrs[n][0], rcvrs[n][1]) << ")." << '\n';
+            cout << '\t' << '\t' << "(" << rcvrs[n][0] << ", " << rcvrs[n][1] << ", " << topo::z(rcvrs[n][0], rcvrs[n][1]) << ")" << '\n';
         }
         if (rcvrs_cnt > 10){ cout << '\t' << '\t' << "..." << '\n';}
 

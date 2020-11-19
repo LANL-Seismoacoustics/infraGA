@@ -890,7 +890,9 @@ void run_eig_search(char* inputs[], int count){
         theta_start = theta_min;
         while(theta_start < theta_max){
             estimate_success = geoac::est_eigenray(src, rcvr, theta_start, theta_max, theta_est, phi_est, theta_next, n_bnc, az_err_lim);
-            if(estimate_success) geoac::find_eigenray(src, rcvr, theta_est, phi_est, freq, n_bnc, iterations, file_id);
+            if(estimate_success){
+                geoac::find_eigenray(src, rcvr, theta_est, phi_est, freq, n_bnc, iterations, file_id);
+            }
             theta_start = theta_next;
         }
     }
@@ -993,8 +995,8 @@ void run_eig_direct(char* inputs[], int count){
     // Set the phi_start angle by the great circle bearing to the receiver and then change it if it's been input
     phi_est = Pi / 2.0 - globe::bearing(src[1], src[2], rcvr[0], rcvr[1]);
     for(int i = 3; i < count; i++){
-        if((strncmp(inputs[i], "az_est=", 8) == 0) || (strncmp(inputs[i], "est_az=", 8) == 0)){
-            phi_est = Pi / 2.0 - atof(inputs[i] + 8) * (Pi / 180.0);
+        if((strncmp(inputs[i], "az_est=", 7) == 0) || (strncmp(inputs[i], "est_az=", 7) == 0)){
+            phi_est = Pi / 2.0 - atof(inputs[i] + 7) * (Pi / 180.0);
         }
     }
     

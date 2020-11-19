@@ -38,11 +38,11 @@ double geoac::mod_dth(double dr, double dr_dtheta){
 
 bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th_max, double & th_est, double & ph_est, double & th_next, int bncs, double az_err_lim, MPI_Comm comm, int rank, int size, int rcvr_id){
     double rcvr_rng = sqrt(pow(rcvr[0] - src[0], 2) + pow(rcvr[1] - src[1], 2));
-    double rcvr_az = atan2(rcvr[1] - src[1], rcvr[0] - src[0]);
+    double rcvr_az = atan2(rcvr[1] - src[1], rcvr[0] - src[0]) * (180.0 / Pi);
     
     if(verbose && verbose_opt == rcvr_id && rank == 0){
         cout << '\t' << "Estimating eigenray angles for source-receiver separated by " << rcvr_rng << " km, and azimuth ";
-        cout << 90.0 - rcvr_az * (180.0 / Pi) << " degrees from N.  Inclination limits: " << th_min * 180.0 / Pi << ", " << th_max * 180.0 / Pi << "." << '\n';
+        cout << 90.0 - rcvr_az << " degrees from N.  Inclination limits: " << th_min * 180.0 / Pi << ", " << th_max * 180.0 / Pi << "." << '\n';
     }
     
     int	iterations = 0, k, length = s_max * int(1.0 / (ds_min * 10)), success[2];
@@ -56,7 +56,8 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
     double** solution;
     build_solution(solution, length);
     
-    phi = rcvr_az;
+    phi = rcvr_az * (Pi / 180.0);
+
     th_max_reached = false;
     while(fabs(dph) > az_err_lim && iterations < 5){
         success[0] = 0;
@@ -77,26 +78,29 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
             if(!break_check){
                 for(int n_bnc = 1; n_bnc <= bncs; n_bnc++){
                     set_refl(solution, k); k = prop_rk4(solution, break_check);
-                    if(break_check) break;
+                    if(break_check){
+                        break;
+                    }
                 }
             }
             
             if(break_check){
                 arrival_rng = rcvr_rng;
+                arrival_az_dev = 100.0;
             } else {
                 arrival_rng = sqrt(pow(solution[k][0] - src[0], 2) + pow(solution[k][1] - src[1], 2));
-                arrival_az_dev = rcvr_az - atan2(solution[k][1] - src[1], solution[k][0] - src[0]);
-                while(arrival_az_dev > Pi){
-                    arrival_az_dev -= 2.0 * Pi;
+                arrival_az_dev = rcvr_az - atan2(solution[k][1] - src[1], solution[k][0] - src[0]) * (180.0 / Pi);
+                while(arrival_az_dev > 180.0){
+                    arrival_az_dev -= 360.0;
                 }
-                while(arrival_az_dev < -Pi){
-                    arrival_az_dev += 2.0 * Pi;
+                while(arrival_az_dev < -180.0){
+                    arrival_az_dev += 360.0;
                 }
             }
             MPI_Barrier(comm);
-            
             MPI_Gather(&arrival_rng, 1, MPI_DOUBLE, rngs, 1, MPI_DOUBLE, 0, comm);
             MPI_Gather(&arrival_az_dev, 1, MPI_DOUBLE, az_devs, 1, MPI_DOUBLE, 0, comm);
+            MPI_Barrier(comm);
             
             if (rank == 0){
                 if(verbose && verbose_opt == rcvr_id){
@@ -116,7 +120,8 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
                     cout << "." << '\n';
                 }
                 
-                if((theta > th_min) && (prev_rng - rcvr_rng) * (rngs[0] - rcvr_rng) < 0.0) {
+
+                if(((prev_rng - rcvr_rng) * (rngs[0] - rcvr_rng) < 0.0) && (rngs[0] < rng_max) && (prev_rng < rng_max) && (theta > th_min)){
                     if(iterations == 0){
                         results_buffer[2] = theta;
                     }
@@ -124,24 +129,25 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
                         
                     if(fabs(prev_az_dev) < az_err_lim){
                         if(verbose && verbose_opt == rcvr_id){
-                            cout << '\t' << '\t' << '\t' << "Identified eigenray estimate.  ";
-                            cout << "Azimuth deviation = " << prev_az_dev << ".  Estimate acceptable." << '\n' << '\n';
+                            cout << '\t' << '\t' << '\t' << "Azimuth deviation = " << prev_az_dev << ", less than " << az_err_lim;
+                            cout << " degrees: estimates acceptable." << '\n' << '\n';
                         }
-                        results_buffer[0] = theta;
+                        results_buffer[0] = theta - dth;
                         results_buffer[1] = phi;
                         success[1] = 1;
                             
                     } else {
                         if(verbose && verbose_opt == rcvr_id){
-                            cout << '\t' << '\t' << '\t' << "Identified eigenray estimate.  ";
-                            cout << "Azimuth deviation = " << prev_az_dev << ".  Shifting azimuth and searching inclinations again." << '\n' << '\n';
+                            cout << '\n' << '\t' << '\t' <<'\t' << "Azimuth deviation = " << prev_az_dev << ", greater than " << az_err_lim << " degrees: compensating and searching inclinations again." << '\n';
+                            cout << '\t' << '\t' << '\t' << "Launch azimuth correction: " << 90.0 - phi * (180.0 / Pi) << " --> " << 90.0 - ((phi * (180.0 / Pi) + prev_az_dev * 0.9)) << '\n' << '\n';
                         }
-                        results_buffer[0] = max(theta - 10.0, th_min);
-                        results_buffer[1] = phi + 0.75 * prev_az_dev;
+                        results_buffer[0] = max(theta - 5.0, th_min + dth * size);
+                        results_buffer[1] = phi + prev_az_dev * (Pi / 180.0) * 0.9;
                         success[1] = 0;
+
+                        iterations++;
                     }
-                }
-                if(success[0] != 1){
+                } else {
                     for(int k = 0; k < size - 1; k++){
                         if((rngs[k] - rcvr_rng) * (rngs[k + 1] - rcvr_rng) < 0.0){
                             if(iterations == 0){
@@ -151,31 +157,31 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
                             
                             if(fabs(az_devs[k]) < az_err_lim){
                                 if(verbose && verbose_opt == rcvr_id){
-                                    cout << '\t' << '\t' << '\t' << "Identified eigenray estimate.  ";
-                                    cout << "Azimuth deviation = " << az_devs[k] << ".  Estimate acceptable." << '\n' << '\n';
+                                    cout << '\t' << '\t' << '\t' << "Azimuth deviation = " << az_devs[k] << ", less than " << az_err_lim;
+                                    cout << " degrees: estimates acceptable." << '\n' << '\n';
                                 }
                                 results_buffer[0] = theta + k * dth;
                                 results_buffer[1] = phi;
                                 success[1] = 1;
-                                break;
                             } else {
                                 if(verbose && verbose_opt == rcvr_id){
-                                    cout << '\t' << '\t' << '\t' << "Identified eigenray estimate.  ";
-                                    cout << "Azimuth deviation = " << az_devs[k] << ".  Shifting azimuth and searching inclinations again." << '\n' << '\n';
+                                    cout << '\n' << '\t' << '\t' <<'\t' << "Azimuth deviation = " << az_devs[k] << ", greater than " << az_err_lim << " degrees: compensating and searching inclinations again." << '\n';
+                                    cout << '\t' << '\t' << '\t' << "Launch azimuth correction: " << 90.0 - phi * (180.0 / Pi) << " --> " << 90.0 - ((phi * (180.0 / Pi) + az_devs[k] * 0.9)) << '\n' << '\n';
                                 }
-                                results_buffer[0] = max(theta - 10.0, th_min);
-                                results_buffer[1] = phi + 0.75 * az_devs[k];
+                                results_buffer[0] = max(theta - 5.0, th_min + dth * size);
+                                results_buffer[1] = phi + az_devs[k] * (Pi / 180.0) * 0.9;
                                 success[1] = 0;
-                                break;
+
+                                iterations++;
                             }
+                        break;
                         }
-                    }}
+                    }
+                }
                 prev_rng = rngs[size - 1];
                 prev_az_dev = az_devs[size - 1];
             }
             MPI_Barrier(comm);
-            
-            // CPU-0 sends out success state and results summaries
             MPI_Bcast(success, 2, MPI_INT, 0, comm);
             MPI_Bcast(results_buffer, 3, MPI_DOUBLE, 0, comm);
             MPI_Barrier(comm);
@@ -190,23 +196,23 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
                 phi = results_buffer[1];
                 break;
             }
+
+            if(iterations >= 3){
+                dth = dth_big / (iterations + 2);
+            }
         }
         
         MPI_Barrier(comm);
-        if (success[1] == 1){
-            break;
-        }
         if(th_max_reached){
             th_next = th_max;
-            if(rank == 0){
-                cout << '\n';
-            }
             break;
         }
         
-        iterations++;
-        dth = dth_big / iterations;
+        if (success[1] == 1){
+            break;
+        }
     }
+
     delete_solution(solution, length);
     if(verbose && verbose_opt == rcvr_id && rank == 0 && !success[1]){
         cout << '\t' << '\t' << "Reached maximum inclination angle or iteration limit." << '\n';

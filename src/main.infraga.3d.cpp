@@ -973,8 +973,8 @@ void run_eig_direct(char* inputs[], int count){
 
     phi_est = atan2(rcvr[1] - src[1], rcvr[0] - src[0]);
     for(int i = 3; i < count; i++){
-        if (strncmp(inputs[i], "phi_est=", 8) == 0){
-            phi_est = Pi / 2.0 - atof(inputs[i] + 8);
+        if((strncmp(inputs[i], "az_est=", 7) == 0) || (strncmp(inputs[i], "est_az=", 7) == 0)){
+            phi_est = Pi / 2.0 - atof(inputs[i] + 7) * (Pi / 180.0);
         }
     }
     if(write_atmo)  geoac::write_prof("atmo.dat", src[0], src[1], phi_est);

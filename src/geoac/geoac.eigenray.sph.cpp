@@ -34,7 +34,9 @@ double geoac::dth_sml = 0.001 * (Pi / 180.0);
 
 ofstream geoac::eig_results;
 
-double geoac::mod_dth(double dr, double dr_dtheta){ return dth_big - (dth_big - dth_sml) * exp(- 1.0 / 2.0 * pow(dr / dr_dtheta, 2));}
+double geoac::mod_dth(double dr, double dr_dtheta){
+    return dth_big - (dth_big - dth_sml) * exp(- 1.0 / 2.0 * pow(dr / dr_dtheta, 2));
+}
 
 
 bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th_max, double & th_est, double & ph_est, double & th_next, int bncs, double az_err_lim){
@@ -42,12 +44,13 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
     double rcvr_az = globe::bearing(src[1], src[2], rcvr[0], rcvr[1]);
     
     if(verbose){
-        cout << '\t' << "Estimating eigenray angles for source-receiver at great circle distance " << rcvr_rng << " km and azimuth " << rcvr_az * (180.0 / Pi) << " degrees.  Inclination limits: [" << th_min * (180.0 / Pi) << ", " << th_max * (180.0 / Pi) << "]." << '\n';
+        cout << '\t' << "Estimating eigenray angles for source-receiver at great circle distance " << rcvr_rng << " km and azimuth " << rcvr_az * (180.0 / Pi);
+        cout << " degrees from N.  Inclination limits: [" << th_min * (180.0 / Pi) << ", " << th_max * (180.0 / Pi) << "]." << '\n';
     }
     
     int	iterations = 0, k, length = s_max * int(1.0 / (ds_min * 10));
     double r, r_prev, dth = dth_big, dph = 100.0;
-    bool break_check, success, th_max_reached;
+    bool break_check, th_max_reached;
 
     calc_amp = false;
     configure();
@@ -56,15 +59,17 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
     build_solution(solution, length);
     
     phi = Pi / 2.0 - rcvr_az;
-    success = 0;
+
     th_max_reached = false;
-    while(fabs(dph) > az_err_lim && iterations < 5){
+    while(fabs(dph * (180.0 / Pi)) > az_err_lim && iterations < 5){
         r = rcvr_rng;
         r_prev = rcvr_rng;
         
         for(double th = th_min; th < th_max; th += dth){
-            if(th + dth >= th_max) th_max_reached = true;
-            
+            if(th + dth >= th_max){
+                th_max_reached = true;
+            }
+
             theta = th;
             set_initial(solution, src[0], src[1], src[2]);
             
@@ -73,46 +78,78 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
                 for(int n_bnc = 1; n_bnc <= bncs; n_bnc++){
                     set_refl(solution,k);
                     k = prop_rk4(solution, break_check);
-                    if(break_check) break;
+                    if(break_check){
+                        break;
+                    }
                 }
             }
             
-            if(break_check){ r = rcvr_rng; r_prev = rcvr_rng; success = false; }
-            else {           r = globe::gc_dist(src[1], src[2], solution[k][1], solution[k][2]);}
-            
-            if(verbose){
-                cout << '\t' << '\t' << "Ray launched with inclination " << theta * (180.0 / Pi) << " degrees arrives at range " << r;
-                cout << " km after " << bncs << " bounces.  Exact arrival at " << solution[k][1] * (180.0 / Pi) << " degrees N latitude, " << solution[k][2] * (180.0 / Pi) << " degrees E longitude" << '\n';
+            r = globe::gc_dist(src[1], src[2], solution[k][1], solution[k][2]);
+            if(break_check){
+                r = rng_max;
+                if(verbose){
+                    cout << '\t' << '\t' << "Ray launched with inclination " << theta * (180.0 / Pi) << " degrees doesn't return to the ground" << '\n';
+                }
+            } else {
+                if(verbose){
+                    cout << '\t' << '\t' << "Ray launched with inclination " << theta * (180.0 / Pi) << " degrees arrives at range " << r;
+                    cout << " km after " << bncs << " bounces.  Exact arrival at " << solution[k][1] * (180.0 / Pi) << " degrees N latitude, " << solution[k][2] * (180.0 / Pi) << " degrees E longitude" << '\n';
+                }
             }
-            
-            if((r - rcvr_rng) * (r_prev - rcvr_rng) < 0.0){
-                if(iterations==0) th_next = theta;
+                        
+            if(((r - rcvr_rng) * (r_prev - rcvr_rng) <= 0.0) && (r < rng_max) && (r_prev < rng_max) && (th > th_min)){
+                if(iterations==0){
+                    th_next = theta;
+                }
                 
-                dph  = globe::bearing(src[1], src[2], rcvr[0], rcvr[1]);
-                dph -= globe::bearing(src[1], src[2], solution[k][1], solution[k][2]);
-                while(dph >  Pi){ dph -= 2.0 * Pi;}
-                while(dph < -Pi){ dph += 2.0 * Pi;}
+                dph  = globe::bearing(src[1], src[2], rcvr[0], rcvr[1]) * (180.0 / Pi);
+                dph -= globe::bearing(src[1], src[2], solution[k][1], solution[k][2]) * (180.0 / Pi);
+                while(dph >  180.0){
+                    dph -= 360.0;
+                }
+                while(dph < -180.0){
+                    dph += 360.0;
+                }
                 
                 if(fabs(dph) < az_err_lim){
-                    if(verbose) cout << '\t' << '\t' << "Azimuth deviation less than " << az_err_lim << " degrees.  Estimates acceptable." << '\n' << '\n';
-                    th_est = theta - dth; ph_est = phi;
+                    th_est = theta - dth;
+                    ph_est = phi;
+
+                    if(verbose){
+                        cout << '\t' << '\t' << "Azimuth deviation = " << dph << ", less than " << az_err_lim << " degrees: estimates acceptable." << '\n' << '\n';
+                    }
+
                     delete_solution(solution, length);
                     return true;
                 } else {
-                    if(verbose) cout << '\t' << '\t' << "Azimuth deviation greater than " << az_err_lim << " degrees.  Compensating and searching inclinations again." << '\n' << '\n';
-                    phi += dph * 0.9; th_min = max(theta - 10.0 * (Pi / 180.0), th_min);
+                    if(verbose){
+                        cout << '\n' << '\t' << '\t' << "Azimuth deviation = " << dph << ", greater than " << az_err_lim << " degrees: compensating and searching inclinations again." << '\n';
+                        cout << '\t' << '\t' << "Launch azimuth correction: " << 90.0 - phi * (180.0 / Pi) << " --> " << 90.0 - (phi * (180.0 / Pi) - dph * 0.9) << '\n' << '\n';
+                    }
+
+                    phi -= dph * (Pi / 180.0) * 0.9;
+                    th_min = max(theta - 5.0 * (Pi / 180.0), th_min);
                 }
+                iterations++;
                 break;
             }
-            if(iterations >= 3){ dth = mod_dth(r - rcvr_rng, (r - r_prev)/(2.0 * dth));}
+
+            if(iterations >= 3){
+                dth = mod_dth(r - rcvr_rng, (r - r_prev) / (2.0 * dth));
+            }
+
             r_prev = r;
         }
-        if(th_max_reached){ th_next = th_max; break;}
-        iterations++;
+        if(th_max_reached){
+            th_next = th_max;
+            break;
+        }
     }
     delete_solution(solution, length);
     
-    if(verbose) cout << '\t' << '\t' << "Reached maximum inclination angle or iteration limit." << '\n' << '\n';
+    if(verbose){
+        cout << '\t' << '\t' << "Reached maximum inclination angle or iteration limit." << '\n' << '\n';
+    }
     return false;
 }
 

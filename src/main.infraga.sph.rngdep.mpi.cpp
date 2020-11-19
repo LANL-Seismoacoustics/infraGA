@@ -446,7 +446,7 @@ void run_prop(char* inputs[], int count){
                     attenuation += geoac::atten(solution, k, freq);
                 }
 
-                if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo && world_rank == 0){
+                if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo && (world_rank == 0)){
                     for(int m = 1; m < k ; m+=10){                        
                         topo_out << setprecision(8) << solution[m][1] * (180.0 / Pi);
                         topo_out << '\t' << setprecision(8) << solution[m][2] * (180.0 / Pi);
@@ -521,7 +521,7 @@ void run_prop(char* inputs[], int count){
                 raypath << '\n';
             }
 
-            if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo && world_rank == 0){
+            if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo && (world_rank == 0)){
                 topo_out.close();
             }
 

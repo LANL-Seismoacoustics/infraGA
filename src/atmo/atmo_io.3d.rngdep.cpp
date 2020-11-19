@@ -299,7 +299,7 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* t
     cout << '\t' << "Propagation region limits:" << '\n';
     cout << '\t' << '\t' << "x = " << geoac::x_min << ", " << geoac::x_max << '\n';
     cout << '\t' << '\t' << "y = " << geoac::y_min << ", " << geoac::y_max << '\n';
-    cout << '\t' << '\t' << "z = 0.0, " << geoac::alt_max << '\n'  << '\n';
+    cout << '\t' << '\t' << "z = " << topo::z0 << ", " << geoac::alt_max << '\n'  << '\n';
     
     topo::set_bndlyr();
     cout << '\t' << "Maximum topography height: " << topo::z_max << '\n';

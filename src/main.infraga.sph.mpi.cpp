@@ -789,7 +789,7 @@ void run_eig_search(char* inputs[], int count){
         cout << '\t' << "receiver location(s) (lat, lon, alt):" << '\n';
         for(int n = 0; n < min(rcvrs_cnt, 10); n++){
             cout << '\t' << '\t' << "(" << rcvrs[n][0] * (180.0 / Pi) << ", " << rcvrs[n][1] * (180.0 / Pi);
-            cout << ", " << topo::z(rcvrs[n][0], rcvrs[n][1]) - globe::r0 <<'\n';
+            cout << ", " << topo::z(rcvrs[n][0], rcvrs[n][1]) - globe::r0 << ")" << '\n';
         }
         if (rcvrs_cnt > 10){
             cout << '\t' << '\t' << "..." << '\n';

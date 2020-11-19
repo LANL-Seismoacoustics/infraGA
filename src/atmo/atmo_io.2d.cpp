@@ -210,7 +210,7 @@ void set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert
     geoac::set_limits();
     cout << '\t' << "Propagation region limits:" << '\n';
     cout << '\t' << '\t' << "r = " << topo::spline.x_vals[0] << ", " << topo::spline.x_vals[topo::spline.length - 1] << '\n';
-    cout << '\t' << '\t' << "z = 0.0, " << geoac::alt_max << '\n' << '\n';
+    cout << '\t' << '\t' << "z = " << topo::z0 << ", " << geoac::alt_max << '\n' << '\n';
 
     topo::set_bndlyr();
     cout << '\t' << "Maximum topography height: " << topo::z_max << '\n';
