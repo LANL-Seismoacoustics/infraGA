@@ -110,6 +110,7 @@ void usage(){
     cout << '\t' << '\t' << "iterations"        << '\t' << "integer"            << '\t' << '\t' << "25" << '\n';
     cout << '\t' << '\t' << "damping"           << '\t' << '\t' << "scalar"     << '\t' << '\t' << "1.0e-3" << '\n';
     cout << '\t' << '\t' << "tolerance"         << '\t' << "km"                 << '\t' << '\t' << "0.1" << '\n';
+    cout << '\t' << '\t' << "az_dev_lim"        << '\t' << "degrees"            << '\t' << '\t' << "2.0" << '\n';
     cout << '\t' << '\t' << "incl_step_min"     << '\t' << "degrees"            << '\t' << '\t' << "0.001" << '\n';
     cout << '\t' << '\t' << "incl_step_max"     << '\t' << "degrees"            << '\t' << '\t' << "0.1" << '\n' << '\n';
     
@@ -779,6 +780,7 @@ void run_eig_search(char* inputs[], int count){
         else if (strncmp(inputs[i], "iterations=", 11) == 0){                                                           iterations=atof(inputs[i] + 11);}
         else if (strncmp(inputs[i], "damping=", 8) == 0){                                                               geoac::damping = atof(inputs[i] + 8);}
         else if (strncmp(inputs[i], "tolerance=", 10) == 0){                                                            geoac::tolerance = atof(inputs[i] + 10);}
+        else if (strncmp(inputs[i], "az_dev_lim=", 11) == 0){                                                           az_err_lim = atof(inputs[i] + 11);}
         else if ((strncmp(inputs[i], "incl_step_min=", 14) == 0) || (strncmp(inputs[i], "min_incl_step=", 14) == 0)){   geoac::dth_sml = atof(inputs[i] + 14) * (Pi / 180.0);}
         else if ((strncmp(inputs[i], "incl_step_max=", 14) == 0) || (strncmp(inputs[i], "max_incl_step=", 14) == 0)){   geoac::dth_big = atof(inputs[i] + 14) * (Pi / 180.0);}
         
@@ -1157,7 +1159,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         raypath << '\n';
     }
 
-    cout << "Calculating ray path geometry and weakly non-linear waveform evoluation..." << '\n';
+    cout << "Calculating ray path geometry and weakly non-linear waveform evolution..." << '\n';
 
     double** solution;
     geoac::build_solution(solution,length);

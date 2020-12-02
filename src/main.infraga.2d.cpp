@@ -511,7 +511,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         raypath << '\n';
     }
 
-    cout << "Calculating ray path geometry and weakly non-linear waveform evoluation..." << '\n';
+    cout << "Calculating ray path geometry and weakly non-linear waveform evolution..." << '\n';
     if (strncmp(wvfrm_file, "none", 4) != 0){   wvfrm::load_wvfrm(wvfrm_array, wvfrm_file);}
     else {                                      wvfrm::build_wvfrm(wvfrm_array, wvfrm_opt);}
 
