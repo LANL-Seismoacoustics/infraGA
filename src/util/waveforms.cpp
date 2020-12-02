@@ -6,6 +6,7 @@
 #include <fstream>
 #include <math.h>
 #include <cstring>
+#include <sstream>
 #include <fftw3.h>
 
 #include "fileIO.h"
@@ -70,13 +71,22 @@ void wvfrm::load_wvfrm(double** & wvfrm_array, char* wvfrm_file){
         wvfrm_array[n] = new double [2];
     }
 
-    ifstream file;
-    file.open(wvfrm_file);
-    for(int n = 0; n < len; n++){
-        file >> wvfrm_array[n][0];
-        file >> wvfrm_array[n][1];
+    string line;
+    ifstream file_in;        
+    file_in.open(wvfrm_file);
+
+    int n = 0;
+    while(!file_in.eof() && n < len){
+        getline(file_in, line);
+        if(line.find("#") != 0){
+            stringstream ss(line);
+            ss >> wvfrm_array[n][0];
+            ss >> wvfrm_array[n][1];
+            n++;
+        }
     }
-    file.close();
+    file_in.close();
+
 }
 
 void wvfrm::build_wvfrm(double** & wvfrm_array, char* option){
