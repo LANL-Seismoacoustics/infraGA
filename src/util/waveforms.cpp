@@ -105,7 +105,7 @@ void wvfrm::build_wvfrm(double** & wvfrm_array, char* option){
             wvfrm_array[n][0] = t;
             wvfrm_array[n][1] = p0 * impulse(t); 
         }
-    } else if ((strncmp(option, "Uwave", 5) == 0) || (strncmp(option, "u-wave", 6) == 0)){
+    } else if ((strncmp(option, "Uwave", 5) == 0) || (strncmp(option, "u-wave", 6) == 0) || (strncmp(option, "U-wave", 6) == 0)){
         alpha = max(alpha, 2.0);
         duration = t0 * len * max(((1.0 + alpha) - sqrt(1.0 + alpha)) / N_rise, 2.0 * 3.14159 * sqrt(1 + alpha) / N_period);
 
@@ -119,7 +119,7 @@ void wvfrm::build_wvfrm(double** & wvfrm_array, char* option){
             wvfrm_array[n][1] = p0 * (impulse(t + eps) - impulse(t - eps)) / (2.0 * eps);
             wvfrm_array[n][1] /= 1.126 * (impulse(eps) - impulse(-eps)) / (2.0 * eps);
         }
-    } else if ((strncmp(option, "Nwave", 5) == 0) || (strncmp(option, "n-wave", 6) == 0)){
+    } else if ((strncmp(option, "Nwave", 5) == 0) || (strncmp(option, "n-wave", 6) == 0) || (strncmp(option, "N-wave", 6) == 0)){
         duration = (t0 / N_period) * len;
 
         cout << '\t' << "Defining waveform from built in N-wave." << '\n';        
