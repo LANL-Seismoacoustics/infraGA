@@ -24,10 +24,12 @@ warnings.filterwarnings('ignore', 'loadtxt: Empty input file')
 # Eigenray parameters
 cpu_cnt = None
 incl_min, incl_max = 0.5, 45.0
-incl_step_max = 0.05
+incl_step_max = 0.1
+rng_max = 2000.0
 iterations = 25
 damping = 1.0e-3
 tolerance = 0.1
+verbose_output = True
 
 # Waveform calculation parameters
 wvfrm_ref = 2.0
@@ -41,7 +43,7 @@ wvfrm_alpha = 4.0
 
 # Option: Kinney & Graham overpressure and positive phase for given yield (in kg)
 # If this is set to "None", then values above are used
-wvfrm_yld = 50e3
+wvfrm_yld = 10.0e3
 
 
 def kg_op(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
@@ -130,7 +132,7 @@ def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
     return result * W**(1.0 / 3.0) / 1e3
 
 
-def compute_3d_wvfrm(profile, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1):
+def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1):
     """
         Computes eigenrays for a source and receiver separated
             by specified distances and then calculates waveform
@@ -141,8 +143,10 @@ def compute_3d_wvfrm(profile, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1):
         ----------
         profile : string
             Path and name of the atmosphere file
+        src_alt : float
+            Altitude of the source
         rcvr_loc : iterable
-            Receiver distance from source [dx, dy]
+            Receiver distance from source and ground elevation [dx, dy, z_gr]
         bnc_max : int
             Maximum number of bounces to consider
     """
@@ -152,12 +156,16 @@ def compute_3d_wvfrm(profile, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1):
         command = "mpirun -np " + str(int(cpu_cnt)) + " infraga-accel-3d -eig_search " + profile 
     else :
         command = "infraga-3d -eig_search " + profile
+
+    command = command + " src_alt=" + str(src_alt)
     command = command + " rcvr_x=" + str(rcvr_loc[0]) + " rcvr_y=" + str(rcvr_loc[1])
-    command = command + " z_grnd=" + str(rcvr_loc[2]) + " bnc_max=" + str(bnc_max)
+    command = command + " z_grnd=" + str(rcvr_loc[2]) + " bnc_max=" + str(bnc_max) + " rng_max=" + str(rng_max)
 
     command = command + " incl_min=" + str(incl_min) + " incl_max=" + str(incl_max)
     command = command + " iterations=" + str(iterations) + " damping=" + str(damping)
     command = command + " tolerance=" + str(tolerance) + " incl_step_max=" + str(incl_step_max)
+    if verbose_output:
+        command = command + " verbose=true"
 
     print(command)
     os.system(command)
@@ -167,6 +175,7 @@ def compute_3d_wvfrm(profile, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1):
 
     eig_results = np.loadtxt(profile_id + ".arrivals.dat")
     if len(eig_results) > 0:
+        eig_results = np.atleast_2d(eig_results)
         os.system("rm " + profile_id + ".eigenray*")
 
         mask = np.ones(len(eig_results), dtype=bool)
@@ -183,12 +192,23 @@ def compute_3d_wvfrm(profile, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1):
 
         # Create waveform interpolations
         file_out = open(profile_id + ".eigenrays.dat", 'w')
+        print("# multipath_wvfrm.py -3d eigenrays", '\n#', file=file_out)
+        print("# Source Alt:", src_alt, file=file_out)
+        print("# Receiver:", rcvr_loc, file=file_out)
+        print("# Bounce max:", bnc_max, '\n#', file=file_out)
+
+        print("# Inclination range: (" + str(incl_min) + ", " + str(incl_max) + ")", file=file_out)
+        print("# Inclination step max:", incl_step_max, file=file_out)
+        print("# Range max:", rng_max, file=file_out)
+        print("# Iterations:", iterations, file=file_out)
+        print("# Damping:", damping, file=file_out)
+        print("# Tolerance:", tolerance, '\n', file=file_out)
 
         wvfrms = []
         t_lims = [np.inf, 0.0]
         for n, line in enumerate(eig_results):
             command = "infraga-3d -wnl_wvfrm " + profile
-            command = command + " inclination=" + str(line[0]) + " azimuth=" + str(line[1])
+            command = command + " inclination=" + str(line[0]) + " azimuth=" + str(line[1]) + " src_alt=" + str(src_alt)
             command = command + " z_grnd=" + str(rcvr_loc[2]) + " bounces=" + str(int(line[2]))
             command = command + " write_ray=true"
 
@@ -225,6 +245,38 @@ def compute_3d_wvfrm(profile, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1):
         t_vals = np.arange(t_lims[0], t_lims[1], 1.0 / float(wvfrm_sps))
     
         file_out = open(profile_id + ".wvfrms.dat", 'w')
+        print("# multipath_wvfrm.py -3d waveform prediction", '\n#', file=file_out)
+        print("# Source Alt:", src_alt, file=file_out)
+        print("# Receiver:", rcvr_loc, file=file_out)
+        print("# Bounce max:", bnc_max, '\n#', file=file_out)
+
+        print("# Inclination range: (" + str(incl_min) + ", " + str(incl_max) + ")", file=file_out)
+        print("# Inclination step max:", incl_step_max, file=file_out)
+        print("# Range max:", rng_max, file=file_out)
+        print("# Iterations:", iterations, file=file_out)
+        print("# Damping:", damping, file=file_out)
+        print("# Tolerance:", tolerance, '\n#', file=file_out)
+
+        # Waveform calculation parameters
+        print("# Waveform reference distance:", wvfrm_ref, file=file_out)
+        print("# Waveform ds:", wvfrm_ds, file=file_out)
+        print("# Waveform sps:", wvfrm_sps, file=file_out)
+
+        if wvfrm_yld:
+            print("# Source yield:", wvfrm_yld, file=file_out)
+        else:
+            print("# Waveform option:", wvfrm_opt, file=file_out)
+            print("# Waveform Pk OP:", wvfrm_p0, file=file_out)
+            print("# Waveform Time Sc.:", wvfrm_t0, file=file_out)
+            print("# Waveform Shaping Param.:", wvfrm_alpha, file=file_out)
+
+        print("#", file=file_out)
+        print("# Eigenray arrivals:", file=file_out)
+        print("# incl [deg]	az [deg]	n_b	x_0 [deg]	y_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	geo. atten. [dB]	absorption [dB]", file=file_out)
+        for line in eig_results:
+            print("#", *line, file=file_out) 
+
+        print('\n#', "t [s]" + '\t' + "p1 [Pa]", '\t' + "p2 [Pa] ...", file=file_out)
         for n in range(len(t_vals)):
             print(t_vals[n], end='\t', file=file_out)
             for wvfrm in wvfrms:
@@ -234,7 +286,7 @@ def compute_3d_wvfrm(profile, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1):
     else:
         print('\n' + "No waveforms to compute.")
 
-def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0], rcvr_loc=[30.0, -114.0, 1.0], bnc_max=1):
+def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114.0, 0.0], bnc_max=1):
     """
         Computes eigenrays for a source and receiver at specified
             latitude and longitude points and then calculates
@@ -246,13 +298,13 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0], rcvr_loc=[30.0, -114.0, 1
         profile : string
             Path and name of the atmosphere file
         src_loc : float
-            Source location [latitude, longitude]
+            Source location [latitude, longitude, altitude]
         rcvr_loc : iterable
-            Receiver location [latitude, longitude
+            Receiver location and ground elevation [latitude, longitude, z_gr]
         bnc_max : int
             Maximum number of bounces to consider
     """
-    src_lat, src_lon = src_loc[0], src_loc[1]
+    src_lat, src_lon, src_alt = src_loc[0], src_loc[1], src_loc[2]
     rcvr_lat, rcvr_lon = rcvr_loc[0], rcvr_loc[1]
     
     # run eigenray analysis
@@ -260,14 +312,15 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0], rcvr_loc=[30.0, -114.0, 1
         command = "mpirun -np " + str(int(cpu_cnt)) + " infraga-accel-sph -eig_search " + profile 
     else :
         command = "infraga-sph -eig_search " + profile
-    command = command + " src_lat=" + str(src_lat) + " src_lon=" + str(src_lon)
-    command = command + " rcvr_lat=" + str(rcvr_lat) + " rcvr_lon=" + str(rcvr_lon)
-    command = command + " z_grnd=" + str(rcvr_loc[2]) + " bnc_max=" + str(bnc_max)
+    command = command + " src_lat=" + str(src_lat) + " src_lon=" + str(src_lon) + " src_alt=" + str(src_alt)
+    command = command + " rcvr_lat=" + str(rcvr_lat) + " rcvr_lon=" + str(rcvr_lon) + " z_grnd=" + str(rcvr_loc[2])
+    command = command + " bnc_max=" + str(bnc_max) + " rng_max=" + str(rng_max)
 
     command = command + " incl_min=" + str(incl_min) + " incl_max=" + str(incl_max)
     command = command + " iterations=" + str(iterations) + " damping=" + str(damping)
     command = command + " tolerance=" + str(tolerance) + " incl_step_max=" + str(incl_step_max)
-    command = command + " verbose=true"
+    if verbose_output:
+        command = command + " verbose=true"
 
     print(command)
     os.system(command)
@@ -275,6 +328,8 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0], rcvr_loc=[30.0, -114.0, 1
     profile_id = os.path.splitext(profile)[0]
     eig_results = np.loadtxt(profile_id + ".arrivals.dat")
     if len(eig_results) > 0:
+        eig_results = np.atleast_2d(eig_results)
+
         os.system("rm " + profile_id + ".eigenray*")
 
         mask = np.ones(len(eig_results), dtype=bool)
@@ -291,15 +346,25 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0], rcvr_loc=[30.0, -114.0, 1
 
         # Create waveform interpolations
         file_out = open(profile_id + ".eigenrays.dat", 'w')
+        print("# multipath_wvfrm.py -sph eigenrays", '\n#', file=file_out)
+        print("# Source:", src_loc, file=file_out)
+        print("# Receiver:", rcvr_loc, file=file_out)
+        print("# Bounce max:", bnc_max, '\n#', file=file_out)
+
+        print("# Inclination range: (" + str(incl_min) + ", " + str(incl_max) + ")", file=file_out)
+        print("# Inclination step max:", incl_step_max, file=file_out)
+        print("# Range max:", rng_max, file=file_out)
+        print("# Iterations:", iterations, file=file_out)
+        print("# Damping:", damping, file=file_out)
+        print("# Tolerance:", tolerance, '\n', file=file_out)
 
         wvfrms = []
         t_lims = [np.inf, 0.0]
         for n, line in enumerate(eig_results):
             command = "infraga-sph -wnl_wvfrm " + profile
-            command = command + " src_lat=" + str(src_lat) + " src_lon=" + str(src_lon)
-            command = command + " inclination=" + str(line[0]) + " azimuth=" + str(line[1])
-            command = command + " z_grnd=" + str(rcvr_loc[2]) + " bounces=" + str(int(line[2]))
-            command = command + " write_ray=true"
+            command = command + " src_lat=" + str(src_lat) + " src_lon=" + str(src_lon) + " src_alt=" + str(src_alt)
+            command = command + " inclination=" + str(line[0]) + " azimuth=" + str(line[1]) + " z_grnd=" + str(rcvr_loc[2])
+            command = command + " bounces=" + str(int(line[2])) + " write_ray=true"
 
             if wvfrm_yld:
                 p0, t0 = kg_op(wvfrm_yld, wvfrm_ref), kg_ppd(wvfrm_yld, wvfrm_ref)
@@ -333,6 +398,39 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0], rcvr_loc=[30.0, -114.0, 1
         t_vals = np.arange(t_lims[0], t_lims[1], 1.0 / float(wvfrm_sps))
     
         file_out = open(profile_id + ".wvfrms.dat", 'w')
+        print("# multipath_wvfrm.py -sph waveform prediction", '\n#', file=file_out)
+        print("# Source:", src_loc, file=file_out)
+        print("# Receiver:", rcvr_loc, file=file_out)
+        print("# Bounce max:", bnc_max, '\n#', file=file_out)
+
+        print("# Inclination range: (" + str(incl_min) + ", " + str(incl_max) + ")", file=file_out)
+        print("# Inclination step max:", incl_step_max, file=file_out)
+        print("# Range max:", rng_max, file=file_out)
+        print("# Iterations:", iterations, file=file_out)
+        print("# Damping:", damping, file=file_out)
+        print("# Tolerance:", tolerance, '\n#', file=file_out)
+
+        # Waveform calculation parameters
+        print("# Waveform reference distance:", wvfrm_ref, file=file_out)
+        print("# Waveform ds:", wvfrm_ds, file=file_out)
+        print("# Waveform sps:", wvfrm_sps, file=file_out)
+
+        if wvfrm_yld:
+            print("# Source yield:", wvfrm_yld, file=file_out)
+        else:
+            print("# Waveform option:", wvfrm_opt, file=file_out)
+            print("# Waveform Pk OP:", wvfrm_p0, file=file_out)
+            print("# Waveform Time Sc.:", wvfrm_t0, file=file_out)
+            print("# Waveform Shaping Param.:", wvfrm_alpha, file=file_out)
+
+        print("#", file=file_out)
+        print("# Eigenray arrivals:", file=file_out)
+        print("# incl [deg]	az [deg]	n_b	lat_0 [deg]	lon_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	geo. atten. [dB]	absorption [dB]", file=file_out)
+        for line in eig_results:
+            print("#", *line, file=file_out) 
+
+        print('\n#', "t [s]" + '\t' + "p1 [Pa]", '\t' + "p2 [Pa] ...", file=file_out)
+
         for n in range(len(t_vals)):
             print(t_vals[n], end='\t', file=file_out)
             for wvfrm in wvfrms:
@@ -354,28 +452,31 @@ def print_usage():
 
     print('\n' + "Usage: python multipath_wvfrm.py [option] profile [parameter values]")
 
-    print('\n' + "Options and parameters:")
+    print('\n' + "Options and parameters (all parameters required):")
     print('\t' + "-3d (run eigenray and waveform analysis in Cartesian geometry)")
     print('\t\t' + "Parameter" + '\t\t\t' + "Units")
-    print('\t\t' + "-" * 50)
-    print('\t\t' + "receiver x" + '\t\t\t' + "km")
-    print('\t\t' + "receiver y" + '\t\t\t' + "km")
-    print('\t\t' + "ground elevation" + '\t\t\t' + "km")
+    print('\t\t' + "-" * 40)
+    print('\t\t' + "source altitude" + '\t\t\t' + "km")
+    print('\t\t' + "receiver dx" + '\t\t\t' + "km")
+    print('\t\t' + "receiver dy" + '\t\t\t' + "km")
+    print('\t\t' + "ground elevation" + '\t\t' + "km")
     print('\t\t' + "bnc_max" + '\t\t\t\t' + "-")
 
     print('\n\t' + "-sph (run eigenray and waveform analysis in global geometry)")
     print('\t\t' + "Parameter" + '\t\t\t' + "Units")
-    print('\t\t' + "-" * 50)
+    print('\t\t' + "-" * 40)
     print('\t\t' + "source latitude" + '\t\t\t' + "degrees")
     print('\t\t' + "source longitude" + '\t\t' + "degrees")
+    print('\t\t' + "source altitude" + '\t\t\t' + "km")
+
     print('\t\t' + "receiver latitude" + '\t\t' + "degrees")
     print('\t\t' + "receiver longitude" + '\t\t' + "degrees")
-    print('\t\t' + "ground elevation" + '\t\t\t' + "km")
+    print('\t\t' + "ground elevation" + '\t\t' + "km")
     print('\t\t' + "bnc_max" + '\t\t\t\t' + "-")
 
     print('\n' + "Examples:")
-    print('\t' + "python multipath_wvfrm.py -3d  ../examples/ToyAtmo.met -400.0 25.0 0.0 1")
-    print('\t' + "python multipath_wvfrm.py -sph ../examples/ToyAtmo.met 30.0 -110.0 30.0 -114.0 1.0 1" + '\n')
+    print('\t' + "python multipath_wvfrm.py -3d  ../examples/ToyAtmo.met 0.0 -400.0 25.0 0.0 1")
+    print('\t' + "python multipath_wvfrm.py -sph ../examples/ToyAtmo.met 30.0 -110.0 0.0 30.0 -114.0 1.0 1" + '\n')
 
 
 if __name__ == '__main__':
@@ -383,8 +484,8 @@ if __name__ == '__main__':
         print_usage()
     else:
         if sys.argv[1] == "-3d":
-            compute_3d_wvfrm(sys.argv[2],rcvr_loc=(float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5])), bnc_max=int(sys.argv[6]))
+            compute_3d_wvfrm(sys.argv[2], src_alt=float(sys.argv[3]), rcvr_loc=(float(sys.argv[4]), float(sys.argv[5]), float(sys.argv[6])), bnc_max=int(sys.argv[7]))
         elif sys.argv[1] == "-sph":
-            compute_sph_wvfrm(sys.argv[2], src_loc=(float(sys.argv[3]), float(sys.argv[4])), rcvr_loc=(float(sys.argv[5]), float(sys.argv[6]), float(sys.argv[7])), bnc_max=int(sys.argv[8]))
+            compute_sph_wvfrm(sys.argv[2], src_loc=(float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5])), rcvr_loc=(float(sys.argv[6]), float(sys.argv[7]), float(sys.argv[8])), bnc_max=int(sys.argv[9]))
         else:
             print_usage()
