@@ -30,20 +30,25 @@ iterations = 25
 damping = 1.0e-3
 tolerance = 0.1
 verbose_output = True
+keep_wvfrm_init = True
 
 # Waveform calculation parameters
-wvfrm_ref = 2.0
+wvfrm_ref = 1.0
 wvfrm_ds = 0.05
 wvfrm_sps = 100
 
 wvfrm_opt = "impulse"
-wvfrm_p0 = 500.0
-wvfrm_t0 = 0.2
-wvfrm_alpha = 4.0
+wvfrm_p0 = 250.0
+wvfrm_t0 = 0.1
+wvfrm_alpha = 2.0
 
 # Option: Kinney & Graham overpressure and positive phase for given yield (in kg)
 # If this is set to "None", then values above are used
-wvfrm_yld = 10.0e3
+wvfrm_yld = None
+
+# Option: Load a waveform from file for use.
+# If this is set to "None", then values above are used
+wvfrm_file = None
 
 
 def kg_op(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
@@ -216,6 +221,8 @@ def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max
                 p0, t0 = kg_op(wvfrm_yld, wvfrm_ref), kg_ppd(wvfrm_yld, wvfrm_ref)
                 command = command + " wvfrm_p0=" + str(p0) + " wvfrm_t0="  + str(t0)
                 command = command + " wvfrm_alpha=0.0 wvfrm_ref=" + str(wvfrm_ref)
+            elif wvfrm_file:
+                command = command + " wvfrm_file=" + wvfrm_file + " wvfrm_ref=" + str(wvfrm_ref)
             else:
                 command = command + " wvfrm_p0=" + str(wvfrm_p0) + " wvfrm_t0="  + str(wvfrm_t0)
                 command = command + " wvfrm_alpha=" + str(wvfrm_alpha) + " wvfrm_ref=" + str(wvfrm_ref)
@@ -233,9 +240,11 @@ def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max
                 print(*line, file=file_out)
             print('\n', file=file_out)
 
-            command = "rm " + profile_id + ".wvfrm_init.dat"
-            command = command + " " + profile_id + ".wvfrm_out.dat"
+
+            command = "rm " + profile_id + ".wvfrm_out.dat"
             command = command + " " + profile_id + ".raypaths.dat"
+            if not keep_wvfrm_init:
+                command = command + " " + profile_id + ".wvfrm_init.dat"
             os.system(command)
         
         file_out.close()
@@ -370,6 +379,8 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114
                 p0, t0 = kg_op(wvfrm_yld, wvfrm_ref), kg_ppd(wvfrm_yld, wvfrm_ref)
                 command = command + " wvfrm_p0=" + str(p0) + " wvfrm_t0="  + str(t0)
                 command = command + " wvfrm_alpha=0.0 wvfrm_ref=" + str(wvfrm_ref)
+            elif wvfrm_file:
+                command = command + " wvfrm_file=" + wvfrm_file + " wvfrm_ref=" + str(wvfrm_ref)
             else:
                 command = command + " wvfrm_p0=" + str(wvfrm_p0) + " wvfrm_t0="  + str(wvfrm_t0)
                 command = command + " wvfrm_alpha=" + str(wvfrm_alpha) + " wvfrm_ref=" + str(wvfrm_ref)
@@ -387,9 +398,10 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114
                 print(*line, file=file_out)
             print('\n', file=file_out)
 
-            command = "rm " + profile_id + ".wvfrm_init.dat"
-            command = command + " " + profile_id + ".wvfrm_out.dat"
+            command = "rm " + profile_id + ".wvfrm_out.dat"
             command = command + " " + profile_id + ".raypaths.dat"
+            if not keep_wvfrm_init:
+                command = command + " " + profile_id + ".wvfrm_init.dat"
             os.system(command)
         file_out.close()
  
