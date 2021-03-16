@@ -736,7 +736,7 @@ void run_eig_search(char* inputs[], int count){
     }
 
     for(int n = 0; n < srcs_cnt; n++){
-        srcs[n][1] = max(srcs[n][0], topo::z(srcs[n][1], srcs[n][2]));
+        srcs[n][2] = max(srcs[n][2], topo::z(srcs[n][0], srcs[n][1]));
     }
     
     if (rcvrs_cnt > world_size){
