@@ -13,7 +13,7 @@ using namespace std;
 
 int geoac::prop_rk4(double ** & solution, bool & check, int length){
 	int k = 0;
-    double s = 0, ds = ds_min;
+    double s = 0.0, ds = ds_min;
     
 	double *temp0 = new double [eq_cnt];    double *partial1 = new double [eq_cnt];
     double *temp1 = new double [eq_cnt];    double *partial2 = new double [eq_cnt];
@@ -23,7 +23,7 @@ int geoac::prop_rk4(double ** & solution, bool & check, int length){
 
 	check = false;
     
-    for(k = 0; k < (length - 1); k++){
+    for(k = 0; k < (length - 2); k++){
 		for (int i = 0; i < eq_cnt; i++){
 			temp0[i] = solution[k][i];
 		}
@@ -36,13 +36,13 @@ int geoac::prop_rk4(double ** & solution, bool & check, int length){
 			partial1[i] = solution[k][i] + temp1[i] / 2.0;
 		}		
 
-		update_refs(s + ds/2, partial1);
+		update_refs(s + ds / 2, partial1);
 		for (int i = 0; i < eq_cnt; i++){
 			temp2[i] = ds * eval_src_eq(s + ds / 2.0, partial1, i);
 			partial2[i] = solution[k][i] + temp2[i] / 2.0;
 		}
 
-		update_refs(s + ds/2, partial2);
+		update_refs(s + ds / 2, partial2);
 		for (int i = 0; i < eq_cnt; i++){
 			temp3[i] = ds * eval_src_eq(s + ds / 2.0, partial2, i);
 			partial3[i] = solution[k][i] + temp3[i];
