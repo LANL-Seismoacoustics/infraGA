@@ -40,7 +40,7 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
         cout << " degrees from N.  Inclination limits: " << th_min * 180.0 / Pi << ", " << th_max * 180.0 / Pi << "." << '\n';
     }
     
-    int	iterations = 0, k, length = s_max * int(1.0 / (ds_min * 10));
+    int	iterations = 0, k, length = int(s_max / ds_min);
     double r, r_prev, dth = dth_big, dph = 100.0;
     bool break_check, th_max_reached;
 
@@ -65,11 +65,11 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
             theta =	th;
             set_initial(solution, src[0], src[1], src[2]);
 
-            k = prop_rk4(solution, break_check);
+            k = prop_rk4(solution, break_check, length);
             if(!break_check){
                 for(int n_bnc = 1; n_bnc <= bncs; n_bnc++){
                     set_refl(solution,k);
-                    k = prop_rk4(solution, break_check);
+                    k = prop_rk4(solution, break_check, length);
                     if(break_check){
                         break;
                     }
@@ -152,7 +152,7 @@ void geoac::find_eigenray(double src[3], double rcvr[2], double th_est, double p
     long double x, y, c_src, c_grnd, dzg_dx, dzg_dy, ds_dth, ds_dph, dx, dy, dx_dth, dy_dth, dx_dph, dy_dph;
 	long double det, dth, dph;
     
-    int	k, length = s_max * int(1.0 / (ds_min * 10));
+    int	k, length = int(s_max / ds_min);
 
     calc_amp = true;
     configure();
@@ -179,7 +179,7 @@ void geoac::find_eigenray(double src[3], double rcvr[2], double th_est, double p
         if(verbose){
             cout << '\t' << '\t' << "Calculating ray path: " << theta * (180.0 / Pi) << " degrees inclination, " << 90.0 - phi * (180.0 / Pi) << " degrees azimuth";
         }
-        k = prop_rk4(solution, break_check);
+        k = prop_rk4(solution, break_check, length);
         if(break_check){
             if(verbose){
                 cout << '\t' << "Ray path left propagation region, reversing step and adjusting step scaling." << '\n';
@@ -193,7 +193,7 @@ void geoac::find_eigenray(double src[3], double rcvr[2], double th_est, double p
         if(!break_check){
             for(int n_bnc = 1; n_bnc <= bnc_cnt; n_bnc++){
                 set_refl(solution,k);
-                k = prop_rk4(solution, break_check);
+                k = prop_rk4(solution, break_check, length);
                 if(break_check){
                     if(verbose){
                         cout << '\t' << "Ray path left propagation region, reversing step and adjusting step scaling." << '\n';
@@ -232,7 +232,7 @@ void geoac::find_eigenray(double src[3], double rcvr[2], double th_est, double p
                 z_max = 0.0;
             
                 set_initial(solution, src[0], src[1], src[2]);
-                k = prop_rk4(solution, break_check);
+                k = prop_rk4(solution, break_check, length);
 
                 for(int m = 1; m < k ; m++){
                     travel_time(travel_time_sum, solution, m - 1,m);
@@ -250,7 +250,7 @@ void geoac::find_eigenray(double src[3], double rcvr[2], double th_est, double p
                 }
                 for(int n_bnc = 1; n_bnc <= bnc_cnt; n_bnc++){
                     set_refl(solution, k);
-                    k = prop_rk4(solution, break_check);
+                    k = prop_rk4(solution, break_check, length);
 
                     for(int m = 1; m < k; m++){
                         travel_time(travel_time_sum, solution, m - 1,m);

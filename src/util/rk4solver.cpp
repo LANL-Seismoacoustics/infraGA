@@ -11,9 +11,8 @@
 
 using namespace std;
 
-int geoac::prop_rk4(double ** & solution, bool & check){
+int geoac::prop_rk4(double ** & solution, bool & check, int length){
 	int k = 0;
-    int step_limit = s_max * int(1.0 / (ds_min * 10));
     double s = 0, ds = ds_min;
     
 	double *temp0 = new double [eq_cnt];    double *partial1 = new double [eq_cnt];
@@ -24,7 +23,7 @@ int geoac::prop_rk4(double ** & solution, bool & check){
 
 	check = false;
     
-    for(k = 0; k < (step_limit - 1); k++){
+    for(k = 0; k < (length - 1); k++){
 		for (int i = 0; i < eq_cnt; i++){
 			temp0[i] = solution[k][i];
 		}
@@ -34,29 +33,35 @@ int geoac::prop_rk4(double ** & solution, bool & check){
 		s += ds;
 		for (int i = 0; i < eq_cnt; i++){
 			temp1[i] = ds * eval_src_eq(s, temp0, i);
-			partial1[i] = solution[k][i] + temp1[i]/2.0;
+			partial1[i] = solution[k][i] + temp1[i] / 2.0;
 		}		
 
 		update_refs(s + ds/2, partial1);
 		for (int i = 0; i < eq_cnt; i++){
-			temp2[i] = ds * eval_src_eq(s + ds/2.0, partial1, i);
-			partial2[i] = solution[k][i] + temp2[i]/2.0;
+			temp2[i] = ds * eval_src_eq(s + ds / 2.0, partial1, i);
+			partial2[i] = solution[k][i] + temp2[i] / 2.0;
 		}
 
 		update_refs(s + ds/2, partial2);
 		for (int i = 0; i < eq_cnt; i++){
-			temp3[i] = ds * eval_src_eq(s + ds/2.0, partial2,i);
+			temp3[i] = ds * eval_src_eq(s + ds / 2.0, partial2, i);
 			partial3[i] = solution[k][i] + temp3[i];
 		}
 
 		update_refs(s + ds, partial3);
 		for (int i = 0; i < eq_cnt; i++){
-			temp4[i] = ds * eval_src_eq(s+ds, partial3, i);
+			temp4[i] = ds * eval_src_eq(s + ds, partial3, i);
 			solution[k + 1][i] = solution[k][i] + temp1[i] / 6.0 + temp2[i] / 3.0 + temp3[i] / 3.0 + temp4[i] / 6.0;
 		}
 
-        if(break_check(solution, k + 1)){   check = true;	break;}
-		if(ground_check(solution, k + 1)){  check = false;  break;}
+        if(break_check(solution, k + 1)){
+			check = true;
+			break;
+		}
+		if(ground_check(solution, k + 1)){
+			check = false;
+			break;
+		}
 	}
 	
     delete [] temp0;   delete [] partial1;

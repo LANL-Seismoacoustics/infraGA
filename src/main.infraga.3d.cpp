@@ -175,6 +175,7 @@ void usage(){
     cout << '\t' << "max_y"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2000.0" << '\n';
     cout << '\t' << "min_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.001" << '\n';
     cout << '\t' << "max_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.05" << '\n';
+    cout << '\t' << "max_s"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
     cout << '\t' << "topo_file"         << '\t' << '\t' << "see manual"         << '\t' << "none" << '\n';
     cout << '\t' << "topo_use_BLw"      << '\t' << '\t' << "see manual"         << '\t' << "false" << '\n' << '\n';
 
@@ -267,6 +268,7 @@ void run_prop(char* inputs[], int count){
 
         else if ((strncmp(inputs[i], "min_ds=", 7) == 0) || (strncmp(inputs[i], "ds_min=", 7) == 0)){       geoac::ds_min = atof(inputs[i] + 7);   cout << '\t' << "User selected ds minimum = " << geoac::ds_min << '\n';}
         else if ((strncmp(inputs[i], "max_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){       geoac::ds_max = atof(inputs[i] + 7);   cout << '\t' << "User selected ds maximum = " << geoac::ds_max << '\n';}
+        else if ((strncmp(inputs[i], "max_s=", 6) == 0) || (strncmp(inputs[i], "s_max=", 6) == 0)){         geoac::s_max = atof(inputs[i] + 6);    cout << '\t' << "User selected s maximum (path length between reflections) = " << geoac::s_max << '\n';}
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
@@ -322,7 +324,7 @@ void run_prop(char* inputs[], int count){
     
     // Define variables used for analysis
 	double D, D_prev, travel_time_sum, attenuation, z_max, inclination, back_az;
-	int k, length = geoac::s_max * int(1.0 / (geoac::ds_min * 10));
+	int k, length = int(geoac::s_max / geoac::ds_min);
 	bool break_check;
     
 	ofstream results, raypath, caustics, topo_out;
@@ -414,7 +416,7 @@ void run_prop(char* inputs[], int count){
 
     		cout << "Calculating ray path: " << theta << " degrees inclination, " << phi << " degrees azimuth." << '\n';
             for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){
-                k = geoac::prop_rk4(solution, break_check);
+                k = geoac::prop_rk4(solution, break_check, length);
                 
                 if(write_rays || write_caustics){
                     if(write_caustics){
@@ -585,6 +587,7 @@ void run_back_proj(char* inputs[], int count){
         
         else if ((strncmp(inputs[i], "min_ds=", 7) == 0) || (strncmp(inputs[i], "ds_min=", 7) == 0)){       geoac::ds_min = atof(inputs[i] + 7);   cout << '\t' << "User selected ds minimum = " << geoac::ds_min << '\n';}
         else if ((strncmp(inputs[i], "max_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){       geoac::ds_max = atof(inputs[i] + 7);   cout << '\t' << "User selected ds maximum = " << geoac::ds_max << '\n';}
+        else if ((strncmp(inputs[i], "max_s=", 6) == 0) || (strncmp(inputs[i], "s_max=", 6) == 0)){         geoac::s_max = atof(inputs[i] + 6);    cout << '\t' << "User selected s maximum (path length between reflections) = " << geoac::s_max << '\n';}
         
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
@@ -620,7 +623,7 @@ void run_back_proj(char* inputs[], int count){
     
     // Define variables used for analysis
     double travel_time_sum, travel_time_var_incl, travel_time_var_az, attenuation, z_max, inclination, back_az;
-    int k, length = geoac::s_max * int(1.0 / (geoac::ds_min * 10));
+    int k, length = int(geoac::s_max / geoac::ds_min);
     bool break_check;
     ofstream projection;
     
@@ -661,7 +664,7 @@ void run_back_proj(char* inputs[], int count){
     z_max = 0.0;
     
     for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){
-        k = geoac::prop_rk4(solution, break_check);
+        k = geoac::prop_rk4(solution, break_check, length);
         
         for(int m = 1; m < k ; m++){
             geoac::travel_time_var(travel_time_sum, travel_time_var_incl, travel_time_var_az, solution, m - 1, m);
@@ -795,6 +798,7 @@ void run_eig_search(char* inputs[], int count){
         
         else if ((strncmp(inputs[i], "min_ds=", 7) == 0) || (strncmp(inputs[i], "ds_min=", 7) == 0)){                   geoac::ds_min = atof(inputs[i] + 7);   cout << '\t' << "User selected ds minimum = " << geoac::ds_min << '\n';}
         else if ((strncmp(inputs[i], "max_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){                   geoac::ds_max = atof(inputs[i] + 7);   cout << '\t' << "User selected ds maximum = " << geoac::ds_max << '\n';}
+        else if ((strncmp(inputs[i], "max_s=", 6) == 0) || (strncmp(inputs[i], "s_max=", 6) == 0)){                     geoac::s_max = atof(inputs[i] + 6);    cout << '\t' << "User selected s maximum (path length between reflections) = " << geoac::s_max << '\n';}
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                                           write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                                          prof_format = inputs[i]+15;}
@@ -953,6 +957,7 @@ void run_eig_direct(char* inputs[], int count){
         
         else if ((strncmp(inputs[i], "min_ds=", 7) == 0) || (strncmp(inputs[i], "ds_min=", 7) == 0)){       geoac::ds_min = atof(inputs[i] + 7);   cout << '\t' << "User selected ds minimum = " << geoac::ds_min << '\n';}
         else if ((strncmp(inputs[i], "max_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){       geoac::ds_max = atof(inputs[i] + 7);   cout << '\t' << "User selected ds maximum = " << geoac::ds_max << '\n';}
+        else if ((strncmp(inputs[i], "max_s=", 6) == 0) || (strncmp(inputs[i], "s_max=", 6) == 0)){         geoac::s_max = atof(inputs[i] + 6);    cout << '\t' << "User selected s maximum (path length between reflections) = " << geoac::s_max << '\n';}
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
@@ -1090,6 +1095,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         
         else if ((strncmp(inputs[i], "min_ds=", 7) == 0) || (strncmp(inputs[i], "ds_min=", 7) == 0)){       geoac::ds_min = atof(inputs[i] + 7);   cout << '\t' << "User selected ds minimum = " << geoac::ds_min << '\n';}
         else if ((strncmp(inputs[i], "max_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){       geoac::ds_max = atof(inputs[i] + 7);   cout << '\t' << "User selected ds maximum = " << geoac::ds_max << '\n';}
+        else if ((strncmp(inputs[i], "max_s=", 6) == 0) || (strncmp(inputs[i], "s_max=", 6) == 0)){         geoac::s_max = atof(inputs[i] + 6);    cout << '\t' << "User selected s maximum (path length between reflections) = " << geoac::s_max << '\n';}
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
@@ -1144,7 +1150,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
 
     // Define variables used for analysis
     double travel_time_sum, attenuation, z_max, inclination, back_az;
-	int k, length = geoac::s_max * int(1.0 / (geoac::ds_min * 10));
+	int k, length = int(geoac::s_max / geoac::ds_min);
     bool break_check;
     
     double** solution;
@@ -1182,7 +1188,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
     z_max = 0.0;
 		
     for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){
-        k = geoac::prop_rk4(solution, break_check);
+        k = geoac::prop_rk4(solution, break_check, length);
 
         for(int m = 1; m < k ; m++){
             geoac::travel_time(travel_time_sum, solution, m - 1,m);

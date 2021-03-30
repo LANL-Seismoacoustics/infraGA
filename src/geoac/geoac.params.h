@@ -28,7 +28,7 @@ namespace  geoac{
     extern double   ds_min;     // Smallest possible step size
     extern double   ds_max;     // Largest possible step size
     extern double   ds_wvfrm;   // Step size for weakly non-linear waveform solver
-    
+
     //-------------------------------------//
     //----Set Propagation Region Limits----//
     //-------------------------------------//

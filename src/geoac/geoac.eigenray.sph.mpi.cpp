@@ -50,7 +50,7 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
         cout << rcvr_az << " degrees.  Inclination limits: [" << th_min * (180.0 / Pi) << ", " << th_max * (180.0 / Pi) << "]." << '\n';
     }
     
-    int	iterations = 0, k, length = s_max * int(1.0 / (ds_min * 10)), success[2];
+    int	iterations = 0, k, length = int(s_max / ds_min), success[2];
     double dth = dth_big, dph = 100.0, arrival_rng, arrival_az_dev, results_buffer[3], rngs[size], az_devs[size], prev_rng = rng_max, prev_az_dev = 1000.0;
     bool break_check, th_max_reached;
 
@@ -79,11 +79,11 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
                 cout << " - " << (theta + dth * (size - 1)) * (180.0 / Pi) << ", azimuth = " << 90.0 - phi * (180.0 / Pi);
             }
             
-            k = prop_rk4(solution, break_check);
+            k = prop_rk4(solution, break_check, length);
             if(!break_check){
                 for(int n_bnc = 1; n_bnc <= bncs; n_bnc++){
                     set_refl(solution, k);
-                    k = prop_rk4(solution, break_check);
+                    k = prop_rk4(solution, break_check, length);
                     if(break_check){
                         break;
                     }
@@ -118,7 +118,7 @@ bool geoac::est_eigenray(double src[3], double rcvr[2], double th_min, double th
                     }
 
                     for(int n = 1; n < size; n++){
-                        if (fabs(rngs[0] - rng_max) > 1.0e-6){
+                        if (fabs(rngs[n] - rng_max) > 1.0e-6){
                             cout << ", " << rngs[n];
                         } else {
                             cout << ", - ";
@@ -242,7 +242,7 @@ bool geoac::find_eigenray(double src[3], double rcvr[2], double & th_est, double
     long double lat, lon, r_grnd, c_src, c_grnd, dzg_dlat, dzg_dlon, ds_norm, ds_dth, ds_dph, dlat, dlon, dlat_dth, dlon_dth, dlat_dph, dlon_dph;
     long double det, dth, dph;
     
-    int	k, length = s_max * int(1.0 / (ds_min * 10));
+    int	k, length = int(s_max / ds_min);
 
     calc_amp = true;
     configure();
@@ -270,7 +270,7 @@ bool geoac::find_eigenray(double src[3], double rcvr[2], double & th_est, double
         }
         
 		set_initial(solution, src[0], src[1], src[2]);
-        k = prop_rk4(solution, break_check);
+        k = prop_rk4(solution, break_check, length);
         if(break_check){
             if(verbose&& verbose_opt == rcvr_id){
                 cout << '\t' << "Ray path left propagation region, reversing step and adjusting step scaling." << '\n';
@@ -282,7 +282,7 @@ bool geoac::find_eigenray(double src[3], double rcvr[2], double & th_est, double
         } else {
             for(int n_bnc = 1; n_bnc <= bnc_cnt; n_bnc++){
                 set_refl(solution, k);
-                k = prop_rk4(solution, break_check);
+                k = prop_rk4(solution, break_check, length);
                 if(break_check){
                     if(verbose && verbose_opt == rcvr_id){
                         cout << '\t' << "Ray path left propagation region, reversing step and adjusting step scaling." << '\n';
@@ -321,7 +321,7 @@ bool geoac::find_eigenray(double src[3], double rcvr[2], double & th_est, double
                 r_max = 0.0;
             
                 set_initial(solution, src[0], src[1], src[2]);
-                k = prop_rk4(solution, break_check);
+                k = prop_rk4(solution, break_check, length);
 
                 for(int m = 1; m < k; m++){
                     travel_time(travel_time_sum, solution, m - 1, m);
@@ -340,7 +340,7 @@ bool geoac::find_eigenray(double src[3], double rcvr[2], double & th_est, double
                 for(int n_bnc = 1; n_bnc <= bnc_cnt; n_bnc++){
                     set_refl(solution, k);
                 
-                    k = prop_rk4(solution, break_check);
+                    k = prop_rk4(solution, break_check, length);
                     for(int m = 1; m < k; m++){
                         travel_time(travel_time_sum, solution, m - 1, m);
                         atten(attenuation, solution, m - 1, m, freq);

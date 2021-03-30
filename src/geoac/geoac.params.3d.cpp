@@ -24,7 +24,7 @@ bool    geoac::calc_amp;    // Is amplitude to be calculated?
 bool    geoac::is_strat;    // Is the medium stratified?
 bool    geoac::is_topo;     // Is there topography?
 
-double  geoac::s_max = 5000.0;  // Ray length at which to stop ray tracing
+double  geoac::s_max = 2500.0;  // Ray length at which to stop ray tracing
 double  geoac::ds_min = 0.001;  // Smallest possible step size
 double  geoac::ds_max = 0.05;   // Largest possible step size
 double  geoac::ds_wvfrm = 0.5;  // Step size in weakly non-linear waveform solver
