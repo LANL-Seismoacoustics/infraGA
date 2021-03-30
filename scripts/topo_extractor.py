@@ -108,7 +108,7 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852):
     output = open(file_out, 'w')
     print(0.0, '\t', elev_interp(src_loc[1], src_loc[0])[0], file=output)
     for n in range(N):
-        print(sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2], file=output, end='\t')
+        print(sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0, file=output, end='\t')
         print(elev_interp(line_pnts[n][0], line_pnts[n][1])[0], file=output)
     output.close()
 
@@ -121,7 +121,9 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852):
         rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
         elev_vals[n] = elev_interp(line_pnts[n][0], line_pnts[n][1])[0]
 
-    plt.plot(rng_vals, elev_vals, 'k-', linewidth=2.0)
+    plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.66')
+    plt.xlabel("Range [km]")
+    plt.ylabel("Elevation [km]")
     plt.show()
 
 def pull_latlon_line(src_loc, azimuth, rng_max, file_out, resol=1.852):
@@ -240,7 +242,10 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852):
 
     XX, YY = np.meshgrid(x_vals, y_vals)
     plt.pcolormesh(XX, YY, xy_elev.T, cmap=plt.cm.terrain, vmin=0.0)
-    plt.colorbar()
+    plt.xlabel("Range (E/W) [km]")
+    plt.ylabel("Range (N/S) [km]")
+    plt.colorbar(label="Elevation [km]")
+
     plt.show()
 
 
@@ -286,7 +291,9 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out):
 
     LON, LAT = np.meshgrid(region_lon, region_lat)
     plt.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, vmin=0.0)
-    plt.colorbar()
+    plt.xlabel("Longitude [deg]")
+    plt.ylabel("Latitude [deg]")
+    plt.colorbar(label="Elevation [km]")
     plt.show()
 
 

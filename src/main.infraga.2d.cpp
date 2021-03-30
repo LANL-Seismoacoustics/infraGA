@@ -318,7 +318,7 @@ void run_prop(char* inputs[], int count){
                 
    				if(m == 1 || m % 15 == 0){
                     raypath << solution[m][0];
-                    raypath << '\t' << max(solution[m][1], topo::z(solution[m][1]));
+                    raypath << '\t' << max(solution[m][1], topo::z(solution[m][0]));
                     if(geoac::calc_amp){    raypath << '\t' << 10.0 * log10(geoac::amp(solution, m));}
                     else{                   raypath << '\t' << 0.0;}
                     raypath << '\t' << -attenuation;
@@ -339,7 +339,7 @@ void run_prop(char* inputs[], int count){
                 break;
             }
 
-            for(int m = 0; m < k ; m++){ z_max = max (z_max, solution[m][1]);}
+            for(int m = 0; m < k ; m++){ z_max = max (z_max, solution[m][0]);}
             
             results << theta;
 			results << '\t' << azimuth;

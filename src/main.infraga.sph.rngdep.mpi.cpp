@@ -629,7 +629,7 @@ void run_eig_search(char* inputs[], int count){
         else if (strncmp(inputs[i], "seq_srcs_dr=", 12) == 0){                                                          seq_dr_max = atof(inputs[i] + 12);}
         
         else if (strncmp(inputs[i], "verbose=", 8) == 0){                                                               geoac::verbose = string2bool(inputs[i] + 8);}
-        else if (strncmp(inputs[i], "verbose_opt=", 12) == 0){                                                          geoac::verbose_opt = atof(inputs[i] + 12);}
+        else if (strncmp(inputs[i], "verbose_rcvr=", 13) == 0){                                                         geoac::verbose_opt = atof(inputs[i] + 13);}
         
         else if (strncmp(inputs[i], "iterations=", 11) == 0){                                                           iterations=atof(inputs[i] + 11);}
         else if (strncmp(inputs[i], "damping=", 8) == 0){                                                               geoac::damping = atof(inputs[i] + 8);}
