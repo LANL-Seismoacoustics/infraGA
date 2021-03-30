@@ -23,7 +23,7 @@ int geoac::prop_rk4(double ** & solution, bool & check, int length){
 
 	check = false;
     
-    for(k = 0; k < (length - 2); k++){
+    for(k = 0; k < (length - 1); k++){
 		for (int i = 0; i < eq_cnt; i++){
 			temp0[i] = solution[k][i];
 		}
