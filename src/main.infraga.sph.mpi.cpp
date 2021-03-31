@@ -591,7 +591,7 @@ void run_eig_search(char* inputs[], int count){
     char input_check;
 
     bool seq_srcs = true, write_atmo = false;
-    double seq_dr = 0.0, seq_dr_max = 10.0;
+    double seq_dr = 0.0, seq_dr_max = 5.0;
     double seq_srcs_ref [3] = {src0[0], src0[1], src0[2]};
     
     vector<double> prev_incl;
