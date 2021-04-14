@@ -433,7 +433,7 @@ void run_prop(char* inputs[], int count){
                             raypath << '\t' << solution[m][1];
                             raypath << '\t' << max(solution[m][2], topo::z(solution[m][0], solution[m][1]));
                             if(geoac::calc_amp){
-                                raypath << '\t' << 10.0 * log10(geoac::amp(solution,m));
+                                raypath << '\t' << 20.0 * log10(geoac::amp(solution,m));
                             } else {
                                 raypath << '\t' << 0.0;
                             }
@@ -491,7 +491,7 @@ void run_prop(char* inputs[], int count){
                 results << '\t' << inclination;
                 results << '\t' << back_az;
                 if(geoac::calc_amp){
-                    results << '\t' << 10.0 * log10(geoac::amp(solution,k));
+                    results << '\t' << 20.0 * log10(geoac::amp(solution,k));
                 } else {
                    results << '\t' << 0.0;
                 }
@@ -696,7 +696,7 @@ void run_back_proj(char* inputs[], int count){
         cout << '\t' << '\t' << "turning height [km] = " << z_max << '\n';
         cout << '\t' << '\t' << "arrival inclination [deg] = " << inclination << '\n';
         cout << '\t' << '\t' << "back azimuth = " << back_az  << '\n';
-        cout << '\t' << '\t' << "attenuation (geometric) [dB] = " << 10.0 * log10(geoac::amp(solution, k)) << '\n';
+        cout << '\t' << '\t' << "attenuation (geometric) [dB] = " << 20.0 * log10(geoac::amp(solution, k)) << '\n';
         cout << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
     } else {
         cout << '\n';
@@ -1157,7 +1157,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
                 raypath << solution[m][0];
                 raypath << '\t' << solution[m][1];
                 raypath << '\t' << max(solution[m][2], topo::z(solution[m][0], solution[m][1]));
-                raypath << '\t' << 10.0 * log10(geoac::amp(solution, m));
+                raypath << '\t' << 20.0 * log10(geoac::amp(solution, m));
                 raypath << '\t' << -attenuation;
                 raypath << '\t' << travel_time_sum;
                 raypath << '\n';
@@ -1219,7 +1219,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         cout << '\t' << '\t' << "turning height [km] = " << z_max << '\n';
         cout << '\t' << '\t' << "arrival inclination [deg] = " << inclination << '\n';
         cout << '\t' << '\t' << "back azimuth = " << back_az  << '\n';
-        cout << '\t' << '\t' << "attenuation (geometric) [dB] = " << 10.0 * log10(geoac::amp(solution, k)) << '\n';
+        cout << '\t' << '\t' << "attenuation (geometric) [dB] = " << 20.0 * log10(geoac::amp(solution, k)) << '\n';
         cout << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
     } else {
         cout << '\n';

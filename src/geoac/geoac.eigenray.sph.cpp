@@ -252,7 +252,7 @@ void geoac::find_eigenray(double src[3], double rcvr[2], double th_est, double p
                         raypath << setprecision(8) << solution[m][1] * (180.0 / Pi);
                         raypath << '\t' << setprecision(8) << solution[m][2] * (180.0 / Pi);
                         raypath << '\t' << solution[m][0] - globe::r0;
-                        raypath << '\t' << 10.0 * log10(amp(solution, m));
+                        raypath << '\t' << 20.0 * log10(amp(solution, m));
                         raypath << '\t' << -attenuation;
                         raypath << '\t' << travel_time_sum << '\n';
                     }
@@ -270,7 +270,7 @@ void geoac::find_eigenray(double src[3], double rcvr[2], double th_est, double p
                             raypath << setprecision(8) << solution[m][1] * (180.0 / Pi);
                             raypath << '\t' << setprecision(8) << solution[m][2] * (180.0 / Pi);
                             raypath << '\t' << solution[m][0] - globe::r0;
-                            raypath << '\t' << 10.0 * log10(amp(solution, m));
+                            raypath << '\t' << 20.0 * log10(amp(solution, m));
                             raypath << '\t' << -attenuation;
                             raypath << '\t' << travel_time_sum << '\n';
                         }
@@ -310,7 +310,7 @@ void geoac::find_eigenray(double src[3], double rcvr[2], double th_est, double p
                     cout << '\t' << '\t' << '\t' << "turning height [km] = " << r_max << '\n';
                     cout << '\t' << '\t' << '\t' << "arrival inclination [deg] = " << inclination << '\n';
                     cout << '\t' << '\t' << '\t' << "back azimuth [deg] = " << back_az << '\n';
-                    cout << '\t' << '\t' << '\t' << "attenuation (geometric) [dB] = " << 10.0 * log10(geoac::amp(solution,k)) << '\n';
+                    cout << '\t' << '\t' << '\t' << "attenuation (geometric) [dB] = " << 20.0 * log10(geoac::amp(solution,k)) << '\n';
                     cout << '\t' << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
                 }
                        
@@ -324,7 +324,7 @@ void geoac::find_eigenray(double src[3], double rcvr[2], double th_est, double p
                 eig_results << '\t' << r_max;
                 eig_results << '\t' << inclination;
                 eig_results << '\t' << back_az;
-                eig_results << '\t' << 10.0 * log10(geoac::amp(solution,k));
+                eig_results << '\t' << 20.0 * log10(geoac::amp(solution,k));
                 eig_results << '\t' << -attenuation;
                 eig_results << '\n';
             

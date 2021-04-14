@@ -404,7 +404,7 @@ void run_prop(char* inputs[], int count){
                                         ray_buffer[1] = solution[m][1];
                                         ray_buffer[2] = max(solution[m][2], topo::z(solution[m][0], solution[m][1]));
                                         if(geoac::calc_amp){
-                                            ray_buffer[3] = 10.0 * log10(geoac::amp(solution, m));
+                                            ray_buffer[3] = 20.0 * log10(geoac::amp(solution, m));
                                         } else {
                                             ray_buffer[3] = 0.0;
                                         }
@@ -481,7 +481,7 @@ void run_prop(char* inputs[], int count){
                             results_buffer[8] = inclination;
                             results_buffer[9] = back_az;
                             if(geoac::calc_amp){
-                                results_buffer[10] = 10.0 * log10(geoac::amp(solution, k));
+                                results_buffer[10] = 20.0 * log10(geoac::amp(solution, k));
                             } else{           
                                 results_buffer[10] = 0.0;
                             }
