@@ -102,6 +102,7 @@ void usage(){
     cout << '\t' << "z_grnd"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
     cout << '\t' << "write_atmo"        << '\t' << '\t' << "true/false"         << '\t' << "false" << '\n' ;
     cout << '\t' << "prof_format"       << '\t' << '\t' << "see manual"         << '\t' << "zTuvdp" << '\n';
+    cout << '\t' << "output_id"         << '\t' << '\t' << "see manual"         << '\t' << "from profile.met" << '\n';
     cout << '\t' << "write_caustics"    << '\t' << '\t' << "true/false"         << '\t' << "false" << '\n';
     cout << '\t' << "calc_amp"          << '\t' << '\t' << "true/false"         << '\t' << "true" << '\n';
     cout << '\t' << "max_alt"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation max" << '\n';
@@ -131,9 +132,10 @@ void run_prop(char* inputs[], int count){
     double theta_min = 0.5, theta_max=45.0, theta_step=0.5, azimuth=-90.0;
     double r_src = 0.0, z_src = 0.0, freq = 0.1;
     int bounces=2;
-    bool write_atmo=false, write_caustics=false;
+    bool write_atmo=false, write_caustics=false, custom_output_id=false;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
+    char* output_id;
     char input_check;
     
     topo::z0 = 0.0;
@@ -177,6 +179,8 @@ void run_prop(char* inputs[], int count){
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
+                                                                                                            output_id = inputs[i] + 10;}
         else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
                                                                                                                 topo::z0 = atof(inputs[i] + 7);
                                                                                                                 topo::z_max = topo::z0;
@@ -193,7 +197,6 @@ void run_prop(char* inputs[], int count){
     }
     z_src = max(z_src, topo::z(r_src));
     if(write_atmo)     geoac::write_prof("atmo.dat", (90.0 - azimuth) * Pi / 180.0);
-
     if(write_caustics) geoac::calc_amp=true;
     geoac::configure();
     
@@ -214,10 +217,13 @@ void run_prop(char* inputs[], int count){
     
     // Extract the file name from the input and use it to ID the output
     char output_buffer [512];
-    char* file_id = inputs[2];
-    for(int m = strlen(file_id); m >= 0; m--){
-        if(file_id[m]=='.'){
-            file_id[m] = '\0'; break;
+    if(!custom_output_id){
+        output_id = inputs[2];
+        for(int m = strlen(output_id); m >= 0; m--){
+            if(output_id[m] == '.'){
+                output_id[m] = '\0';
+                break;
+            }
         }
     }
     
@@ -227,11 +233,11 @@ void run_prop(char* inputs[], int count){
 	bool break_check;
 
 	ofstream results, raypath, caustics;    
-    sprintf(output_buffer, "%s.arrivals.dat", file_id);
+    sprintf(output_buffer, "%s.arrivals.dat", output_id);
     results.open(output_buffer);
 
     results << "# infraga-2d -prop summary:" << '\n';
-    results << "#" << '\t' << "profile: " << inputs[2] << ".met" << '\n';
+    results << "#" << '\t' << "profile: " << inputs[2] << '\n';
     results << "#" << '\t' << "inclination: " << theta_min << ", " << theta_max << ", " << theta_step << '\n';
     results << "#" << '\t' << "azimuth: " << azimuth << '\n';
     results << "#" << '\t' << "bounces: " << bounces << '\n';
@@ -257,7 +263,7 @@ void run_prop(char* inputs[], int count){
     results << '\t' << "perp. dist. [km]";
     results << '\n';
     
-    sprintf(output_buffer, "%s.raypaths.dat", file_id);
+    sprintf(output_buffer, "%s.raypaths.dat", output_id);
     raypath.open(output_buffer);
     raypath << "# r [km]";
     raypath << '\t' << "z [km]";
@@ -268,7 +274,7 @@ void run_prop(char* inputs[], int count){
     
     if(write_caustics){
         for (int bnc = 0; bnc <= bounces; bnc++){
-            sprintf(output_buffer, "%s.caustics-%i.dat", file_id, bnc);
+            sprintf(output_buffer, "%s.caustics-%i.dat", output_id, bnc);
             caustics.open(output_buffer);
             caustics << "# r [km]";
             caustics << '\t' << "z [km]";
@@ -307,7 +313,7 @@ void run_prop(char* inputs[], int count){
 			k = geoac::prop_rk4(solution, break_check, length);
 
             if(write_caustics) {
-                sprintf(output_buffer, "%s.caustics-%i.dat", file_id, bnc_cnt);
+                sprintf(output_buffer, "%s.caustics-%i.dat", output_id, bnc_cnt);
                 caustics.open(output_buffer,fstream::app);
                 D_prev = geoac::jacobian(solution, 1);
             }
@@ -377,7 +383,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
     
     double r_src = 0.0, z_src = 0.0, freq = 0.1, D, D_prev;
     int bounces = 0;
-    bool break_check, write_atmo=false, write_rays=false;
+    bool break_check, write_atmo=false, write_rays=false, custom_output_id=false;
     char* prof_format = "zTuvdp";
     char* topo_file = "none";
     char input_check;
@@ -388,6 +394,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
     int wvfrm_ref_k = 0;
     char* wvfrm_file = "none";
     char* wvfrm_opt = "impulse";
+    char* output_id;
     ofstream wvfrm_out;
 
     geoac::theta = 15.0 * (Pi / 180.0);
@@ -445,6 +452,8 @@ void run_wnl_wvfrm(char* inputs[], int count){
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 15;}
+        else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
+                                                                                                            output_id = inputs[i] + 10;}
         else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
                                                                                                                 topo::z0 = atof(inputs[i] + 7);
                                                                                                                 topo::z_max = topo::z0;
@@ -487,11 +496,13 @@ void run_wnl_wvfrm(char* inputs[], int count){
 
     // Extract the file name from the input and use it to distinguish the resulting output
     char output_buffer [512];
-    char* file_id = inputs[2];
-    for(int m = strlen(file_id); m >= 0; m--){
-        if(file_id[m]=='.'){
-            file_id[m] = '\0';
-            break;
+    if(!custom_output_id){
+        output_id = inputs[2];
+        for(int m = strlen(output_id); m >= 0; m--){
+            if(output_id[m] == '.'){
+                output_id[m] = '\0';
+                break;
+            }
         }
     }
     
@@ -504,7 +515,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
     
     ofstream raypath;
     if(write_rays){
-        sprintf(output_buffer, "%s.raypaths.dat", file_id);
+        sprintf(output_buffer, "%s.raypaths.dat", output_id);
         raypath.open(output_buffer);
         raypath << "# r [km]";
         raypath << '\t' << "z [km]";
@@ -553,7 +564,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
             rho0 = atmo::rho(0.0, 0.0, solution[wvfrm_ref_k + 1][1]);
             D0 = geoac::jacobian(solution, wvfrm_ref_k + 1);
 
-            sprintf(output_buffer, "%s.wvfrm_init.dat", file_id);
+            sprintf(output_buffer, "%s.wvfrm_init.dat", output_id);
             wvfrm_out.open(output_buffer);
             wvfrm_out << "# t [sec]" << '\t' << "p(t) [Pa]" << '\n';
             for (int n = 0; n < wvfrm::len; n++){
@@ -588,10 +599,10 @@ void run_wnl_wvfrm(char* inputs[], int count){
         cout << '\t' << '\t' << "Ray path does not return to the ground." << '\n' << '\n';
     }
 
-    sprintf(output_buffer, "%s.wvfrm_out.dat", file_id);
+    sprintf(output_buffer, "%s.wvfrm_out.dat", output_id);
     wvfrm_out.open(output_buffer);
     wvfrm_out << "# infraga-2d -wnl_wvfrm summary:" << '\n';
-    wvfrm_out << "#" << '\t' << "profile: " << inputs[2] << ".met" << '\n';
+    wvfrm_out << "#" << '\t' << "profile: " << inputs[2] << '\n';
     wvfrm_out << "#" << '\t' << "inclination: " << geoac::theta * (180.0 / Pi)  << '\n';
     wvfrm_out << "#" << '\t' << "azimuth: " << geoac::phi * (180.0 / Pi)  << '\n';
     wvfrm_out << "#" << '\t' << "bounces: " << bounces << '\n';

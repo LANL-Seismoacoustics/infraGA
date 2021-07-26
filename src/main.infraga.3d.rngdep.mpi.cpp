@@ -120,6 +120,7 @@ void usage(){
     cout << '\t' << "z_grnd"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
     cout << '\t' << "write_atmo"        << '\t' << '\t' << "true/false"         << '\t' << "false" << '\n';
     cout << '\t' << "prof_format"       << '\t' << '\t' << "see manual"         << '\t' << "zTuvdp" << '\n';
+    cout << '\t' << "output_id"         << '\t' << '\t' << "see manual"         << '\t' << "from profile.met" << '\n';
     cout << '\t' << "calc_amp"          << '\t' << '\t' << "true/false"         << '\t' << "true" << '\n';
     cout << '\t' << "max_alt"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation limits" << '\n';
     cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2000.0" << '\n';
@@ -164,10 +165,11 @@ void run_prop(char* inputs[], int count){
     double phi_min=-90.0, phi_max=-90.0, phi_step=1.0;
     int bounces=2;
     double  x_src, y_src, z_src = 0.0;
-    bool write_atmo=false, write_rays=false, write_topo=false;
+    bool write_atmo=false, write_rays=false, write_topo=false, custom_output_id=false;
     double freq=0.1;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
+    char* output_id;
     char input_check;
 
     topo::z0 = 0.0;
@@ -229,6 +231,8 @@ void run_prop(char* inputs[], int count){
         else if ((strncmp(inputs[i], "max_s=", 6) == 0) || (strncmp(inputs[i], "s_max=", 6) == 0)){         geoac::s_max = atof(inputs[i] + 6);     if(world_rank == 0){cout << '\t' << "User selected s maximum (path length between reflections) = " << geoac::s_max << '\n';}}
 
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
+                                                                                                            output_id = inputs[i] + 10;}
         else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
                                                                                                                 topo::z0 = atof(inputs[i] + 7);
                                                                                                                 topo::z_max = topo::z0;
@@ -273,7 +277,9 @@ void run_prop(char* inputs[], int count){
     
     // Extract the file name from the input and use it to distinguish the resulting output
     char output_buffer [512];
-    char* file_id = inputs[2];
+    if(!custom_output_id){
+        output_id = inputs[2];
+    }
     
     double ds = 0.1, D, D_prev, travel_time_sum, z_max, attenuation, back_az, inclination;
 	int k, break_check_int, length = int(geoac::s_max / geoac::ds_min);
@@ -286,7 +292,7 @@ void run_prop(char* inputs[], int count){
             geoac::write_prof("atmo.dat", x_src, y_src, (90.0 - phi_min) * Pi / 180.0);
         }
         
-        sprintf(output_buffer, "%s.arrivals.dat", file_id);
+        sprintf(output_buffer, "%s.arrivals.dat", output_id);
         results.open(output_buffer);
 
         results << "# infraga-accel-3d-rngdep -prop summary:" << '\n';
@@ -320,7 +326,7 @@ void run_prop(char* inputs[], int count){
         results << '\n';
     
         if(write_rays){
-            sprintf(output_buffer, "%s.raypaths.dat", file_id);
+            sprintf(output_buffer, "%s.raypaths.dat", output_id);
             raypath.open(output_buffer);
         
             raypath << "# x [km]";
@@ -555,7 +561,7 @@ void run_eig_search(char* inputs[], int count){
     int srcs_cnt = 1, rcvrs_cnt = 1;
     char* srcs_file = "None";
     char* rcvrs_file = "None";
-    bool sequential_srcs = true, write_atmo=false;
+    bool sequential_srcs = true, write_atmo=false, custom_output_id=false;
     
     double src0 [3]  = {0.0, 30.0, 0.0};
     double rcvr0 [2] = {30.0, -2.5};
@@ -567,6 +573,7 @@ void run_eig_search(char* inputs[], int count){
     double freq = 0.1;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
+    char* output_id;
     char input_check;
 
     bool seq_srcs = true;
@@ -649,6 +656,8 @@ void run_eig_search(char* inputs[], int count){
         else if ((strncmp(inputs[i], "max_s=", 6) == 0) || (strncmp(inputs[i], "s_max=", 6) == 0)){                     geoac::s_max = atof(inputs[i] + 6);     if(world_rank == 0){cout << '\t' << "User selected s maximum (path length between reflections) = " << geoac::s_max << '\n';}}
 
         else if (strncmp(inputs[i], "prof_format=",12) == 0){                                                           prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                            custom_output_id = true; 
+                                                                                                                        output_id = inputs[i] + 10;}
         else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                                if(!geoac::is_topo){
                                                                                                                             topo::z0 = atof(inputs[i] + 7);
                                                                                                                             topo::z_max = topo::z0;
@@ -795,7 +804,9 @@ void run_eig_search(char* inputs[], int count){
     
     // Extract the file name from the input and use it to distinguish the output
 	char output_buffer[60];
-    char* file_id = inputs[2];
+    if(!custom_output_id){
+        output_id = inputs[2];
+    }
     
     double theta_start, theta_next, theta_est, phi_est;
     bool estimate_success;
@@ -808,13 +819,13 @@ void run_eig_search(char* inputs[], int count){
     
         if(group_rank == 0){
             if(srcs_cnt == 1 && rcvrs_cnt == 1){
-                sprintf(output_buffer, "%s.arrivals.dat", file_id);
+                sprintf(output_buffer, "%s.arrivals.dat", output_id);
             } else if (srcs_cnt == 1 && rcvrs_cnt > 1) {
-                sprintf(output_buffer, "%s.rcvr-%i.arrivals.dat", file_id, task_id);
+                sprintf(output_buffer, "%s.rcvr-%i.arrivals.dat", output_id, task_id);
             } else if (srcs_cnt > 1 && rcvrs_cnt == 1) {
-                sprintf(output_buffer, "%s.src-%i.arrivals.dat", file_id, n_src);
+                sprintf(output_buffer, "%s.src-%i.arrivals.dat", output_id, n_src);
             } else {
-                sprintf(output_buffer, "%s.src-%i.rcvr-%i.arrivals.dat", file_id, n_src, task_id);
+                sprintf(output_buffer, "%s.src-%i.rcvr-%i.arrivals.dat", output_id, n_src, task_id);
             }
             geoac::eig_results.open(output_buffer);
     
@@ -851,13 +862,13 @@ void run_eig_search(char* inputs[], int count){
             geoac::eig_results << '\n';
 
             if(srcs_cnt == 1 && rcvrs_cnt == 1){
-                sprintf(output_buffer, "%s.eigenray-", file_id);
+                sprintf(output_buffer, "%s.eigenray-", output_id);
             } else if (srcs_cnt == 1 && rcvrs_cnt > 1) {
-                sprintf(output_buffer, "%s.rcvr-%i.eigenray-", file_id, task_id);
+                sprintf(output_buffer, "%s.rcvr-%i.eigenray-", output_id, task_id);
             } else if (srcs_cnt > 1 && rcvrs_cnt == 1) {
-                sprintf(output_buffer, "%s.src-%i.eigenray-", file_id, n_src);
+                sprintf(output_buffer, "%s.src-%i.eigenray-", output_id, n_src);
             } else {
-                sprintf(output_buffer, "%s.src-%i.rcvr-%i.eigenray-", file_id, n_src, task_id);
+                sprintf(output_buffer, "%s.src-%i.rcvr-%i.eigenray-", output_id, n_src, task_id);
             }
         }
     

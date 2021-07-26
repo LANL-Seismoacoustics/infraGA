@@ -119,6 +119,7 @@ void usage(){
     cout << '\t' << "z_grnd"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
     cout << '\t' << "write_atmo"        << '\t' << '\t' << "true/false"         << '\t' << "false" << '\n';
     cout << '\t' << "prof_format"       << '\t' << '\t' << "see manual"         << '\t' << "zTuvdp" << '\n';
+    cout << '\t' << "output_id"         << '\t' << '\t' << "see manual"         << '\t' << "from profile.met" << '\n';
     cout << '\t' << "calc_amp"          << '\t' << '\t' << "true/false"         << '\t' << "true" << '\n';
     
     cout << '\t' << "max_alt"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation max" << '\n';
@@ -164,10 +165,11 @@ void run_prop(char* inputs[], int count){
     double phi_min = -90.0, phi_max = -90.0, phi_step = 1.0;
     int bounces=2;
     double lat_src = 30.0, lon_src = 0.0, z_src = 0.0;
-    bool write_atmo=false, write_rays=false, write_topo=false;
+    bool write_atmo=false, write_rays=false, write_topo=false, custom_output_id=false;
     double freq = 0.1;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
+    char* output_id;
     char input_check;
     
     topo::z0 = 0.0;
@@ -283,11 +285,13 @@ void run_prop(char* inputs[], int count){
     
     // Extract the file name from the input and use it to distinguish the resulting output
     char output_buffer [512];
-    char* file_id = inputs[2];
-    for(int m = strlen(file_id); m >= 0; m--){
-        if(file_id[m]=='.'){
-            file_id[m] = '\0';
-            break;
+    if(!custom_output_id){
+        output_id = inputs[2];
+        for(int m = strlen(output_id); m >= 0; m--){
+            if(output_id[m] == '.'){
+                output_id[m] = '\0';
+                break;
+            }
         }
     }
     
@@ -302,11 +306,11 @@ void run_prop(char* inputs[], int count){
             geoac::write_prof("atmo.dat", lat_src, lon_src, (90.0 - phi_min) * Pi / 180.0);
         }
         
-        sprintf(output_buffer, "%s.arrivals.dat", file_id);
+        sprintf(output_buffer, "%s.arrivals.dat", output_id);
         results.open(output_buffer);
 
         results << "# infraga-accel-sph -prop summary:" << '\n';
-        results << "#" << '\t' << "profile: " << inputs[2] << ".met" << '\n';
+        results << "#" << '\t' << "profile: " << inputs[2] << '\n';
         results << "#" << '\t' << "inclination: " << theta_min << ", " << theta_max << ", " << theta_step << '\n';
         results << "#" << '\t' << "azimuth: " << phi_min << ", " << phi_max << ", " << phi_step << '\n';
         results << "#" << '\t' << "bounces: " << bounces << '\n';
@@ -335,7 +339,7 @@ void run_prop(char* inputs[], int count){
         results << '\n';
     
         if(write_rays){
-            sprintf(output_buffer, "%s.raypaths.dat", file_id);
+            sprintf(output_buffer, "%s.raypaths.dat", output_id);
             raypath.open(output_buffer);
         
             raypath << "# lat [deg]";
@@ -588,9 +592,10 @@ void run_eig_search(char* inputs[], int count){
     double freq = 0.1;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
+    char* output_id;
     char input_check;
 
-    bool seq_srcs = true, write_atmo = false;
+    bool seq_srcs = true, write_atmo = false, custom_output_id=false;
     double seq_dr = 0.0, seq_dr_max = 5.0;
     double seq_srcs_ref [3] = {src0[0], src0[1], src0[2]};
     
@@ -835,11 +840,13 @@ void run_eig_search(char* inputs[], int count){
     
     // Extract the file name from the input and use it to distinguish the resulting output
     char output_buffer [512];
-    char* file_id = inputs[2];
-    for(int m = strlen(file_id); m >= 0; m--){
-        if(file_id[m]=='.'){
-            file_id[m] = '\0';
-            break;
+    if(!custom_output_id){
+        output_id = inputs[2];
+        for(int m = strlen(output_id); m >= 0; m--){
+            if(output_id[m] == '.'){
+                output_id[m] = '\0';
+                break;
+            }
         }
     }
     
@@ -854,18 +861,18 @@ void run_eig_search(char* inputs[], int count){
 
         if (group_rank == 0){
             if(srcs_cnt == 1 && rcvrs_cnt == 1){
-                sprintf(output_buffer, "%s.arrivals.dat", file_id);
+                sprintf(output_buffer, "%s.arrivals.dat", output_id);
             } else if (srcs_cnt == 1 && rcvrs_cnt > 1) {
-                sprintf(output_buffer, "%s.rcvr-%i.arrivals.dat", file_id, task_id);
+                sprintf(output_buffer, "%s.rcvr-%i.arrivals.dat", output_id, task_id);
             } else if (srcs_cnt > 1 && rcvrs_cnt == 1) {
-                sprintf(output_buffer, "%s.src-%i.arrivals.dat", file_id, n_src);
+                sprintf(output_buffer, "%s.src-%i.arrivals.dat", output_id, n_src);
             } else {
-                sprintf(output_buffer, "%s.src-%i.rcvr-%i.arrivals.dat", file_id, n_src, task_id);
+                sprintf(output_buffer, "%s.src-%i.rcvr-%i.arrivals.dat", output_id, n_src, task_id);
             }
             geoac::eig_results.open(output_buffer);
         
             geoac::eig_results << "# infraga-accel-sph -eig_search summary:" << '\n';
-            geoac::eig_results << "# " << '\t' << "profile: " << file_id << '\n';
+            geoac::eig_results << "# " << '\t' << "profile: " << output_id << '\n';
             geoac::eig_results << "# " << '\t' << "source location (lat, lon, alt): " << srcs[n_src][1] * (180.0 / Pi) << ", " << srcs[n_src][2] * (180.0 / Pi) << ", " << srcs[n_src][0] << '\n';
             geoac::eig_results << "# " << '\t' << "receiver location (lat, lon, alt): " << rcvrs[task_id][0] * (180.0 / Pi) << ", " << rcvrs[task_id][1] * (180.0 / Pi) << ", " << topo::z(rcvrs[task_id][0], rcvrs[task_id][1]) - globe::r0 << '\n';
             geoac::eig_results << "# " << '\t' << "inclination range: " << theta_min * (180.0 / Pi) << ", " << theta_max * (180.0 / Pi) << '\n';
@@ -895,13 +902,13 @@ void run_eig_search(char* inputs[], int count){
             geoac::eig_results << '\n';
             
             if(srcs_cnt == 1 && rcvrs_cnt == 1){
-                sprintf(output_buffer, "%s.eigenray-", file_id);
+                sprintf(output_buffer, "%s.eigenray-", output_id);
             } else if (srcs_cnt == 1 && rcvrs_cnt > 1) {
-                sprintf(output_buffer, "%s.rcvr-%i.eigenray-", file_id, task_id);
+                sprintf(output_buffer, "%s.rcvr-%i.eigenray-", output_id, task_id);
             } else if (srcs_cnt > 1 && rcvrs_cnt == 1) {
-                sprintf(output_buffer, "%s.src-%i.eigenray-", file_id, n_src);
+                sprintf(output_buffer, "%s.src-%i.eigenray-", output_id, n_src);
             } else {
-                sprintf(output_buffer, "%s.src-%i.rcvr-%i.eigenray-", file_id, n_src, task_id);
+                sprintf(output_buffer, "%s.src-%i.rcvr-%i.eigenray-", output_id, n_src, task_id);
             }
             
         }
