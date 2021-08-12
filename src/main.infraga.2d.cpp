@@ -130,7 +130,7 @@ void run_prop(char* inputs[], int count){
     cout << '\t' << "##########################################" << '\n' << '\n';
     
     double theta_min = 0.5, theta_max=45.0, theta_step=0.5, azimuth=-90.0;
-    double r_src = 0.0, z_src = 0.0, freq = 0.1;
+    double r_src = 0.0, z_src = 0.0, freq = 0.1, turn_ht_min = 0.05;
     int bounces=2;
     bool write_atmo=false, write_caustics=false, custom_output_id=false;
     char* prof_format = "zTuvdp";
@@ -343,11 +343,13 @@ void run_prop(char* inputs[], int count){
             }
             if(write_caustics) caustics.close();
             
+            for(int m = 0; m < k ; m++){
+                z_max = max (z_max, solution[m][0]);
+            }
+
     		if(break_check || k < 2){
                 break;
             }
-
-            for(int m = 0; m < k ; m++){ z_max = max (z_max, solution[m][0]);}
             
             results << theta;
 			results << '\t' << azimuth;

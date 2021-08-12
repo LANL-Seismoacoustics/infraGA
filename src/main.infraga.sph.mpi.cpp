@@ -77,6 +77,7 @@ void usage(){
     cout << '\t' << '\t' << "src_lon"           << '\t' << '\t' << "degrees"    << '\t' << '\t' << "0.0" << '\n';
     cout << '\t' << '\t' << "src_alt"           << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
 
+    cout << '\t' << '\t' << "turn_ht_min"       << '\t' << "km"                 << '\t' << '\t' << "0.2" << '\n';
     cout << '\t' << '\t' << "write_rays"        << '\t' << "true/false"         << '\t' << "false" << '\n';
     cout << '\t' << '\t' << "write_topo"        << '\t' << "true/false"         << '\t' << "false" << '\n' << '\n';
     
@@ -166,7 +167,7 @@ void run_prop(char* inputs[], int count){
     int bounces=2;
     double lat_src = 30.0, lon_src = 0.0, z_src = 0.0;
     bool write_atmo=false, write_rays=false, write_topo=false, custom_output_id=false;
-    double freq = 0.1;
+    double freq = 0.1, turn_ht_min = 0.2;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
     char* output_id;
@@ -215,6 +216,7 @@ void run_prop(char* inputs[], int count){
         else if ((strncmp(inputs[i], "src_lat=", 8) == 0) || (strncmp(inputs[i], "lat_src=", 8) == 0)){     lat_src = atof(inputs[i] + 8);}
         else if ((strncmp(inputs[i], "src_lon=", 8) == 0) || (strncmp(inputs[i], "lon_src=", 8) == 0)){     lon_src = atof(inputs[i] + 8);}
         
+        else if (strncmp(inputs[i], "turn_ht_min=", 12) == 0){                                              turn_ht_min = atof(inputs[i] + 12);}
         else if (strncmp(inputs[i], "write_rays=", 11) == 0){                                               write_rays = string2bool(inputs[i] + 11);}
         
         else if (strncmp(inputs[i], "freq=", 5) == 0){                                                      freq = atof(inputs[i] + 5);}
@@ -474,12 +476,17 @@ void run_prop(char* inputs[], int count){
                     }
                 }
 
-                break_check_int = int(break_check);
-                MPI_Allgather(&break_check_int, 1, MPI_INT, mpi_break_check, 1, MPI_INT, MPI_COMM_WORLD);
-            
                 for(int m = 0; m < k ; m++){
                     r_max = max (r_max, solution[m][0] - globe::r0);
                 }
+
+                if(!geoac::is_topo && r_max < (topo::z0 + turn_ht_min)){
+                    break_check = true;
+                }
+
+                break_check_int = int(break_check);
+                MPI_Allgather(&break_check_int, 1, MPI_INT, mpi_break_check, 1, MPI_INT, MPI_COMM_WORLD);
+            
                 inclination = - asin(atmo::c(solution[k][0], solution[k][1], solution[k][2]) / atmo::c(globe::r0 + z_src, lat_src, lon_src) * solution[k][3]) * (180.0 / Pi);
 
                 back_az = 90.0 - atan2(-solution[k][4], -solution[k][5]) * (180.0 / Pi);
