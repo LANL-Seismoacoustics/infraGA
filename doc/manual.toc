@@ -5,7 +5,7 @@
 \contentsline {subsection}{\numberline {2.3}3D Stratified Spherical Propagation}{7}{subsection.2.3}
 \contentsline {subsection}{\numberline {2.4}Range Dependent Propagation}{9}{subsection.2.4}
 \contentsline {section}{\numberline {3}Clarifications}{11}{section.3}
-\contentsline {subsection}{\numberline {3.1}Amplitude Format}{11}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.1}Amplitude Output}{11}{subsection.3.1}
 \contentsline {subsection}{\numberline {3.2}Range Dependent Profile Interpolation}{11}{subsection.3.2}
 \contentsline {subsection}{\numberline {3.3}Running the Accelerated Methods}{11}{subsection.3.3}
 \contentsline {section}{\numberline {4}Additional Parameters}{13}{section.4}

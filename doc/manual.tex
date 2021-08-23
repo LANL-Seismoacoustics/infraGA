@@ -65,9 +65,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 \newpage
 \section{Introduction and Installation}
 \label{Sect:Intro_Install}
-\hspace*{0.25in}  InfraGA/GeoAc is a numerical package written in C++, which solves the equations governing acoustic propagation through the atmosphere in the geometric limit using the geometric acoustic methods in the GeoAc library via a classical fourth-order Runge Kutta (RK4) algorithm.  The toolkit contains multiple instances of said equation system and is able to model propagation in an azimuthal plane using the effective motionless medium approximation as well as in three dimensions using an inhomogeneous moving background medium.  The three dimensional propagation scheme include methods to model propagation in a Cartesian coordinate system as well as a curvilinear coordinate system which incorporates the curvature of the earth as either spherical or elliptical (as defined by the WGS84 ellipsoid). 
+\hspace*{0.25in}  InfraGA/GeoAc is a numerical package written in C++, which solves the equations governing acoustic propagation through the atmosphere in the geometric limit using the geometric acoustic methods in the GeoAc library via a classical fourth-order Runge Kutta (RK4) algorithm.  The toolkit contains multiple instances of said equation system and is able to model propagation in an azimuthal plane using the effective motionless medium approximation as well as in three dimensions using an inhomogeneous moving background medium.  The three dimensional propagation scheme include methods to model propagation in a Cartesian coordinate system as well as a curvilinear coordinate system which simulates the propagation of sound through a spherical layer surrounding the Earth.
 
-In addition to the geometric propagation paths which are straightforward to compute, the GeoAc library uses auxiliary parameters as discussed in \textit{Impulse propagation in the nocturnal boundary layer - analysis of the geometric component} [Blom \& Waxler; J. Acoust. Soc. Am., 2012, Vol.131(5), pp.3680--90] to calculate the Jacobian determinant and obtain a frequency independent amplitude coefficient describing the attenuation due to geometric spreading.  The auxiliary parameters used to compute the amplitude coefficient have been found to provide an efficient means to identify eigenrays (propagation paths connecting a source and receiver at specific locations) as detailed in \textit{Modeling and observations of an elevated, moving infrasonic source: eigenray methods} [Blom \& Waxler; J. Acoust. Soc. Am., 2016, In Review].  Eigenray information provides a means to predict the characteristics of the various acoustic phases observed at a given receiver location for a known source and propagation medium.
+In addition to the geometric propagation paths which are straightforward to compute, the GeoAc library uses auxiliary parameters as discussed in Blom \& Waxler (2012) to calculate the Jacobian determinant and obtain a frequency independent amplitude coefficient describing the attenuation due to geometric spreading.  The auxiliary parameters used to compute the amplitude coefficient have been found to provide an efficient means to identify eigenrays (propagation paths connecting a source and receiver at specific locations) as detailed in Blom \& Waxler (2017).  Eigenray information provides a means to predict the characteristics of the various acoustic phases observed at a given receiver location for a known source and propagation medium.
 
 For propagation through a horizontally varying medium, a multivariate interpolation scheme has been developed which uses a modified Keys bicubic interpolation algorithm as described in \textit{Cubic Convolution Interpolation for Digital Image Processing}  [IEEE Transactions on Signal Processing, Acoustics, Speech, and Signal Processing 29 (6): pp.1153-60].  In this case, the interpolation algorithm has been configured so that both first and second order derivatives of the medium are continuous between grid squares.  This condition is required to generate smooth and continuous solutions for the auxiliary parameters used in computation the geometric spreading.
 
@@ -163,7 +163,7 @@ The methods in \verb=infraga-2d= compute ray paths in an azimuthal plane using t
 
 	\verb=atmo.dat= 
 	
-	Contains the interpolate atmospheric profile.  Columns are:
+	Contains the interpolate atmospheric profile.  This is only output if \verb#write_atmo=true#.  Columns are:
 	\begin{small}
 	\begin{equation*}
 	 z \left[ \text{km} \right] \hspace{2pt} \vdots \hspace{2pt}
@@ -183,7 +183,7 @@ The methods in \verb=infraga-2d= compute ray paths in an azimuthal plane using t
 	\begin{equation*}
 	r \text{[km] } \hspace{2pt} \vdots \hspace{2pt} 
 	z\text{[km]} \hspace{2pt} \vdots \hspace{2pt}
-	A_\text{geo.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
+	A_\text{trans.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
 	A_\text{atmo.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}	
 	t \text{[sec]}
 	\end{equation*}
@@ -201,8 +201,9 @@ The methods in \verb=infraga-2d= compute ray paths in an azimuthal plane using t
 	z_\text{max} \text{[km]} \hspace{2pt} \vdots \hspace{2pt} 
 	\vartheta_\text{inc.} \text{[deg]} \hspace{2pt} \vdots \hspace{2pt}
 	\varphi_\text{back} \text{[deg]} \hspace{2pt} \vdots \hspace{2pt}
-	A_\text{geo.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
-	A_\text{atmo.} \text{[dB]}	
+	A_\text{trans.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
+	A_\text{atmo.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}	
+	d_\perp \text{[km]}
 	\end{equation*}
 
 \subsection{3D Stratified Cartesian Propagation}
@@ -264,6 +265,7 @@ The methods in \verb=infraga-3d= compute ray paths in a three dimensional inhomo
  \verb=src_x=  			& East/West offset of the source							& \(0.0\) km \\
  \verb=src_y=  			& North/South offset of the source							& \(0.0\) km \\
  \verb=src_alt=  		& Altitude of the source (rel. sea level)						& \(0.0\) km \\ \hline
+ \verb=turn_ht_min=		& Turning height minimum									& \(0.2\) km \\
  \verb=write_atmo=		& Boolean to write the atmosphere specifications				& false \\
  \verb=write_rays=		& Boolean to write the ray paths							& true \\  \hline
  \end{tabular}
@@ -290,6 +292,7 @@ The methods in \verb=infraga-3d= compute ray paths in a three dimensional inhomo
  \verb=iterations=		& Maximum number of iterations in eigenray search			& 25 \\ 
  \verb=damping=		& Damping factor in Levenberg-Marquardt solver			& 1.0e-3 \\
  \verb=tolerance=		& Accepted distance from receiver location				& 0.1 km \\
+ \verb=az_dev_lim=		& Limiting azimuthal deviation for preliminary solver			& 2.0\(^o\) \\
  \verb=incl_step_min=	& Smallest step size in search algorithm					& 1.0e-3\(^o\)\\
  \verb=incl_step_max=	& Largest step size in search algorithm					& 0.1\(^o\) \\ \hline
 \end{tabular}
@@ -341,7 +344,7 @@ The methods in \verb=infraga-3d= compute ray paths in a three dimensional inhomo
 
 	\verb=atmo.dat= 
 	
-	Contains the interpolate atmospheric profile.  Columns are:
+	Contains the interpolate atmospheric profile.  This is only output if \verb#write_atmo=true#.  Columns are:
 	\begin{small}
 	\begin{equation*}
 	 z \left[ \text{km} \right] \hspace{2pt} \vdots \hspace{2pt}
@@ -364,7 +367,7 @@ The methods in \verb=infraga-3d= compute ray paths in a three dimensional inhomo
 	x \text{[km] } \hspace{2pt} \vdots \hspace{2pt} 
 	y \text{[km] } \hspace{2pt} \vdots \hspace{2pt}  
 	z\text{[km]} \hspace{2pt} \vdots \hspace{2pt} 
-	A_\text{geo.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
+	A_\text{trans.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
 	A_\text{atmo.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}	
 	t \text{[sec]}
 	\end{equation*}
@@ -383,7 +386,7 @@ The methods in \verb=infraga-3d= compute ray paths in a three dimensional inhomo
 	z_\text{max} \text{[km]} \hspace{2pt} \vdots \hspace{2pt} 
 	\vartheta_\text{inc.} \text{[deg]} \hspace{2pt} \vdots \hspace{2pt}
 	\varphi_\text{back} \text{[deg]} \hspace{2pt} \vdots \hspace{2pt}
-	A_\text{geo.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
+	A_\text{trans.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
 	A_\text{atmo.} \text{[dB]}	
 	\end{equation*}
 
@@ -397,7 +400,7 @@ The methods in \verb=infraga-3d= compute ray paths in a three dimensional inhomo
 
 	\hspace{25pt} \verb#	Celerity = [ ]. #
 
- 	\hspace{25pt} \verb#	Amplitude (geometric) = [ ]. #
+ 	\hspace{25pt} \verb#	Amplitude (transport) = [ ]. #
 
  	\hspace{24pt} \verb#	Atmospheric attenuation =  [ ]. #
 
@@ -465,6 +468,7 @@ The methods in \verb=infraga-sph= compute ray paths in a three dimensional inhom
  \verb=src_lat= 			& Latitude of the source 										& \(30.0^o\) \\
  \verb=src_lon= 		& Longitude of the source										& \(0.0^o\) \\
  \verb=src_alt=  		& Altitude of the source (rel. sea level)							& \(0.0\) km \\ \hline
+ \verb=turn_ht_min=		& Turning height minimum									& \(0.2\) km \\
  \verb=write_atmo=		& Boolean to write the atmosphere specifications					& false \\
  \verb=write_rays=		& Boolean to write the ray paths								& true \\  \hline
 \end{tabular}
@@ -491,6 +495,7 @@ The methods in \verb=infraga-sph= compute ray paths in a three dimensional inhom
  \verb=iterations=		& Maximum number of iterations in eigenray search			& 25 \\ 
  \verb=damping=		& Damping factor in Levenberg-Marquardt solver			& 1.0e-3 \\
  \verb=tolerance=		& Accepted distance from receiver location				& 0.1 km \\
+ \verb=az_dev_lim=		& Limiting azimuthal deviation for preliminary solver			& 2.0\(^o\) \\
  \verb=incl_step_min=	& Smallest step size in search algorithm					& 1.0e-3\(^o\)\\
  \verb=incl_step_max=	& Largest step size in search algorithm					& 0.1\(^o\) \\ \hline
 \end{tabular}
@@ -541,7 +546,7 @@ The methods in \verb=infraga-sph= compute ray paths in a three dimensional inhom
 
 	\verb=atmo.dat= 
 	
-	Contains the interpolate atmospheric profile.  Columns are:
+	Contains the interpolate atmospheric profile.  This is only output if \verb#write_atmo=true# is set.  Columns are:
 	\begin{small}
 	\begin{equation*}
 	 z \left[ \text{km} \right] \hspace{2pt} \vdots \hspace{2pt}
@@ -564,7 +569,7 @@ The methods in \verb=infraga-sph= compute ray paths in a three dimensional inhom
 	z \text{[km] } \hspace{2pt} \vdots \hspace{2pt} 
 	\text{Lat [deg]} \hspace{2pt} \vdots \hspace{2pt}
 	\text{Lon [deg]} \hspace{2pt} \vdots \hspace{2pt}
-	A_\text{geo.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
+	A_\text{trans.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
 	A_\text{atmo.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}	
 	t \text{[sec]}
 	\end{equation*}
@@ -584,7 +589,7 @@ The methods in \verb=infraga-sph= compute ray paths in a three dimensional inhom
 	z_\text{max} \text{[km]} \hspace{2pt} \vdots \hspace{2pt} 
 	\vartheta_\text{inc.} \text{[deg]} \hspace{2pt} \vdots \hspace{2pt}
 	\varphi_\text{back} \text{[deg]} \hspace{2pt} \vdots \hspace{2pt}
-	A_\text{geo.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
+	A_\text{trans.} \text{[dB]} \hspace{2pt} \vdots \hspace{2pt}
 	A_\text{atmo.} \text{[dB]}	
 	\end{equation*}
 	\end{small}
@@ -646,11 +651,14 @@ The methods in \verb=infraga-3d-rngdep= and \verb=infraga-sph-rngdep= are identi
 \newpage
  \section{Clarifications} 
  \label{Sect:Clarifications}
- \subsection{Amplitude Format}
+ \subsection{Amplitude Output}
  \label{Sect:Clarifications:Amplitude}
  
- The amplitude coefficient computed in the infraGA methods is defined in dB relative to spherical spreading at the source.  That is, the amplitude approaches \( 20 \log_{10} \left( \frac{1}{s} \right)\) for \(s\downarrow 0\) with \(s\) measured in kilometers.  This results in a 60 dB amplitude at 1 m and, assuming there is negligible refraction within the first kilometer, 0 dB at 1 km, which functions as an approximate reference distance for amplitudes in the far field.
- 
+ The amplitude coefficient computed in the infraGA methods is defined in terms of acoustic power in dB relative to spherical spreading at the source.  That is, the amplitude approaches \( 10 \log_{10} \left( \frac{1}{s^2} \right) = 20 \log_{10} \left( \frac{1}{s} \right) \) for \(s\downarrow 0\) with \(s\) measured in kilometers.  This results in a 60 dB amplitude at 1 m and, assuming there is negligible refraction within the first kilometer, 0 dB at 1 km, which functions as an approximate reference distance for amplitudes in the far field.  Two amplitude values output in the ray path and arrival files:
+ \begin{itemize}
+  \item The transport solution in Eq (\ref{Eq:TransportEq}) of Sect. \ref{Sect:Math} describes changes in amplitude due to geometric spreading as well as impedance changes due to variations in the density and sound speed (note: for ground-to-ground propagation the impedance ratio goes to unity and this term is purely the geometric spreading losses)
+  \item The absorption losses as computed by the model developed by Sutherland and Bass (2004) (see Sect. \ref{Sect:AdditionalParams:freq})
+\end{itemize} 
 \subsection{Range Dependent Profile Interpolation}
  \label{Sect:Clarifications:RngDep}
 
@@ -697,7 +705,7 @@ An additional option, \verb=seq_srcs=, is used to further accelerate eigenray an
 \section{Additional Parameters}
 \label{Sect:AdditionalParams}
 
-\hspace{0.25in} In addition to those listed in the previous section, a number of global parameters can be used to modify the propagation scheme.  These include \verb#freq#, \verb#z_grnd#, and \verb#profile_format#. Additionally, while a Python script is included to convert G2S .bin files into range dependent files, a summary of the details of the expected inputs is presented here.  Lastly, boolean values control the output of caustic points in the \verb=-prop= option and the computation of amplitudes in the \verb=-prop= and \verb=-interactive= options.
+\hspace{0.25in} In addition to those listed in the previous section, a number of global parameters can be used to modify the propagation scheme.  These include \verb#freq#, \verb#z_grnd#, and \verb#profile_format#. Additionally, while a Python script is included to convert G2S .bin files into range dependent files, a summary of the details of the expected inputs is presented here.  Lastly, boolean values control the output of caustic points and the computation of amplitudes in the \verb=-prop= option.
 
 \subsection{Propagating Specific Frequencies and Modifying Absorption}
 \label{Sect:AdditionalParams:freq}
@@ -787,8 +795,6 @@ The specified topography file is expected to be an ascii specification of the gr
 
 Note that inclusion of topography can significantly increase computation time due to the additional evaluations of the ground interpolation for ground intercept checks and boundary layer no-slip condition.   Additionally, the eigenray methods are very slow to converge (if they converge at all) and require a significantly smaller \verb=incl_step_max= when including topography in order to identify an approximate eigenray.  
 
-Use of ETOPO1 should be cited using: Amante, C. \& Eakins, B.W. (2009). ``ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis."  \textit{NOAA Technical Memorandum NESDIS NGDC-24}. National Geophysical Data Center, NOAA. doi:10.7289/V5C8276M
-
 
 \subsection{Computing waveforms along ray paths}
 \label{Sect:AdditionalParams:wvfrms}
@@ -849,7 +855,7 @@ The optimal parameters for this filter pair or a more robust method of suppressi
 
 \newpage
 \section{Plotting the Results}
-Included here are several short gnuplot scripts which are useful for displaying results.  In all cases, you'll need to attached the appropriate prefix to the raypath.dat and results.dat files to be plotted. \newline
+Included here are several short gnuplot scripts which are useful for displaying results.  In all cases, you'll need to attached the appropriate prefix to the raypath.dat and results.dat files to be plotted.  Further, for \verb=infraga-sph= results, a Python script is included that uses Cartopy to plot arrivals with a map overlay. \newline
 
 \begin{footnotesize}
 
@@ -911,7 +917,7 @@ Included here are several short gnuplot scripts which are useful for displaying 
 \begin{center}\line(1,0){300}\end{center}
 \end{footnotesize}
 
-Note: swap \verb=4:5= to \verb=5:4= for spherical coordinate cases to put longitude on the horizontal axis.
+Note: swap \verb=4:5= to \verb=5:4= for spherical coordinate cases to put longitude on the horizontal axis and latitude on the vertical axis.
 
 \begin{figure}[h]
 \centering
@@ -934,7 +940,7 @@ Note: swap \verb=4:5= to \verb=5:4= for spherical coordinate cases to put longit
 
 \newpage
 \section{Mathematical Background - What Does infraGA Do?}
-
+\label{Sect:Math}
 The propagation of acoustic energy can be described by a linear perturbation of the fluid mechanics equations.  The linear order continuity, Euler, and state equations for an inhomogeneous, moving medium have the forms,
 \begin{subequations}
 \label{Eq:LinearizedGeometric}
@@ -1181,17 +1187,17 @@ The algorithms included in \verb=infraGA/GeoAc= have been documented in a number
   \item Blom, P. \& Waxler, R. (2017). ``Modeling and observations of an elevated, moving infrasonic source: eigenray methods". \textit{J. Acoust. Soc. Am.}, \textbf{141}(4), 2681--2692.
   \item Blom, P. (2019). ``Modeling infrasonic propagation through a spherical atmospheric layer: Analysis of the stratospheric pair." \textit{J. Acoust. Soc. Am.}, \textbf{145}(4), 2198--2208.	
   \item Blom, P. (2020). ``The influence of irregular terrain on infrasonic propagation in the troposphere" \textit{J. Acoust. Soc. Am.}, \textbf{148}(4), 1984-1997.
-  \item Blom, P. \& Waxler, R. (2021). ``Characteristics of thermospheric infrasound predicted using ray tracing and weakly non-linear waveform analysis" \textit{J. Acoust. Soc. Am.}, in peer review.	
+  \item Blom, P., \& Waxler, R. (2021) ``Characteristics of thermospheric infrasound predicted using ray tracing and weakly non-linear waveform analyses." \textit{J. Acoust. Soc. Am.} \textbf{149}(5): 3174--3188.
 \end{itemize}
 
 \section{Citations}
 The ray tracing methods developed as well as many of the other underlying methods in \verb=infraGA/GeoAc= leveraged work by many researchers including those below.
 \begin{itemize}
+  \item Amante, C. \& Eakins, B.W. (2009). ``ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis."  \textit{NOAA Technical Memorandum NESDIS NGDC-24}. National Geophysical Data Center, NOAA. doi:10.7289/V5C8276M
   \item Brekhovskikh, L. M., \& Godin, O. (2013).  \textit{Acoustics of layered media II: point sources and bounded beams} (Vol. 10). Springer Science \& Business Media.
   \item Keys, R. G. (1981). ``Cubic convolution interpolation for digital image processing." \textit{Acoustics, Speech and Signal Processing, IEEE Transactions on}, \textbf{29}(6), pp. 1153-1160.
   \item Lonzaga, J. B., Waxler, R. M., Assink, J. D., \& Talmadge, C. L. (2015). ``Modelling waveforms of infrasound arrivals from impulsive sources using weakly non-linear ray theory." \textit{Geophysical Journal International}, \textbf{200}(3), 1347-1361.
   \item Pierce, A. D. (1980).  \textit{Acoustics: An introduction to its physical principles and applications.}  McGraw-Hill Inc. 
-
   \item Sutherland, L. C., \& Bass, H. E., (2004). Atmospheric absorption in the atmosphere up to 160 km. \textit{The Journal of the Acoustical Society of America}, \textbf{115}(3), pp.1012-1032.
 
  \end{itemize}

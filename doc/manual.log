@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  14 APR 2021 12:02
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  23 AUG 2021 16:06
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -404,84 +404,96 @@ Underfull \hbox (badness 10000) in paragraph at lines 162--163
 
  []
 
-[4] [5]
-Underfull \hbox (badness 10000) in paragraph at lines 340--341
+[4]
+Overfull \hbox (10.0568pt too wide) detected at line 207
+\OML/cmm/m/it/10 #[] [] '[] [] n[] [] r[][] [] t[] [] ^^W[] [] z[][] [] #[][] [
+] '[][] [] A[][] [] A[][] [] d[][]
+ []
+
+[5]
+Underfull \hbox (badness 10000) in paragraph at lines 343--344
 
  []
 
 [6]
-Overfull \hbox (5.73479pt too wide) detected at line 388
+Overfull \hbox (12.02788pt too wide) detected at line 391
 \OML/cmm/m/it/10 #[] [] '[] [] n[] [] x[][] [] y[][] [] t[] [] ^^W[] [] z[][] [
 ] #[][] [] '[][] [] A[][] [] A[][]
  []
 
-[7] [8] [9] [10]
-Underfull \hbox (badness 10000) in paragraph at lines 685--686
+[7] [8]
+Overfull \hbox (0.61787pt too wide) detected at line 594
+\OML/cmm/m/it/9 #[] [] '[] [] n[] [] [][][] [] [][][] [] t[] [] ^^W []  [] z[][
+] [] #[][] [] '[][] [] A[][] [] A[][]
+ []
+
+[9] [10]
+Underfull \hbox (badness 10000) in paragraph at lines 693--694
 
  []
 
 [11] [12] [13] [14]
-Underfull \hbox (badness 10000) in paragraph at lines 796--797
+Underfull \hbox (badness 10000) in paragraph at lines 802--803
 
  []
 
 
-Overfull \hbox (1.97905pt too wide) in paragraph at lines 798--822
+Overfull \hbox (1.97905pt too wide) in paragraph at lines 804--828
 [][] 
  []
 
 [15] [16]
-Underfull \hbox (badness 10000) in paragraph at lines 852--853
+Underfull \hbox (badness 10000) in paragraph at lines 858--859
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 875--876
+Underfull \hbox (badness 10000) in paragraph at lines 881--882
 
  []
 
-<Figures/2DExample1.png, id=244, 361.35pt x 189.63647pt>
+<Figures/2DExample1.png, id=248, 361.35pt x 189.63647pt>
 File: Figures/2DExample1.png Graphic file (type png)
 <use Figures/2DExample1.png>
-Package pdftex.def Info: Figures/2DExample1.png  used on input line 918.
+Package pdftex.def Info: Figures/2DExample1.png  used on input line 924.
 (pdftex.def)             Requested size: 352.31625pt x 184.89626pt.
-<Figures/2DExample2.png, id=246, 325.215pt x 252.945pt>
+<Figures/2DExample2.png, id=250, 325.215pt x 252.945pt>
 File: Figures/2DExample2.png Graphic file (type png)
 <use Figures/2DExample2.png>
-Package pdftex.def Info: Figures/2DExample2.png  used on input line 924.
+Package pdftex.def Info: Figures/2DExample2.png  used on input line 930.
 (pdftex.def)             Requested size: 234.8775pt x 182.68762pt.
-<Figures/3DExample1.png, id=247, 309.89375pt x 252.945pt>
+<Figures/3DExample1.png, id=251, 309.89375pt x 252.945pt>
 File: Figures/3DExample1.png Graphic file (type png)
 <use Figures/3DExample1.png>
-Package pdftex.def Info: Figures/3DExample1.png  used on input line 930.
+Package pdftex.def Info: Figures/3DExample1.png  used on input line 936.
 (pdftex.def)             Requested size: 225.4804pt x 184.04234pt.
-<Figures/3DExample2.png, id=248, 309.89375pt x 252.945pt>
+<Figures/3DExample2.png, id=252, 309.89375pt x 252.945pt>
 File: Figures/3DExample2.png Graphic file (type png)
 <use Figures/3DExample2.png>
-Package pdftex.def Info: Figures/3DExample2.png  used on input line 931.
+Package pdftex.def Info: Figures/3DExample2.png  used on input line 937.
 (pdftex.def)             Requested size: 225.4804pt x 184.04234pt.
 [17 <./Figures/2DExample1.png>] [18 <./Figures/2DExample2.png> <./Figures/3DExa
 mple1.png> <./Figures/3DExample2.png>] [19] [20] [21] [22] [23]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1205.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1211.
  [24]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1205.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1211.
 
 (./manual.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1205.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1205.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1211.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1211.
 
 Package rerunfilecheck Info: File `manual.out' has not changed.
-(rerunfilecheck)             Checksum: 9652501B378EA913CC5EF293ADD60DA8;2258.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1205.
+(rerunfilecheck)             Checksum: 03E973B1480EEDC81AA5A68ACF97C88C;2258.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1211.
  ) 
 Here is how much of TeX's memory you used:
  6739 strings out of 492649
- 97322 string characters out of 6129622
- 208808 words of memory out of 5000000
+ 97311 string characters out of 6129622
+ 208879 words of memory out of 5000000
  10418 multiletter control sequences out of 15000+600000
  25227 words of font info for 94 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 28i,16n,32p,1049b,368s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 28i,16n,32p,845b,379s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbsy10.pf
 b></usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
@@ -510,10 +522,10 @@ nts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive/2018/texmf-dist/fon
 ts/type1/public/amsfonts/cm/cmtt12.pfb></usr/local/texlive/2018/texmf-dist/font
 s/type1/public/amsfonts/cm/cmtt8.pfb></usr/local/texlive/2018/texmf-dist/fonts/
 type1/public/amsfonts/symbols/msam10.pfb>
-Output written on manual.pdf (24 pages, 1466146 bytes).
+Output written on manual.pdf (24 pages, 1467154 bytes).
 PDF statistics:
- 458 PDF objects out of 1000 (max. 8388607)
- 392 compressed objects within 4 object streams
+ 461 PDF objects out of 1000 (max. 8388607)
+ 395 compressed objects within 4 object streams
  107 named destinations out of 1000 (max. 500000)
  253 words of extra memory for PDF output out of 10000 (max. 10000000)
 
