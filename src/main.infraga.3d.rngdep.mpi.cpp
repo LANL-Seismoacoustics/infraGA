@@ -137,8 +137,8 @@ void usage(){
     
     cout << "Output (see output files or manual for units):" << '\n';
     cout << '\t' << "atmo.dat -> z[km] : c [m/s]  : u (zonal winds) [m/s] : v (meridional winds) [m/s] : density[g/cm^3] : ceff [km/s]" << '\n';
-    cout << '\t' << "{...}.raypaths.dat -> x : y : z : geo atten : absorption : time " << '\n';
-    cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : x : y : time : cel : z_max : arrival incl : back az : geo atten : absorption" << '\n' << '\n';
+    cout << '\t' << "{...}.raypaths.dat -> x : y : z : trans. coeff. : absorption : time " << '\n';
+    cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : x : y : time : cel : z_max : arrival incl : back az : trans. coeff. : absorption" << '\n' << '\n';
 
     cout << "Examples:" << '\n';
     cout << '\t' << "mpirun -np 4 ./bin/infraga-accel-3d-rngdep -prop examples/profs/example examples/profs/example_x.loc examples/profs/example_y.loc src_x=0.0 src_y=0.0 bounces=5 incl_step=2.0 azimuth=-90.0" << '\n';
@@ -323,7 +323,7 @@ void run_prop(char* inputs[], int count){
         results << '\t' << "turning ht [km]";
         results << '\t' << "arrival incl [deg]";
         results << '\t' << "back az [deg]";
-        results << '\t' << "geo. atten. [dB]";
+        results << '\t' << "trans. coeff. [dB]";
         results << '\t' << "absorption [dB]";
         results << '\n';
     
@@ -334,7 +334,7 @@ void run_prop(char* inputs[], int count){
             raypath << "# x [km]";
             raypath << '\t' << "y [km]";
             raypath << '\t' << "z [km]";
-            raypath << '\t' << "geo. atten. [dB]";
+            raypath << '\t' << "trans. coeff. [dB]";
             raypath << '\t' << "absorption [dB]";
             raypath << '\t' << "time [s]";
             raypath << '\n';
@@ -416,7 +416,7 @@ void run_prop(char* inputs[], int count){
                                         } else {
                                             ray_buffer[3] = 0.0;
                                         }
-                                        ray_buffer[4] = -attenuation;
+                                        ray_buffer[4] = -2.0 * attenuation;
                                         ray_buffer[5] = travel_time_sum;
                                     }
                                 
@@ -497,7 +497,7 @@ void run_prop(char* inputs[], int count){
                             } else{           
                                 results_buffer[10] = 0.0;
                             }
-                            results_buffer[11] = -attenuation;
+                            results_buffer[11] = -2.0 * attenuation;
                         }
                     
                         if(world_rank == j && j!=0){
@@ -863,7 +863,7 @@ void run_eig_search(char* inputs[], int count){
             geoac::eig_results << '\t' << "turning ht [km]";
             geoac::eig_results << '\t' << "arrival incl [deg]";
             geoac::eig_results << '\t' << "back az [deg]";
-            geoac::eig_results << '\t' << "geo. atten. [dB]";
+            geoac::eig_results << '\t' << "trans. coeff. [dB]";
             geoac::eig_results << '\t' << "absorption [dB]";
             geoac::eig_results << '\n';
 

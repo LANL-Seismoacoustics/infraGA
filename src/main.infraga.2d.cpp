@@ -114,8 +114,8 @@ void usage(){
 
     cout << "Output (see output files or manual for units):" << '\n';
     cout << '\t' << "atmo.dat -> z[km] : c [m/s]  : u (zonal winds) [m/s] : v (meridional winds) [m/s] : density[g/cm^3] : ceff [km/s]" << '\n';
-    cout << '\t' << "{...}.raypaths.dat -> r : z : geo atten : absorption : time " << '\n';
-    cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : r : time : cel : z_max : arrival incl : geo atten : absorption" << '\n' << '\n';
+    cout << '\t' << "{...}.raypaths.dat -> r : z : trans. coeff. : absorption : time " << '\n';
+    cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : r : time : cel : z_max : arrival incl : trans. coeff. : absorption : perp dist" << '\n' << '\n';
 
     cout << "Examples:" << '\n';
     cout << '\t' << "./bin/infraga-2d -prop examples/ToyAtmo.met incl_step=1.0 bounces=2 max_rng=500.0" << '\n';
@@ -258,7 +258,7 @@ void run_prop(char* inputs[], int count){
     results << '\t' << "celerity [km/s]";
     results << '\t' << "turning ht [km]";
     results << '\t' << "arrival incl. [deg]";
-    results << '\t' << "geo. atten. [dB]";
+    results << '\t' << "trans. coeff. [dB]";
     results << '\t' << "absorption [dB]";
     results << '\t' << "perp. dist. [km]";
     results << '\n';
@@ -267,7 +267,7 @@ void run_prop(char* inputs[], int count){
     raypath.open(output_buffer);
     raypath << "# r [km]";
     raypath << '\t' << "z [km]";
-    raypath << '\t' << "geo. atten. [dB]";
+    raypath << '\t' << "trans. coeff. [dB]";
     raypath << '\t' << "absorption [dB]";
     raypath << '\t' << "time [s]";
     raypath << '\n';
@@ -329,7 +329,7 @@ void run_prop(char* inputs[], int count){
                     raypath << '\t' << max(solution[m][1], topo::z(solution[m][0]));
                     if(geoac::calc_amp){    raypath << '\t' << 20.0 * log10(geoac::amp(solution, m));}
                     else{                   raypath << '\t' << 0.0;}
-                    raypath << '\t' << -attenuation;
+                    raypath << '\t' << -2.0 * attenuation;
                     raypath << '\t' << travel_time_sum;
                     raypath << '\n';
                 }
@@ -361,7 +361,7 @@ void run_prop(char* inputs[], int count){
             results << '\t' <<  - asin(atmo::c(0.0, 0.0, topo::z(solution[k][0])) / atmo::c(0.0, 0.0, z_src) * solution[k][3]) * (180.0 / Pi);
             if(geoac::calc_amp){    results << '\t' << 20.0 * log10(geoac::amp(solution, k));}
             else{                   results << '\t' << 0.0;}
-            results << '\t' << -attenuation;
+            results << '\t' << -2.0 * attenuation;
             results << '\t' << geoac::est_dev(solution,k);
 			results << '\n';
             
@@ -521,7 +521,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         raypath.open(output_buffer);
         raypath << "# r [km]";
         raypath << '\t' << "z [km]";
-        raypath << '\t' << "geo. atten. [dB]";
+        raypath << '\t' << "trans. coeff. [dB]";
         raypath << '\t' << "absorption [dB]";
         raypath << '\t' << "time [s]";
         raypath << '\n';
@@ -548,7 +548,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
                 raypath << solution[m][0];
                 raypath << '\t' << max(solution[m][1], topo::z(solution[m][1]));
                 raypath << '\t' << 20.0 * log10(geoac::amp(solution, m));
-                raypath << '\t' << -attenuation;
+                raypath << '\t' << -2.0 * attenuation;
                 raypath << '\t' << travel_time_sum;
                 raypath << '\t' << geoac::est_dev(solution, k);
                 raypath << '\n';
@@ -595,8 +595,8 @@ void run_wnl_wvfrm(char* inputs[], int count){
         cout << '\t' << '\t' << "celerity [km/s] = " << solution[k][0] / travel_time_sum << '\n';
         cout << '\t' << '\t' << "turning height [km] = " << z_max << '\n';
         cout << '\t' << '\t' << "inclination [deg] = " << - asin(atmo::c(0.0, 0.0, topo::z(solution[k][0])) / atmo::c(0.0, 0.0, z_src) * solution[k][3]) * (180.0 / Pi) << '\n';
-        cout << '\t' << '\t' << "attenuation (geometric) [dB] = " << 20.0 * log10(geoac::amp(solution, k)) << '\n';
-        cout << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
+        cout << '\t' << '\t' << "trans. coeff. [dB] = " << 20.0 * log10(geoac::amp(solution, k)) << '\n';
+        cout << '\t' << '\t' << "absorption [dB] = " << -2.0 * attenuation << '\n' << '\n';
     } else {
         cout << '\t' << '\t' << "Ray path does not return to the ground." << '\n' << '\n';
     }

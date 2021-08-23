@@ -183,8 +183,8 @@ void usage(){
 
     cout << "Output (see output files or manual for units):" << '\n';
     cout << '\t' << "atmo.dat -> z[km] : c [m/s]  : u (zonal winds) [m/s] : v (meridional winds) [m/s] : density[g/cm^3] : ceff [km/s]" << '\n';
-    cout << '\t' << "{...}.raypaths.dat -> lat : lon : z : geo atten : absorption : time " << '\n';
-    cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : lat : lon : time : cel : z_max : arrival incl : back az : geo atten : absorption" << '\n' << '\n';
+    cout << '\t' << "{...}.raypaths.dat -> lat : lon : z : trans. coeff. : absorption : time " << '\n';
+    cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : lat : lon : time : cel : z_max : arrival incl : back az : trans. coeff. : absorption" << '\n' << '\n';
     // cout << '\t' << "{...}.projection.dat -> lat : lon : z : t : LAT_incl : LON_incl : Z_incl : T_incl : LAT_az : LON_az : Z_az : T_az" << '\n' << '\n';
 
     cout << "Examples:" << '\n';
@@ -369,7 +369,7 @@ void run_prop(char* inputs[], int count){
     results << '\t' << "turning ht [km]";
     results << '\t' << "inclination [deg]";
     results << '\t' << "back azimuth [deg]";
-    results << '\t' << "geo. atten. [dB]";
+    results << '\t' << "trans. coeff. [dB]";
     results << '\t' << "absorption [dB]";
     results << '\n';
     
@@ -380,7 +380,7 @@ void run_prop(char* inputs[], int count){
         raypath << "# lat [deg]";
         raypath << '\t' << "lon [deg]";
         raypath << '\t' << "z [km]";
-        raypath << '\t' << "geo. atten. [dB]";
+        raypath << '\t' << "trans. coeff. [dB]";
         raypath << '\t' << "absorption [dB]";
         raypath << '\t' << "time [s]";
         raypath << '\n';
@@ -459,7 +459,7 @@ void run_prop(char* inputs[], int count){
                             } else{
                                 raypath << '\t' << 0.0;
                             }
-                            raypath << '\t' << -attenuation;
+                            raypath << '\t' << -2.0 * attenuation;
                             raypath << '\t' << travel_time_sum << '\n';
                         }
                         
@@ -522,7 +522,7 @@ void run_prop(char* inputs[], int count){
                 results << '\t' << back_az;
                 if(geoac::calc_amp){    results << '\t' << 20.0 * log10(geoac::amp(solution,k));}
                 else{                   results << '\t' << 0.0;}
-                results << '\t' << -attenuation;
+                results << '\t' << -2.0 * attenuation;
                 results << '\n';
             
                 geoac::set_refl(solution,k);
@@ -734,8 +734,8 @@ void run_back_proj(char* inputs[], int count){
         cout << '\t' << '\t' << "turning height [km] = " << r_max << '\n';
         cout << '\t' << '\t' << "arrival inclination [deg] = " << inclination << '\n';
         cout << '\t' << '\t' << "back azimuth [deg] = " << back_az << '\n';
-        cout << '\t' << '\t' << "attenuation (geometric) [dB] = " << 20.0 * log10(geoac::amp(solution,k)) << '\n';
-        cout << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
+        cout << '\t' << '\t' << "trans. coeff. [dB] = " << 20.0 * log10(geoac::amp(solution,k)) << '\n';
+        cout << '\t' << '\t' << "absorption [dB] = " << -2.0 * attenuation << '\n' << '\n';
     } else {
         cout << '\n';
         cout << '\t' << '\t' << "Ray path does not return to the ground." << '\n' << '\n';
@@ -913,7 +913,7 @@ void run_eig_search(char* inputs[], int count){
     geoac::eig_results << '\t' << "turning ht [km]";
     geoac::eig_results << '\t' << "inclination [deg]";
     geoac::eig_results << '\t' << "back azimuth [deg]";
-    geoac::eig_results << '\t' << "geo. atten. [dB]";
+    geoac::eig_results << '\t' << "trans. coeff. [dB]";
     geoac::eig_results << '\t' << "absorption [dB]";
     geoac::eig_results << '\n';
     
@@ -1235,7 +1235,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         raypath << "# z [km]";
         raypath << '\t' << "lat [deg]";
         raypath << '\t' << "lon [deg]";
-        raypath << '\t' << "geo. atten. [dB]";
+        raypath << '\t' << "trans. coeff. [dB]";
         raypath << '\t' << "absorption [dB]";
         raypath << '\t' << "time [s]";
         raypath << '\n';
@@ -1269,7 +1269,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
                 raypath << '\t' << setprecision(8) << solution[m][2] * (180.0 / Pi);
                 raypath << '\t' << solution[m][0] - globe::r0;
                 raypath << '\t' << 20.0 * log10(geoac::amp(solution, m));
-                raypath << '\t' << -attenuation;
+                raypath << '\t' << -2.0 * attenuation;
                 raypath << '\t' << travel_time_sum;
                 raypath << '\n';
             }
@@ -1336,8 +1336,8 @@ void run_wnl_wvfrm(char* inputs[], int count){
         cout << '\t' << '\t' << "turning height [km] = " << r_max << '\n';
         cout << '\t' << '\t' << "arrival inclination [deg] = " << inclination << '\n';
         cout << '\t' << '\t' << "back azimuth [deg] = " << back_az << '\n';
-        cout << '\t' << '\t' << "attenuation (geometric) [dB] = " << 20.0 * log10(geoac::amp(solution,k)) << '\n';
-        cout << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
+        cout << '\t' << '\t' << "trans. coeff. [dB] = " << 20.0 * log10(geoac::amp(solution,k)) << '\n';
+        cout << '\t' << '\t' << "absorption [dB] = " << -2.0 * attenuation << '\n' << '\n';
     } else {
         cout << '\n';
         cout << '\t' << '\t' << "Ray path does not return to the ground." << '\n' << '\n';

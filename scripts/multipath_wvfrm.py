@@ -281,7 +281,7 @@ def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max
 
         print("#", file=file_out)
         print("# Eigenray arrivals:", file=file_out)
-        print("# incl [deg]	az [deg]	n_b	x_0 [deg]	y_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	geo. atten. [dB]	absorption [dB]", file=file_out)
+        print("# incl [deg]	az [deg]	n_b	x_0 [deg]	y_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]	absorption [dB]", file=file_out)
         for line in eig_results:
             print("#", *line, file=file_out) 
 
@@ -437,7 +437,7 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114
 
         print("#", file=file_out)
         print("# Eigenray arrivals:", file=file_out)
-        print("# incl [deg]	az [deg]	n_b	lat_0 [deg]	lon_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	geo. atten. [dB]	absorption [dB]", file=file_out)
+        print("# incl [deg]	az [deg]	n_b	lat_0 [deg]	lon_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]	absorption [dB]", file=file_out)
         for line in eig_results:
             print("#", *line, file=file_out) 
 
