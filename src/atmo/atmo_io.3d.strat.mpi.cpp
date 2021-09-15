@@ -313,7 +313,7 @@ int set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert_
                     topo::spline.y_vals[ny] = spline_vals[1];
                     topo::spline.f_vals[nx][ny] = spline_vals[2];
                 }
-            MPI_Barrier(MPI_COMM_WORLD);
+                MPI_Barrier(MPI_COMM_WORLD);
             }
         }
         MPI_Barrier(MPI_COMM_WORLD);

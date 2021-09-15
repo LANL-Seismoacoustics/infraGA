@@ -610,7 +610,7 @@ void run_eig_search(char* inputs[], int count){
         MPI_Finalize();
         return;
     }
-        
+
     if (geoac::is_topo){
         src0[0] = (geoac::x_max + geoac::x_min) / 2.0;    rcvr0[0] = src0[0] - 250.0;
         src0[1] = (geoac::y_max + geoac::y_min) / 2.0;    rcvr0[1] = src0[1];
@@ -970,14 +970,14 @@ void run_eig_search(char* inputs[], int count){
 
 
 int main(int argc, char* argv[]){
-    if (argc < 2){ usage();}
+    if (argc < 3){ usage();}
     else {
-        if ((strncmp(argv[1], "--version", 9) == 0) || (strncmp(argv[1], "-v", 2) == 0)){       version();}
-        else if ((strncmp(argv[1], "--usage", 7) == 0) || (strncmp(argv[1], "-u", 2) == 0)){    usage();}
+        if ((strncmp(argv[1], "--version", 9) == 0) || (strncmp(argv[1], "-v", 2) == 0)){           version();}
+        else if ((strncmp(argv[1], "--usage", 7) == 0) || (strncmp(argv[1], "-u", 2) == 0)){        usage();}
         
-        else if (strncmp(argv[1], "-prop", 5) == 0){                                            run_prop(argv, argc);}
-        else if (strncmp(argv[1], "-eig_search", 11) == 0){                                     run_eig_search(argv, argc);}        
-        else {                                                                                  cout << "Unrecognized option." << '\n';}
+        else if ((strncmp(argv[1], "-prop", 5) == 0)|| (strncmp(argv[1], "-p", 2) == 0)){           run_prop(argv, argc);}
+        else if ((strncmp(argv[1], "-eig_search", 11) == 0)|| (strncmp(argv[1], "-es", 2) == 0)){   run_eig_search(argv, argc);}
+        else {                                                                                         cout << "Unrecognized option." << '\n';}
     }
     return 0;
 }
