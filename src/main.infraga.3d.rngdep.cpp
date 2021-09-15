@@ -209,7 +209,7 @@ void run_prop(char* inputs[], int count){
     
     double theta_min = 0.5, theta_max=45.0, theta_step=0.5;
     double phi_min=-90.0, phi_max=-90.0, phi_step=1.0;
-    int bounces=2;
+    int bounces=2, file_check;
     double  x_src, y_src, z_src = 0.0;
     bool write_atmo=false, write_rays=true, write_caustics=false, write_topo=false, custom_output_id=false;
     double freq=0.1, turn_ht_min = 0.2;
@@ -229,9 +229,12 @@ void run_prop(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (count < 5){         cout << "You have to specify an atmosphere file and grid definition files..." << '\n'; return;}
-    if (geoac::is_topo){    set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
-    else{                   set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if(!file_check){
+        return;
+    }
+
 
     x_src = (geoac::x_max + geoac::x_min) / 2.0;
     y_src = (geoac::y_max + geoac::y_min) / 2.0;
@@ -539,7 +542,7 @@ void run_back_proj(char* inputs[], int count){
     
     double x_rcvr = 0.0, y_rcvr = 0.0, z_rcvr = 0.0;
     double freq = 0.1, D, D_prev;
-    int bounces = 0;
+    int bounces = 0, file_check;
     bool write_atmo=false, custom_output_id=false;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
@@ -560,9 +563,11 @@ void run_back_proj(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (count < 5){         cout << "You have to specify an atmosphere file and grid definition files..." << '\n'; return;}
-    if (geoac::is_topo){    set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, true);}
-    else{                   set_region(inputs[2], inputs[3], inputs[4], prof_format, true);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, true);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, true);}
+    if(!file_check){
+        return;
+    }
     
     if (geoac::is_topo){
         x_rcvr = (geoac::x_max + geoac::x_min) / 2.0;
@@ -734,7 +739,7 @@ void run_eig_search(char* inputs[], int count){
     double rcvr [2] = {-250.0, 0.0};
     double theta_min = 0.5, theta_max = 45.0;
     int bnc_min = 0, bnc_max = 0;
-    int iterations=25;
+    int iterations=25, file_check;
     double az_err_lim=2.0;
     double freq = 0.1;
     char* prof_format = "zTuvdp";
@@ -755,9 +760,11 @@ void run_eig_search(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (count < 5){         cout << "You have to specify an atmosphere file and grid definition files..." << '\n'; return;}
-    if (geoac::is_topo){    set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
-    else{                   set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if(!file_check){
+        return;
+    }
 
     src[0] = (geoac::x_max + geoac::x_min) / 2.0;   rcvr[0] = src[0] + 250.0;
     src[1] = (geoac::y_max + geoac::y_min) / 2.0;   rcvr[1] = src[1];
@@ -904,7 +911,7 @@ void run_eig_direct(char* inputs[], int count){
     double src [3]  = {0.0, 0.0, 0.0};
     double rcvr [2] = {-250.0, 0.0};
     double theta_est = 0.5, phi_est=45.0;
-    int bounces = 0, iterations=25;
+    int bounces = 0, iterations=25, file_check;
     double freq = 0.1;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
@@ -924,9 +931,11 @@ void run_eig_direct(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (count < 5){         cout << "You have to specify an atmosphere file and grid definition files..." << '\n'; return;}
-    if (geoac::is_topo){    set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
-    else{                   set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if(!file_check){
+        return;
+    }
 
     src[0] = (geoac::x_max + geoac::x_min) / 2.0;   rcvr[0] = src[0] + 250.0;
     src[1] = (geoac::y_max + geoac::y_min) / 2.0;   rcvr[1] = src[1];
@@ -1018,7 +1027,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
     
     double x_src = 0.0, y_src = 0.0, z_src = 0.0;
     double freq = 0.1, D, D_prev;
-    int bounces = 0;
+    int bounces = 0, file_check;
     bool write_atmo = false, write_rays=false, custom_output_id=false;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
@@ -1047,9 +1056,11 @@ void run_wnl_wvfrm(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (count < 5){         cout << "You have to specify an atmosphere file and grid definition files..." << '\n'; return;}
-    if (geoac::is_topo){    set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
-    else{                   set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if(!file_check){
+        return;
+    }
 
     if (geoac::is_topo){
         x_src = (geoac::x_max + geoac::x_min) / 2.0;
@@ -1318,7 +1329,8 @@ void run_region_test(char* inputs[], int count){
     
     ofstream file_out;
     double x_src, y_src, alt_max = 120.0, eps=1.0e-3;
-    
+    int file_check;
+
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
     
@@ -1336,9 +1348,11 @@ void run_region_test(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){ topo::use_BLw = string2bool(inputs[i] + 13);}
     }
     
-    if (count < 5){         cout << "You have to specify an atmosphere file and grid definition files..." << '\n'; return;}
-    if (geoac::is_topo){    set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
-    else{                   set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if(!file_check){
+        return;
+    }
 
     x_src = (geoac::x_max + geoac::x_min) / 2.0;
     y_src = (geoac::y_max + geoac::y_min) / 2.0;
@@ -1761,12 +1775,13 @@ void run_region_test(char* inputs[], int count){
 }
 
 int main(int argc, char* argv[]){
-    if (argc < 2){ usage();}
-    else {
+    if (argc < 3){
+        usage();
+    } else {
         if ((strncmp(argv[1], "--version", 9) == 0) || (strncmp(argv[1], "-v", 2) == 0)){       version();  return 0;}
         else if ((strncmp(argv[1], "--usage", 7) == 0) || (strncmp(argv[1], "-u", 2) == 0)){    usage();    return 0;}
 
-        else if (strncmp(argv[1], "-prop",5) == 0){                                             run_prop(argv, argc);           return 0;}
+        else if (strncmp(argv[1], "-prop", 5) == 0){                                            run_prop(argv, argc);           return 0;}
         else if (strncmp(argv[1], "-back_proj", 10) == 0){                                      run_back_proj(argv, argc);      return 0;}
         else if (strncmp(argv[1], "-eig_search", 11) == 0){                                     run_eig_search(argv, argc);     return 0;}
         else if (strncmp(argv[1], "-eig_direct", 11) == 0){                                     run_eig_direct(argv, argc);     return 0;}

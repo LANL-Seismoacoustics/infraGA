@@ -31,11 +31,11 @@ namespace atmo {
 //---------Topography and Atmosphere---------//
 //--------------Interpolations---------------//
 //-------------------------------------------//
-void set_region(char*, char*, bool);                // Read in the atmosphere file and set up interpolations
-void set_region(char*, char*, char*, bool);         // Read in the atmosphere and topography files and set up interpolations
+int set_region(char*, char*, bool);                // Read in the atmosphere file and set up interpolations
+int set_region(char*, char*, char*, bool);         // Read in the atmosphere and topography files and set up interpolations
 
-void set_region(char*, char*, bool, int);           // Read in the atmosphere file and set up interpolations using OpenMPI
-void set_region(char*, char*, char*, bool, int);    // Read in the atmosphere and topography files and set up interpolations using OpenMPI
+int set_region(char*, char*, bool, int);           // Read in the atmosphere file and set up interpolations using OpenMPI
+int set_region(char*, char*, char*, bool, int);    // Read in the atmosphere and topography files and set up interpolations using OpenMPI
 
 void clear_region();                                // Clear the interpolations
 

@@ -131,7 +131,7 @@ void run_prop(char* inputs[], int count){
     
     double theta_min = 0.5, theta_max=45.0, theta_step=0.5, azimuth=-90.0;
     double r_src = 0.0, z_src = 0.0, freq = 0.1, turn_ht_min = 0.05;
-    int bounces=2;
+    int bounces=2, file_check;
     bool write_atmo=false, write_caustics=false, custom_output_id=false;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
@@ -148,9 +148,11 @@ void run_prop(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
 
-    if (count < 3){         cout << "You have to specify an atmosphere file..." << '\n'; return;}
-    if (geoac::is_topo){    set_region(inputs[2], topo_file, prof_format, false);}
-    else{                   set_region(inputs[2], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], topo_file, prof_format, false);}
+    else{                   file_check = set_region(inputs[2], prof_format, false);}
+    if(!file_check){
+        return;
+    }
     
     for(int i = 3; i < count; i++){
         if ((strncmp(inputs[i], "incl_min=", 9) == 0) || (strncmp(inputs[i], "min_incl=", 9) == 0)){        theta_min = atof(inputs[i] + 9);}
@@ -384,7 +386,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
     cout << '\t' << "##########################################" << '\n' << '\n';
     
     double r_src = 0.0, z_src = 0.0, freq = 0.1, D, D_prev;
-    int bounces = 0;
+    int bounces = 0, file_check;
     bool break_check, write_atmo=false, write_rays=false, custom_output_id=false;
     char* prof_format = "zTuvdp";
     char* topo_file = "none";
@@ -412,9 +414,11 @@ void run_wnl_wvfrm(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
 
-    if (count < 3){         cout << "You have to specify an atmosphere file..." << '\n'; return;}
-    if (geoac::is_topo){    set_region(inputs[2], topo_file, prof_format, false);}
-    else{                   set_region(inputs[2], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], topo_file, prof_format, false);}
+    else{                   file_check = set_region(inputs[2], prof_format, false);}
+    if(!file_check){
+        return;
+    }
 
     for(int i = 3; i < count; i++){
         if (strncmp(inputs[i], "inclination=", 12) == 0){                                                   geoac::theta = atof(inputs[i] + 12) * (Pi / 180.0);}
@@ -653,6 +657,7 @@ void run_region_test(char* inputs[], int count){
     
     ofstream file_out;
     double alt_max=120.0, eps=1.0e-3;
+    int file_check;
     
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
@@ -670,9 +675,11 @@ void run_region_test(char* inputs[], int count){
         else if (strncmp(inputs[i], "alt_max=", 8) == 0){       alt_max = atof(inputs[i] + 8);}
     }
     
-    if (count < 3){         cout << "You have to specify an atmosphere file..." << '\n'; return;}
-    if (geoac::is_topo){    set_region(inputs[2], topo_file, prof_format, false);}
-    else{                   set_region(inputs[2], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], topo_file, prof_format, false);}
+    else{                   file_check = set_region(inputs[2], prof_format, false);}
+    if(!file_check){
+        return;
+    }
 
     // Write the sound speed and its derivatives (analytic and defined)
     cout << '\n' << "Running region test comparing defined derivatives to finite differences (make sure you've created 'region_tests/2D/' directory)..." << '\n';
@@ -846,7 +853,7 @@ void run_region_test(char* inputs[], int count){
 
 
 int main(int argc, char* argv[]){
-    if (argc < 2){ usage();}
+    if (argc < 3){ usage();}
     else {
         if ((strncmp(argv[1], "--version", 9) == 0) || (strncmp(argv[1], "-v", 2) == 0)){       version();}
         else if ((strncmp(argv[1], "--usage", 7) == 0) || (strncmp(argv[1], "-u", 2) == 0)){    usage();}

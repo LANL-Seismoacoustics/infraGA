@@ -18,7 +18,6 @@ using namespace std;
 int file_length(string file_name){
 	ifstream file_in;	file_in.open(file_name.c_str() );
 	if(!file_in.is_open()){
-        cout << '\n' << '\n' << "WARNING!!!  Error opening file " << file_name << ", check file name." << '\n';
 		return 0;
 	} else {
 		int count = 0;
@@ -40,7 +39,6 @@ int file_width(string file_name){
     file_in.open(file_name.c_str());
     
     if(!file_in.is_open()){
-        cout << '\n' << '\n' << "WARNING!!!  Error opening file " << file_name << ", check file name." << '\n';
         return 0;
     } else {
         double temp;
@@ -68,9 +66,7 @@ void file_2d_dims(string file_name, int & n1, int & n2){
     int N = file_length(file_name);
     
     ifstream file_in;    file_in.open(file_name.c_str() );
-    if(!file_in.is_open()){
-        cout << '\n' << '\n' << "WARNING!!!  Error opening file " << file_name << ", check file name." << '\n';
-    } else {
+    if(file_in.is_open()){
         file_in >> xj;
         file_in >> yprev;
         file_in >> fj;

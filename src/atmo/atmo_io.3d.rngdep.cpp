@@ -55,7 +55,7 @@ struct interp::hybrid_spline_3D atmo::v_spline;
 //---------Topography and Atmosphere---------//
 //--------------Interpolations---------------//
 //-------------------------------------------//
-void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* atmo_format, bool invert_winds){
+int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* atmo_format, bool invert_winds){
     cout << "Interpolating atmosphere data in '" << atmo_prefix << "'* using format '" << atmo_format << "'..." << '\n';
     int x_cnt, y_cnt, z_cnt;
     double temp;
@@ -65,10 +65,20 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* a
     
     x_cnt = file_length(atmo_locs_x);
     y_cnt = file_length(atmo_locs_y);
-    
+    if(x_cnt < 2 || y_cnt < 2){
+        cout << '\t' << "ERROR: Invalid grid specifications (check grid node files)" << '\n' << '\n';
+        return 0;
+    }
+
     sprintf(output_buffer, "%s%i.met", atmo_prefix, 0);
-    z_cnt = file_length(output_buffer);
-    
+    file_in.open(output_buffer);
+    if(!file_in.is_open()){
+        cout << '\t' << "ERROR: Invalid atmospheric specification (" << output_buffer << ")" << '\n' << '\n';
+        return 0;
+    }
+    file_in.close();
+
+    z_cnt = file_length(output_buffer);    
     interp::prep(atmo::c_spline, x_cnt, y_cnt, z_cnt);
     interp::prep(atmo::u_spline, x_cnt, y_cnt, z_cnt);
     interp::prep(atmo::v_spline, x_cnt, y_cnt, z_cnt);
@@ -95,6 +105,12 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* a
     for(int nx = 0; nx < x_cnt; nx++){
     for(int ny = 0; ny < y_cnt; ny++){
         sprintf(output_buffer, "%s%i.met", atmo_prefix, nx * y_cnt + ny);
+        file_in.open(output_buffer);
+        if(!file_in.is_open()){
+            cout << '\t' << "ERROR: Invalid atmospheric specification (" << output_buffer << ")" << '\n' << '\n';
+            return 0;
+        }
+
         if((nx < 3) && (ny < 3)){
             cout << '\t' << "Setting grid node at (" << atmo::c_spline.x_vals[nx] << ", " << atmo::c_spline.y_vals[ny];
             cout << ") with profile " << output_buffer << '\n';
@@ -103,7 +119,6 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* a
         }
         
         int nz = 0;
-        file_in.open(output_buffer);
         while(!file_in.eof() && nz < z_cnt){
             getline (file_in, line);
             if(line.find("#") != 0){
@@ -170,10 +185,11 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* a
     cout << '\t' << '\t' << "z = " << topo::z0 << ", " << geoac::alt_max << '\n';
     
     topo::set_bndlyr();
+    return 1;
 }
 
 
-void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* topo_file, char* atmo_format, bool invert_winds){
+int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* topo_file, char* atmo_format, bool invert_winds){
     cout << "Interpolating atmosphere data in '" << atmo_prefix << "#' and topography data in '" << topo_file << "'..." << '\n';
     
     int x_cnt, y_cnt, z_cnt;
@@ -197,10 +213,20 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* t
     
     x_cnt = file_length(atmo_locs_x);
     y_cnt = file_length(atmo_locs_y);
-    
+    if(x_cnt < 2 || y_cnt < 2){
+        cout << '\t' << "ERROR: Invalid grid specifications (check grid node files)" << '\n' << '\n';
+        return 0;
+    }
+
     sprintf(output_buffer, "%s%i.met", atmo_prefix, 0);
+    file_in.open(output_buffer);
+    if(!file_in.is_open()){
+        cout << '\t' << "ERROR: Invalid atmospheric specification (" << output_buffer << ")" << '\n' << '\n';
+        return 0;
+    }
+    file_in.close();
+
     z_cnt = file_length(output_buffer);
-    
     interp::prep(atmo::c_spline, x_cnt, y_cnt, z_cnt);
     interp::prep(atmo::u_spline, x_cnt, y_cnt, z_cnt);
     interp::prep(atmo::v_spline, x_cnt, y_cnt, z_cnt);
@@ -227,6 +253,12 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* t
     for(int nx = 0; nx < x_cnt; nx++){
     for(int ny = 0; ny < y_cnt; ny++){
         sprintf(output_buffer, "%s%i.met", atmo_prefix, nx * y_cnt + ny);
+        file_in.open(output_buffer);
+        if(!file_in.is_open()){
+            cout << '\t' << "ERROR: Invalid atmospheric specification (" << output_buffer << ")" << '\n' << '\n';
+            return 0;
+        }
+
         if((nx < 3) && (ny < 3)){
             cout << '\t' << "Setting grid node at (" << atmo::c_spline.x_vals[nx] << ", " << atmo::c_spline.y_vals[ny];
             cout << ") with profile " << output_buffer << '\n';
@@ -235,7 +267,6 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* t
         }
             
         int nz = 0;
-        file_in.open(output_buffer);
         while(!file_in.eof() && nz < z_cnt){
             getline (file_in, line);
             if(line.find("#") != 0){
@@ -304,6 +335,8 @@ void set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* t
     topo::set_bndlyr();
     cout << '\t' << "Maximum topography height: " << topo::z_max << '\n';
     cout << '\t' << "Boundary layer height: " << topo::z_bndlyr << '\n';
+
+    return 1;
 }
 
 

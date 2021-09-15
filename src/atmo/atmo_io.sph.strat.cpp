@@ -54,7 +54,7 @@ struct interp::natural_cubic_spline_1D  atmo::v_spline;
 //---------Topography and Atmosphere---------//
 //--------------Interpolations---------------//
 //-------------------------------------------//
-void set_region(char* atmo_file, char* atmo_format, bool invert_winds){
+int set_region(char* atmo_file, char* atmo_format, bool invert_winds){
     cout << "Interpolating atmosphere data in '" << atmo_file << "' using format '" << atmo_format << "'..." << '\n';
     
     interp::prep(atmo::c_spline,    file_length(atmo_file));
@@ -68,74 +68,80 @@ void set_region(char* atmo_file, char* atmo_format, bool invert_winds){
     ifstream file_in;
 
     file_in.open(atmo_file);
-    while(!file_in.eof() && n < atmo::c_spline.length){
-        getline (file_in, line);
-        if(line.find("#") != 0){
-            stringstream ss(line);
-            if(strncmp(atmo_format, "zTuvdp", 6) == 0){
-                ss >> atmo::c_spline.x_vals[n];    // Extract z_i value
-                ss >> temp;                        // Extract T(z_i) but don't store it
-                ss >> atmo::u_spline.f_vals[n];    // Extract u(z_i)
-                ss >> atmo::v_spline.f_vals[n];    // Extract v(z_i)
-                ss >> atmo::rho_spline.f_vals[n];  // Extract rho(z_i)
-                ss >> atmo::c_spline.f_vals[n];    // Extract p(z_i) into c(z_i) and convert below
-            } else if (strncmp(atmo_format, "zuvwTdp", 7) == 0){
-                ss >> atmo::c_spline.x_vals[n];    // Extract z_i value
-                ss >> atmo::u_spline.f_vals[n];    // Extract u(z_i)
-                ss >> atmo::v_spline.f_vals[n];    // Extract v(z_i)
-                ss >> temp;                        // Extract w(z_i) but don't store it
-                ss >> temp;                        // Extract T(z_i) but don't store it
-                ss >> atmo::rho_spline.f_vals[n];  // Extract rho(z_i)
-                ss >> atmo::c_spline.f_vals[n];    // Extract p(z_i) into c(z_i) and convert below
-            } else if (strncmp(atmo_format, "zcuvd", 5) == 0){
-                ss >> atmo::c_spline.x_vals[n];    // Extract z_i value
-                ss >> atmo::c_spline.f_vals[n];    // Extract c(z_i)
-                ss >> atmo::u_spline.f_vals[n];    // Extract u(z_i)
-                ss >> atmo::v_spline.f_vals[n];    // Extract v(z_i)
-                ss >> atmo::rho_spline.f_vals[n];  // Extract rho(z_i)
-            } else {
-                cout << "Unrecognized profile option: " << atmo_format << ".  Valid options are: zTuvdp, zuvwTdp, or zcuvd" << '\n';
-                break;
-            }
+    if(!file_in.is_open()){
+        cout << '\t' << "ERROR: Invalid atmospheric specification (" << atmo_file << ")" << '\n' << '\n';
+        return 0;
+    } else {
+        while(!file_in.eof() && n < atmo::c_spline.length){
+            getline (file_in, line);
+            if(line.find("#") != 0){
+                stringstream ss(line);
+                if(strncmp(atmo_format, "zTuvdp", 6) == 0){
+                    ss >> atmo::c_spline.x_vals[n];    // Extract z_i value
+                    ss >> temp;                        // Extract T(z_i) but don't store it
+                    ss >> atmo::u_spline.f_vals[n];    // Extract u(z_i)
+                    ss >> atmo::v_spline.f_vals[n];    // Extract v(z_i)
+                    ss >> atmo::rho_spline.f_vals[n];  // Extract rho(z_i)
+                    ss >> atmo::c_spline.f_vals[n];    // Extract p(z_i) into c(z_i) and convert below
+                } else if (strncmp(atmo_format, "zuvwTdp", 7) == 0){
+                    ss >> atmo::c_spline.x_vals[n];    // Extract z_i value
+                    ss >> atmo::u_spline.f_vals[n];    // Extract u(z_i)
+                    ss >> atmo::v_spline.f_vals[n];    // Extract v(z_i)
+                    ss >> temp;                        // Extract w(z_i) but don't store it
+                        ss >> temp;                        // Extract T(z_i) but don't store it
+                    ss >> atmo::rho_spline.f_vals[n];  // Extract rho(z_i)
+                    ss >> atmo::c_spline.f_vals[n];    // Extract p(z_i) into c(z_i) and convert below
+                } else if (strncmp(atmo_format, "zcuvd", 5) == 0){
+                    ss >> atmo::c_spline.x_vals[n];    // Extract z_i value
+                    ss >> atmo::c_spline.f_vals[n];    // Extract c(z_i)
+                    ss >> atmo::u_spline.f_vals[n];    // Extract u(z_i)
+                    ss >> atmo::v_spline.f_vals[n];    // Extract v(z_i)
+                    ss >> atmo::rho_spline.f_vals[n];  // Extract rho(z_i)
+                } else {
+                    cout << "Unrecognized profile option: " << atmo_format << ".  Valid options are: zTuvdp, zuvwTdp, or zcuvd" << '\n';
+                    break;
+                }
         
-            // Copy altitude values to other interpolations
-            atmo::u_spline.x_vals[n] = atmo::c_spline.x_vals[n];
-            atmo::v_spline.x_vals[n] = atmo::c_spline.x_vals[n];
-            atmo::rho_spline.x_vals[n] = atmo::c_spline.x_vals[n];
+                // Copy altitude values to other interpolations
+                atmo::u_spline.x_vals[n] = atmo::c_spline.x_vals[n];
+                atmo::v_spline.x_vals[n] = atmo::c_spline.x_vals[n];
+                atmo::rho_spline.x_vals[n] = atmo::c_spline.x_vals[n];
         
-            // Convert pressure and density to adiabatic sound speed unless c is specified and scale winds from m/s to km/s
-            if (strncmp(atmo_format, "zTuvdp", 6) == 0 || strncmp(atmo_format, "zuvwTdp", 7) == 0){
-                atmo::c_spline.f_vals[n] = sqrt(0.1 * atmo::gam * atmo::c_spline.f_vals[n] / atmo::rho_spline.f_vals[n]) / 1000.0;
-            } else {
-                atmo::c_spline.f_vals[n] /= 1000.0;
-            }
+                // Convert pressure and density to adiabatic sound speed unless c is specified and scale winds from m/s to km/s
+                if (strncmp(atmo_format, "zTuvdp", 6) == 0 || strncmp(atmo_format, "zuvwTdp", 7) == 0){
+                    atmo::c_spline.f_vals[n] = sqrt(0.1 * atmo::gam * atmo::c_spline.f_vals[n] / atmo::rho_spline.f_vals[n]) / 1000.0;
+                } else {
+                    atmo::c_spline.f_vals[n] /= 1000.0;
+                }
         
-            if(invert_winds){
-                atmo::u_spline.f_vals[n] /= -1000.0;
-                atmo::v_spline.f_vals[n] /= -1000.0;
-            } else {
-                atmo::u_spline.f_vals[n] /= 1000.0;
-                atmo::v_spline.f_vals[n] /= 1000.0;
+                if(invert_winds){
+                    atmo::u_spline.f_vals[n] /= -1000.0;
+                    atmo::v_spline.f_vals[n] /= -1000.0;
+                } else {
+                    atmo::u_spline.f_vals[n] /= 1000.0;
+                    atmo::v_spline.f_vals[n] /= 1000.0;
+                }
+                n++;
             }
-            n++;
         }
-    }
-    file_in.close();
+        file_in.close();
     
-    interp::set(atmo::c_spline);    interp::set(atmo::u_spline);
-    interp::set(atmo::rho_spline);  interp::set(atmo::v_spline);
+        interp::set(atmo::c_spline);    interp::set(atmo::u_spline);
+        interp::set(atmo::rho_spline);  interp::set(atmo::v_spline);
     
-    geoac::set_limits();
-    cout << '\t' << "Propagation region limits:" << '\n';
-    cout << '\t' << '\t' << "latitude = " << geoac::lat_min * (180.0 / Pi) << ", " << geoac::lat_max * (180.0 / Pi) << '\n';
-    cout << '\t' << '\t' << "longitude = " << geoac::lon_min * (180.0 / Pi) << ", " << geoac::lon_max  * (180.0 / Pi) << '\n';
-    cout << '\t' << '\t' << "altitutde = " << topo::z0 << ", " << geoac::alt_max << '\n' << '\n';
+        geoac::set_limits();
+        cout << '\t' << "Propagation region limits:" << '\n';
+        cout << '\t' << '\t' << "latitude = " << geoac::lat_min * (180.0 / Pi) << ", " << geoac::lat_max * (180.0 / Pi) << '\n';
+        cout << '\t' << '\t' << "longitude = " << geoac::lon_min * (180.0 / Pi) << ", " << geoac::lon_max  * (180.0 / Pi) << '\n';
+        cout << '\t' << '\t' << "altitutde = " << topo::z0 << ", " << geoac::alt_max << '\n' << '\n';
 
-    topo::set_bndlyr();
+        topo::set_bndlyr();
+        return 1;
+    }
 }
 
 
-void set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert_winds){
+int set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert_winds){
     cout << "Interpolating atmosphere data in '" << atmo_file << "' and topography data in '" << topo_file << "'..." << '\n';
     int n1, n2;
     ifstream file_in;
@@ -144,14 +150,19 @@ void set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert
     interp::prep(topo::spline, n1, n2);
     
     file_in.open(topo_file);
-    for (int n1 = 0; n1 < topo::spline.length_x; n1++){
-    for (int n2 = 0; n2 < topo::spline.length_y; n2++){
-        file_in >> topo::spline.x_vals[n1];
-        file_in >> topo::spline.y_vals[n2];
-        file_in >> topo::spline.f_vals[n1][n2];
-    }}
-    file_in.close();
-    
+    if(!file_in.is_open()){
+        cout << '\t' << "ERROR: Invalid terrain file (" << topo_file << ")" << '\n' << '\n';
+        return 0;
+    } else {
+        for (int n1 = 0; n1 < topo::spline.length_x; n1++){
+            for (int n2 = 0; n2 < topo::spline.length_y; n2++){
+                file_in >> topo::spline.x_vals[n1];
+                file_in >> topo::spline.y_vals[n2];
+                file_in >> topo::spline.f_vals[n1][n2];
+            }
+        }
+        file_in.close();
+    }
     for (int n = 0; n < topo::spline.length_x; n++){ topo::spline.x_vals[n] *= (Pi / 180.0);}
     for (int n = 0; n < topo::spline.length_y; n++){ topo::spline.y_vals[n] *= (Pi / 180.0);}
 
@@ -165,73 +176,80 @@ void set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert
     n1 = 0;
 
     file_in.open(atmo_file);
-    while(!file_in.eof() && n1 < atmo::c_spline.length){
-        getline (file_in, line);
-        if(line.find("#") != 0){
-            stringstream ss(line);
-            if(strncmp(atmo_format, "zTuvdp", 6) == 0){
-                ss >> atmo::c_spline.x_vals[n1];    // Extract z_i value
-                ss >> temp;                        // Extract T(z_i) but don't store it
-                ss >> atmo::u_spline.f_vals[n1];    // Extract u(z_i)
-                ss >> atmo::v_spline.f_vals[n1];    // Extract v(z_i)
-                ss >> atmo::rho_spline.f_vals[n1];  // Extract rho(z_i)
-                ss >> atmo::c_spline.f_vals[n1];    // Extract p(z_i) into c(z_i) and convert below
-            } else if (strncmp(atmo_format, "zuvwTdp", 7) == 0){
-                ss >> atmo::c_spline.x_vals[n1];    // Extract z_i value
-                ss >> atmo::u_spline.f_vals[n1];    // Extract u(z_i)
-                ss >> atmo::v_spline.f_vals[n1];    // Extract v(z_i)
-                ss >> temp;                        // Extract w(z_i) but don't store it
-                ss >> temp;                        // Extract T(z_i) but don't store it
-                ss >> atmo::rho_spline.f_vals[n1];  // Extract rho(z_i)
-                ss >> atmo::c_spline.f_vals[n1];    // Extract p(z_i) into c(z_i) and convert below
-            } else if (strncmp(atmo_format, "zcuvd", 5) == 0){
-                ss >> atmo::c_spline.x_vals[n1];    // Extract z_i value
-                ss >> atmo::c_spline.f_vals[n1];    // Extract c(z_i)
-                ss >> atmo::u_spline.f_vals[n1];    // Extract u(z_i)
-                ss >> atmo::v_spline.f_vals[n1];    // Extract v(z_i)
-                ss >> atmo::rho_spline.f_vals[n1];  // Extract rho(z_i)
-            } else {
-                cout << "Unrecognized profile option: " << atmo_format << ".  Valid options are: zTuvdp, zuvwTdp, or zcuvd" << '\n';
-                break;
-            }
+    if(!file_in.is_open()){
+        cout << '\t' << "ERROR: Invalid atmospheric specification (" << atmo_file << ")" << '\n' << '\n';
+        return 0;
+    } else {
+        while(!file_in.eof() && n1 < atmo::c_spline.length){
+            getline (file_in, line);
+            if(line.find("#") != 0){
+                stringstream ss(line);
+                if(strncmp(atmo_format, "zTuvdp", 6) == 0){
+                    ss >> atmo::c_spline.x_vals[n1];    // Extract z_i value
+                    ss >> temp;                        // Extract T(z_i) but don't store it
+                    ss >> atmo::u_spline.f_vals[n1];    // Extract u(z_i)
+                    ss >> atmo::v_spline.f_vals[n1];    // Extract v(z_i)
+                    ss >> atmo::rho_spline.f_vals[n1];  // Extract rho(z_i)
+                    ss >> atmo::c_spline.f_vals[n1];    // Extract p(z_i) into c(z_i) and convert below
+                } else if (strncmp(atmo_format, "zuvwTdp", 7) == 0){
+                    ss >> atmo::c_spline.x_vals[n1];    // Extract z_i value
+                    ss >> atmo::u_spline.f_vals[n1];    // Extract u(z_i)
+                    ss >> atmo::v_spline.f_vals[n1];    // Extract v(z_i)
+                    ss >> temp;                        // Extract w(z_i) but don't store it
+                    ss >> temp;                        // Extract T(z_i) but don't store it
+                    ss >> atmo::rho_spline.f_vals[n1];  // Extract rho(z_i)
+                    ss >> atmo::c_spline.f_vals[n1];    // Extract p(z_i) into c(z_i) and convert below
+                } else if (strncmp(atmo_format, "zcuvd", 5) == 0){
+                    ss >> atmo::c_spline.x_vals[n1];    // Extract z_i value
+                    ss >> atmo::c_spline.f_vals[n1];    // Extract c(z_i)
+                    ss >> atmo::u_spline.f_vals[n1];    // Extract u(z_i)
+                    ss >> atmo::v_spline.f_vals[n1];    // Extract v(z_i)
+                    ss >> atmo::rho_spline.f_vals[n1];  // Extract rho(z_i)
+                } else {
+                    cout << "Unrecognized profile option: " << atmo_format << ".  Valid options are: zTuvdp, zuvwTdp, or zcuvd" << '\n';
+                    break;
+                }
         
-            // Copy altitude values to other interpolations
-            atmo::u_spline.x_vals[n1] = atmo::c_spline.x_vals[n1];
-            atmo::v_spline.x_vals[n1] = atmo::c_spline.x_vals[n1];
-            atmo::rho_spline.x_vals[n1] = atmo::c_spline.x_vals[n1];
+                // Copy altitude values to other interpolations
+                atmo::u_spline.x_vals[n1] = atmo::c_spline.x_vals[n1];
+                atmo::v_spline.x_vals[n1] = atmo::c_spline.x_vals[n1];
+                atmo::rho_spline.x_vals[n1] = atmo::c_spline.x_vals[n1];
         
-            // Convert pressure and density to adiabatic sound speed unless c is specified and scale winds from m/s to km/s
-            if (strncmp(atmo_format, "zTuvdp", 6) == 0 || strncmp(atmo_format, "zuvwTdp", 7) == 0){
-                atmo::c_spline.f_vals[n1] = sqrt(0.1 * atmo::gam * atmo::c_spline.f_vals[n1] / atmo::rho_spline.f_vals[n1]) / 1000.0;
-            } else {
-                atmo::c_spline.f_vals[n1] /= 1000.0;
-            }
+                // Convert pressure and density to adiabatic sound speed unless c is specified and scale winds from m/s to km/s
+                if (strncmp(atmo_format, "zTuvdp", 6) == 0 || strncmp(atmo_format, "zuvwTdp", 7) == 0){
+                    atmo::c_spline.f_vals[n1] = sqrt(0.1 * atmo::gam * atmo::c_spline.f_vals[n1] / atmo::rho_spline.f_vals[n1]) / 1000.0;
+                } else {
+                    atmo::c_spline.f_vals[n1] /= 1000.0;
+                }
         
-            if(invert_winds){
-                atmo::u_spline.f_vals[n1] /= -1000.0;
-                atmo::v_spline.f_vals[n1] /= -1000.0;
-            } else {
-                atmo::u_spline.f_vals[n1] /= 1000.0;
-                atmo::v_spline.f_vals[n1] /= 1000.0;
+                if(invert_winds){
+                    atmo::u_spline.f_vals[n1] /= -1000.0;
+                    atmo::v_spline.f_vals[n1] /= -1000.0;
+                } else {
+                    atmo::u_spline.f_vals[n1] /= 1000.0;
+                    atmo::v_spline.f_vals[n1] /= 1000.0;
+                }
+                n1++;
             }
-            n1++;
         }
+        file_in.close();
+    
+        interp::set(topo::spline);
+        interp::set(atmo::c_spline);    interp::set(atmo::u_spline);
+        interp::set(atmo::rho_spline);  interp::set(atmo::v_spline);
+    
+        geoac::set_limits();
+        cout << '\t' << "Propagation region limits:" << '\n';
+        cout << '\t' << '\t' << "latitude = " << geoac::lat_min * (180.0 / Pi) << ", " << geoac::lat_max * (180.0 / Pi) << '\n';
+        cout << '\t' << '\t' << "longitude = " << geoac::lon_min * (180.0 / Pi) << ", " << geoac::lon_max  * (180.0 / Pi) << '\n';
+        cout << '\t' << '\t' << "altitude = " << topo::z0 << ", " << geoac::alt_max << '\n' << '\n';
+    
+        topo::set_bndlyr();
+        cout << '\t' << "Maximum topography height: " << topo::z_max << '\n';
+        cout << '\t' << "Boundary layer height: " << topo::z_bndlyr << '\n';
+
+        return 1;
     }
-    file_in.close();
-    
-    interp::set(topo::spline);
-    interp::set(atmo::c_spline);    interp::set(atmo::u_spline);
-    interp::set(atmo::rho_spline);  interp::set(atmo::v_spline);
-    
-    geoac::set_limits();
-    cout << '\t' << "Propagation region limits:" << '\n';
-    cout << '\t' << '\t' << "latitude = " << geoac::lat_min * (180.0 / Pi) << ", " << geoac::lat_max * (180.0 / Pi) << '\n';
-    cout << '\t' << '\t' << "longitude = " << geoac::lon_min * (180.0 / Pi) << ", " << geoac::lon_max  * (180.0 / Pi) << '\n';
-    cout << '\t' << '\t' << "altitude = " << topo::z0 << ", " << geoac::alt_max << '\n' << '\n';
-    
-    topo::set_bndlyr();
-    cout << '\t' << "Maximum topography height: " << topo::z_max << '\n';
-    cout << '\t' << "Boundary layer height: " << topo::z_bndlyr << '\n';
 }
 
 

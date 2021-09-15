@@ -23,11 +23,11 @@ namespace atmo {
 //---------Topography and Atmosphere---------//
 //--------------Interpolations---------------//
 //-------------------------------------------//
-void set_region(char*, char*, char*, char*, bool);              // Input the atmosphere file prefix, limits, and atmosphere file format
-void set_region(char*, char*, char*, char*, char*, bool);       // Input the atmosphere file prefix, limits, topography file, and atmosphere file format
+int set_region(char*, char*, char*, char*, bool);              // Input the atmosphere file prefix, limits, and atmosphere file format
+int set_region(char*, char*, char*, char*, char*, bool);       // Input the atmosphere file prefix, limits, topography file, and atmosphere file format
 
-void set_region(char*, char*, char*, char*, bool, int);         // Input the atmosphere file prefix, limits, and atmosphere file format using OpenMPI
-void set_region(char*, char*, char*, char*, char*, bool, int);  // Input the atmosphere file prefix, limits, topography file, and atmosphere file format using OpenMPI
+int set_region(char*, char*, char*, char*, bool, int);         // Input the atmosphere file prefix, limits, and atmosphere file format using OpenMPI
+int set_region(char*, char*, char*, char*, char*, bool, int);  // Input the atmosphere file prefix, limits, topography file, and atmosphere file format using OpenMPI
 
 void clear_region();                                            // Clear the interpolations
 

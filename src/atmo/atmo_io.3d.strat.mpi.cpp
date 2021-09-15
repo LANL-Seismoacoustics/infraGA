@@ -54,7 +54,7 @@ struct interp::natural_cubic_spline_1D atmo::v_spline;
 //---------Topography and Atmosphere---------//
 //--------------Interpolations---------------//
 //-------------------------------------------//
-void set_region(char* atmo_file, char* atmo_format, bool invert_winds, int rank){
+int set_region(char* atmo_file, char* atmo_format, bool invert_winds, int rank){
     if(rank == 0){
         cout << "Interpolating atmosphere data in '" << atmo_file << "' using format '" << atmo_format << "'..." << '\n';
     
@@ -174,7 +174,7 @@ void set_region(char* atmo_file, char* atmo_format, bool invert_winds, int rank)
 }
 
 
-void set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert_winds, int rank){
+int set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert_winds, int rank){
     cout << "Interpolating atmosphere data in '" << atmo_file << "' and topography data in '" << topo_file << "'..." << '\n';
     if(rank == 0){
         int n1, n2;
