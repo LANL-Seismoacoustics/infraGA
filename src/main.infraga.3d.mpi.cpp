@@ -163,7 +163,7 @@ void run_prop(char* inputs[], int count){
     
     double theta_min = 0.5, theta_max = 45.0, theta_step = 0.5;
     double phi_min = -90.0, phi_max = -90.0, phi_step = 1.0;
-    int bounces = 2;
+    int bounces = 2, file_check;
     double x_src = 0.0, y_src = 0.0, z_src = 0.0;
     bool  write_atmo = false, write_rays = false, write_topo=false, custom_output_id=false;
     double freq = 0.1, turn_ht_min = 0.2;
@@ -183,10 +183,13 @@ void run_prop(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (count < 3){         if (world_rank == 0) { cout << "You have to specify an atmosphere file..." << '\n';} return;}
-    if (geoac::is_topo){    set_region(inputs[2], topo_file, prof_format, false, world_rank);}
-    else {                  set_region(inputs[2], prof_format, false, world_rank);}
-    
+    if (geoac::is_topo){    file_check = set_region(inputs[2], topo_file, prof_format, false, world_rank);}
+    else {                  file_check = set_region(inputs[2], prof_format, false, world_rank);}
+    if (!file_check){
+        MPI_Finalize();
+        return;
+    }
+
     if (geoac::is_topo){
         x_src = (geoac::x_max + geoac::x_min) / 2.0;
         y_src = (geoac::y_max + geoac::y_min) / 2.0;
@@ -572,7 +575,7 @@ void run_eig_search(char* inputs[], int count){
     
     double theta_min = 0.5, theta_max = 45.0;
     int bnc_min = 0, bnc_max = 0;
-    int iterations = 25;
+    int iterations = 25, file_check;
     double az_err_lim = 2.0;
     double freq = 0.1;
     char* prof_format = "zTuvdp";
@@ -594,24 +597,20 @@ void run_eig_search(char* inputs[], int count){
     geoac::calc_amp = true;
     geoac::is_topo = false;
     geoac::verbose = false;
-    
-    if (count < 3){
-        if (world_rank == 0){
-            cout << "You have to specify an atmosphere file..." << '\n';
-        }
-        MPI_Finalize();
-        return;
-    }
-    
+        
     for(int i = 3; i < count; i++){
         if (strncmp(inputs[i], "prof_format=", 12) == 0){       prof_format = inputs[i] + 12;}
         else if (strncmp(inputs[i], "z_grnd=", 7) == 0){        topo::z0 = atof(inputs[i] + 7);}
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
    
-    if (geoac::is_topo){    set_region(inputs[2], topo_file, prof_format, false, world_rank);}
-    else {                  set_region(inputs[2], prof_format, false, world_rank);}
-    
+    if (geoac::is_topo){    file_check = set_region(inputs[2], topo_file, prof_format, false, world_rank);}
+    else {                  file_check = set_region(inputs[2], prof_format, false, world_rank);}
+    if (!file_check){
+        MPI_Finalize();
+        return;
+    }
+        
     if (geoac::is_topo){
         src0[0] = (geoac::x_max + geoac::x_min) / 2.0;    rcvr0[0] = src0[0] - 250.0;
         src0[1] = (geoac::y_max + geoac::y_min) / 2.0;    rcvr0[1] = src0[1];
