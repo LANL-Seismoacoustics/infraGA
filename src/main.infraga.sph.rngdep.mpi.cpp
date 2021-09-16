@@ -166,7 +166,7 @@ void run_prop(char* inputs[], int count){
     
     double theta_min = 0.5, theta_max = 45.0, theta_step = 0.5;
     double phi_min = -90.0, phi_max = -90.0, phi_step = 1.0;
-    int bounces = 2;
+    int bounces = 2, file_check;
     double  lat_src, lon_src, z_src = 0.0;
     bool write_atmo = false, write_rays = false, write_topo=false, custom_output_id=false;
     double freq = 0.1, turn_ht_min = 0.2;
@@ -187,10 +187,13 @@ void run_prop(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (count < 3){         if (world_rank == 0) { cout << "You have to specify an atmosphere file and grid definition files..." << '\n';} return;}
-    if (geoac::is_topo){    set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false, world_rank);}
-    else{                   set_region(inputs[2], inputs[3], inputs[4], prof_format, false, world_rank);}
-    
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false, world_rank);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false, world_rank);}
+    if(!file_check){
+        MPI_Finalize();
+        return;
+    }
+
     lat_src = (geoac::lat_max + geoac::lat_min) / 2.0 * (180.0 / Pi);
     lon_src = (geoac::lon_max + geoac::lon_min) / 2.0 * (180.0 / Pi);
     
@@ -583,7 +586,7 @@ void run_eig_search(char* inputs[], int count){
     double rcvr0 [2] = {30.0, -2.5};
     
     double theta_min = 0.5, theta_max = 45.0, az_err_lim=2.0,  freq = 0.1;
-    int bnc_min = 0, bnc_max = 0, iterations=25;
+    int bnc_min = 0, bnc_max = 0, iterations=25, file_check;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
     char* output_id;
@@ -602,24 +605,20 @@ void run_eig_search(char* inputs[], int count){
     
     geoac::is_topo = false;
     geoac::verbose = false;
-    
-    if (count < 3){
-        if (world_rank == 0){
-            cout << "You have to specify an atmosphere file..." << '\n';
-        }
-        MPI_Finalize();
-        return;
-    }
-    
+       
     for(int i = 5; i < count; i++){
         if (strncmp(inputs[i], "prof_format=", 12) == 0){       prof_format = inputs[i] + 12;}
         else if (strncmp(inputs[i], "z_grnd=", 7) == 0){        topo::z0 = atof(inputs[i] + 7);}
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (geoac::is_topo){    set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false, world_rank);}
-    else{                   set_region(inputs[2], inputs[3], inputs[4], prof_format, false, world_rank);}
-    
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false, world_rank);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false, world_rank);}
+    if(!file_check){
+        MPI_Finalize();
+        return;
+    }
+
     if (geoac::is_topo){
         src0[1] = (geoac::lat_max + geoac::lat_min) / 2.0 * (180.0 / Pi);    rcvr0[0] = src0[1] + 0.0;
         src0[2] = (geoac::lon_max + geoac::lon_min) / 2.0 * (180.0 / Pi);    rcvr0[1] = src0[2] + 2.5;
@@ -978,13 +977,12 @@ void run_eig_search(char* inputs[], int count){
 }
 
 int main(int argc, char* argv[]){
-    if (argc < 2){ usage();}
+    if (argc < 5){ usage();}
     else {
-        if ((strncmp(argv[1], "--version", 9) == 0) || (strncmp(argv[1], "-v", 2) == 0)){       version();}
-        else if ((strncmp(argv[1], "--usage", 7) == 0) || (strncmp(argv[1], "-u", 2) == 0)){    usage();}
-        
-        else if (strncmp(argv[1], "-prop", 5) == 0){                                            run_prop(argv, argc);}
-        else if (strncmp(argv[1], "-eig_search", 11) == 0){                                     run_eig_search(argv, argc);}
-        else {                                                                                  cout << "Unrecognized option." << '\n';}
+        if ((strncmp(argv[1], "-version", 8) == 0) || (strncmp(argv[1], "-v", 2) == 0)){            version();}
+        else if ((strncmp(argv[1], "-usage", 6) == 0) || (strncmp(argv[1], "-u", 2) == 0)){         usage();}
+        else if ((strncmp(argv[1], "-prop", 5) == 0)|| (strncmp(argv[1], "-p", 2) == 0)){           run_prop(argv, argc);}
+        else if ((strncmp(argv[1], "-eig_search", 11) == 0)|| (strncmp(argv[1], "-s", 2) == 0)){    run_eig_search(argv, argc);}
+        else {                                                                                      cout << "Unrecognized option." << '\n';}
     }
     return 0;}

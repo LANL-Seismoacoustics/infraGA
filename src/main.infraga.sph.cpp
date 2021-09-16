@@ -1941,19 +1941,15 @@ int main(int argc, char* argv[]){
         usage();
         return 0;
     } else {
-        if ((strncmp(argv[1], "--version", 9) == 0) || (strncmp(argv[1], "-v", 2) == 0)){       version();  return 0;}
-        else if ((strncmp(argv[1], "--usage", 7) == 0) || (strncmp(argv[1], "-u", 2) == 0)){    usage();    return 0;}
-    
-        else if (strncmp(argv[1], "-prop", 5) == 0){                                            run_prop(argv, argc);           return 0;}
-        else if (strncmp(argv[1], "-back_proj", 10) == 0){                                      run_back_proj(argv, argc);      return 0;}
-        else if (strncmp(argv[1], "-eig_search", 11) == 0){                                     run_eig_search(argv, argc);     return 0;}
-        else if (strncmp(argv[1], "-eig_direct", 11) == 0){                                     run_eig_direct(argv, argc);     return 0;}
-        else if (strncmp(argv[1], "-wnl_wvfrm", 10) == 0){                                      run_wnl_wvfrm(argv, argc);      return 0;}
-
-        // Test methods...development use only.
-        else if (strncmp(argv[1], "-region_test", 12) == 0){                                    run_region_test(argv, argc);    return 0;}
-
-        else {                                                                                  cout << "Unrecognized option." << '\n';}
+        if ((strncmp(argv[1], "-version", 8) == 0) || (strncmp(argv[1], "-v", 2) == 0)){            version();}
+        else if ((strncmp(argv[1], "-usage", 6) == 0) || (strncmp(argv[1], "-u", 2) == 0)){         usage();}
+        else if ((strncmp(argv[1], "-prop", 5) == 0) || (strncmp(argv[1], "-p", 2) == 0)){          run_prop(argv, argc);}
+        else if ((strncmp(argv[1], "-back_proj", 10) == 0) || (strncmp(argv[1], "-b", 2) == 0)){    run_back_proj(argv, argc);}
+        else if ((strncmp(argv[1], "-eig_search", 11) == 0) || (strncmp(argv[1], "-s", 2) == 0)){   run_eig_search(argv, argc);}
+        else if ((strncmp(argv[1], "-eig_direct", 11) == 0) || (strncmp(argv[1], "-d", 2) == 0)){   run_eig_direct(argv, argc);}
+        else if ((strncmp(argv[1], "-wnl_wvfrm", 10) == 0) || (strncmp(argv[1], "-w", 2) == 0)){    run_wnl_wvfrm(argv, argc);}
+        else if (strncmp(argv[1], "-region_test", 12) == 0){                                        run_region_test(argv, argc);} // Development use only to evaluate interpolation
+        else {                                                                                      cout << "Unrecognized option." << '\n';}
     }
     return 0;
 }

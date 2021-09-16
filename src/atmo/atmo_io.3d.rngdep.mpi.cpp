@@ -56,8 +56,10 @@ struct interp::hybrid_spline_3D atmo::v_spline;
 //--------------Interpolations---------------//
 //-------------------------------------------//
 int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* atmo_format, bool invert_winds, int rank){
+    int result = 1;
     if(rank == 0){
         cout << "Interpolating atmosphere data in '" << atmo_prefix << "'* using format '" << atmo_format << "'..." << '\n';
+
         int x_cnt, y_cnt, z_cnt;
         double temp;
         char output_buffer [512];
@@ -66,161 +68,187 @@ int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* at
     
         x_cnt = file_length(atmo_locs_x);
         y_cnt = file_length(atmo_locs_y);
-    
+        if(x_cnt < 2 || y_cnt < 2){
+            cout << '\t' << "ERROR: Invalid grid specifications (check grid node files)" << '\n' << '\n';
+            result = 0;
+        }
+
         sprintf(output_buffer, "%s%i.met", atmo_prefix, 0);
-        z_cnt = file_length(output_buffer);
+        file_in.open(output_buffer);
+        if(!file_in.is_open()){
+            cout << '\t' << "ERROR: Invalid atmospheric specification (" << output_buffer << ")" << '\n' << '\n';
+            result = 0;
+        } else {
+            file_in.close();
+            z_cnt = file_length(output_buffer);
     
-        interp::prep(atmo::c_spline, x_cnt, y_cnt, z_cnt);
-        interp::prep(atmo::u_spline, x_cnt, y_cnt, z_cnt);
-        interp::prep(atmo::v_spline, x_cnt, y_cnt, z_cnt);
-        interp::prep(atmo::rho_spline, x_cnt, y_cnt, z_cnt);
+            interp::prep(atmo::c_spline, x_cnt, y_cnt, z_cnt);
+            interp::prep(atmo::u_spline, x_cnt, y_cnt, z_cnt);
+            interp::prep(atmo::v_spline, x_cnt, y_cnt, z_cnt);
+            interp::prep(atmo::rho_spline, x_cnt, y_cnt, z_cnt);
     
-        file_in.open(atmo_locs_x);
-        for (int nx = 0; nx < x_cnt; nx++){
-            file_in >> atmo::c_spline.x_vals[nx];
-            atmo::u_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
-            atmo::v_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
-            atmo::rho_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
-        }
-        file_in.close();
-    
-        file_in.open(atmo_locs_y);
-        for (int ny = 0; ny < y_cnt; ny++){
-            file_in >> atmo::c_spline.y_vals[ny];
-            atmo::u_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
-            atmo::v_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
-            atmo::rho_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
-        }
-        file_in.close();
-    
-        for(int nx = 0; nx < x_cnt; nx++){
-        for(int ny = 0; ny < y_cnt; ny++){
-            sprintf(output_buffer, "%s%i.met", atmo_prefix, nx * y_cnt + ny);
-            if((nx < 3) && (ny < 3)){
-                cout << '\t' << "Setting grid node at (" << atmo::c_spline.x_vals[nx] << ", " << atmo::c_spline.y_vals[ny];
-                cout << ") with profile " << output_buffer << '\n';
-            } else if((nx < 3) && (ny == 3)) {
-                cout << '\t' << "..." << '\n';
-            }
-        
-            int nz = 0;
-            file_in.open(output_buffer);
-            while(!file_in.eof() && nz < z_cnt){
-                getline (file_in, line);
-                if(line.find("#") != 0){
-                    stringstream ss(line);
-                    if(strncmp(atmo_format, "zTuvdp", 6) == 0){
-                        ss >> atmo::c_spline.z_vals[nz];                // Extract z_i value
-                        ss >> temp;                                     // Extract T(z_i) but don't store it
-                        ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
-                        ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
-                        ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
-                        ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract p(z_i) into c(z_i) and convert below
-                    } else if (strncmp(atmo_format, "zuvwTdp", 7) == 0){
-                        ss >> atmo::c_spline.z_vals[nz];                // Extract z_i value
-                        ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
-                        ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
-                        ss >> temp;                                     // Extract w(z_i) but don't store it
-                        ss >> temp;                                     // Extract T(z_i) but don't store it
-                        ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
-                        ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract p(z_i) into c(z_i) and convert below
-                    } else if (strncmp(atmo_format, "zcuvd", 5) == 0){
-                        ss >> atmo::c_spline.z_vals[nz];                // Extract z_i value
-                        ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract c(z_i)
-                        ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
-                        ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
-                        ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
-                    } else {
-                        cout << "Unrecognized profile option: " << atmo_format << ".  Valid options are: zTuvdp, zuvwTdp, or zcuvd" << '\n';
-                        break;
-                    }
-        
-                    // Copy altitude values to other interpolations
-                    atmo::u_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
-                    atmo::v_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
-                    atmo::rho_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
-            
-                    // Convert pressure and density to adiabatic sound speed unless c is specified and scale winds from m/s to km/s
-                    if (strncmp(atmo_format, "zTuvdp", 6) == 0 || strncmp(atmo_format, "zuvwTdp", 7) == 0){
-                        atmo::c_spline.f_vals[nx][ny][nz] = sqrt(0.1 * atmo::gam * atmo::c_spline.f_vals[nx][ny][nz] / atmo::rho_spline.f_vals[nx][ny][nz]) / 1000.0;
-                    } else {
-                        atmo::c_spline.f_vals[nx][ny][nz] /= 1000.0;
-                    }
-            
-                    if(invert_winds){
-                        atmo::u_spline.f_vals[nx][ny][nz] /= -1000.0;
-                        atmo::v_spline.f_vals[nx][ny][nz] /= -1000.0;
-                    } else {
-                        atmo::u_spline.f_vals[nx][ny][nz] /= 1000.0;
-                        atmo::v_spline.f_vals[nx][ny][nz] /= 1000.0;
-                    }
-                    nz++;
-                }
+            file_in.open(atmo_locs_x);
+            for (int nx = 0; nx < x_cnt; nx++){
+                file_in >> atmo::c_spline.x_vals[nx];
+                atmo::u_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
+                atmo::v_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
+                atmo::rho_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
             }
             file_in.close();
-        }}
-        cout << '\n';
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    int spline_len [3];
-    double spline_vals [7];
     
-    if(rank == 0){
-        spline_len[0] = atmo::c_spline.length_x;
-        spline_len[1] = atmo::c_spline.length_y;
-        spline_len[2] = atmo::c_spline.length_z;
-    }
-    MPI_Bcast(&spline_len, 3, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
-    if(rank != 0){
-        interp::prep(atmo::c_spline, spline_len[0], spline_len[1], spline_len[2]);
-        interp::prep(atmo::u_spline, spline_len[0], spline_len[1], spline_len[2]);
-        interp::prep(atmo::v_spline, spline_len[0], spline_len[1], spline_len[2]);
-        interp::prep(atmo::rho_spline, spline_len[0], spline_len[1], spline_len[2]);
-    }
-
-    for(int nx = 0; nx < spline_len[0]; nx++){
-    for(int ny = 0; ny < spline_len[1]; ny++){
-        for(int nz = 0; nz < spline_len[2]; nz++){
-            if(rank == 0){
-                spline_vals[0] = atmo::c_spline.x_vals[nx];
-                spline_vals[1] = atmo::c_spline.y_vals[ny];
-                spline_vals[2] = atmo::c_spline.z_vals[nz];
-                spline_vals[3] = atmo::c_spline.f_vals[nx][ny][nz];
-                spline_vals[4] = atmo::u_spline.f_vals[nx][ny][nz];
-                spline_vals[5] = atmo::v_spline.f_vals[nx][ny][nz];
-                spline_vals[6] = atmo::rho_spline.f_vals[nx][ny][nz];
+            file_in.open(atmo_locs_y);
+            for (int ny = 0; ny < y_cnt; ny++){
+                file_in >> atmo::c_spline.y_vals[ny];
+                atmo::u_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
+                atmo::v_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
+                atmo::rho_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
             }
-            MPI_Bcast(&spline_vals, 7, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            MPI_Barrier(MPI_COMM_WORLD);
+            file_in.close();
+    
+            for(int nx = 0; nx < x_cnt; nx++){
+                for(int ny = 0; ny < y_cnt; ny++){
+                    sprintf(output_buffer, "%s%i.met", atmo_prefix, nx * y_cnt + ny);
+                    file_in.open(output_buffer);
+                    if(!file_in.is_open()){
+                        cout << '\t' << "ERROR: Invalid atmospheric specification (" << output_buffer << ")" << '\n' << '\n';
+                        result = 0;
+                        break;
+                    }
+
+                    if((nx < 3) && (ny < 3)){
+                        cout << '\t' << "Setting grid node at (" << atmo::c_spline.x_vals[nx] << ", " << atmo::c_spline.y_vals[ny];
+                        cout << ") with profile " << output_buffer << '\n';
+                    } else if((nx < 3) && (ny == 3)) {
+                        cout << '\t' << "..." << '\n';
+                    }
+        
+                    int nz = 0;
+                    while(!file_in.eof() && nz < z_cnt){
+                        getline (file_in, line);
+                        if(line.find("#") != 0){
+                            stringstream ss(line);
+                            if(strncmp(atmo_format, "zTuvdp", 6) == 0){
+                                ss >> atmo::c_spline.z_vals[nz];                // Extract z_i value
+                                ss >> temp;                                     // Extract T(z_i) but don't store it
+                                ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
+                                ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
+                                ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
+                                ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract p(z_i) into c(z_i) and convert below
+                            } else if (strncmp(atmo_format, "zuvwTdp", 7) == 0){
+                                ss >> atmo::c_spline.z_vals[nz];                // Extract z_i value
+                                ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
+                                ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
+                                ss >> temp;                                     // Extract w(z_i) but don't store it
+                                ss >> temp;                                     // Extract T(z_i) but don't store it
+                                ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
+                                ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract p(z_i) into c(z_i) and convert below
+                            } else if (strncmp(atmo_format, "zcuvd", 5) == 0){
+                                ss >> atmo::c_spline.z_vals[nz];                // Extract z_i value
+                                ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract c(z_i)
+                                ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
+                                ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
+                                ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
+                            } else {
+                                cout << "Unrecognized profile option: " << atmo_format << ".  Valid options are: zTuvdp, zuvwTdp, or zcuvd" << '\n';
+                                break;
+                            }
+        
+                            // Copy altitude values to other interpolations
+                            atmo::u_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
+                            atmo::v_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
+                            atmo::rho_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
             
-            if(rank != 0){
-                atmo::c_spline.x_vals[nx] = spline_vals[0];     atmo::c_spline.y_vals[ny] = spline_vals[1];     atmo::c_spline.z_vals[nz] = spline_vals[2];     atmo::c_spline.f_vals[nx][ny][nz] = spline_vals[3];
-                atmo::u_spline.x_vals[nx] = spline_vals[0];     atmo::u_spline.y_vals[ny] = spline_vals[1];     atmo::u_spline.z_vals[nz] = spline_vals[2];     atmo::u_spline.f_vals[nx][ny][nz] = spline_vals[4];
-                atmo::v_spline.x_vals[nx] = spline_vals[0];     atmo::v_spline.y_vals[ny] = spline_vals[1];     atmo::v_spline.z_vals[nz] = spline_vals[2];     atmo::v_spline.f_vals[nx][ny][nz] = spline_vals[5];
-                atmo::rho_spline.x_vals[nx] = spline_vals[0];   atmo::rho_spline.y_vals[ny] = spline_vals[1];   atmo::rho_spline.z_vals[nz] = spline_vals[2];   atmo::rho_spline.f_vals[nx][ny][nz] = spline_vals[6];
+                            // Convert pressure and density to adiabatic sound speed unless c is specified and scale winds from m/s to km/s
+                            if (strncmp(atmo_format, "zTuvdp", 6) == 0 || strncmp(atmo_format, "zuvwTdp", 7) == 0){
+                                atmo::c_spline.f_vals[nx][ny][nz] = sqrt(0.1 * atmo::gam * atmo::c_spline.f_vals[nx][ny][nz] / atmo::rho_spline.f_vals[nx][ny][nz]) / 1000.0;
+                            } else {
+                                atmo::c_spline.f_vals[nx][ny][nz] /= 1000.0;
+                            }
+            
+                            if(invert_winds){
+                                atmo::u_spline.f_vals[nx][ny][nz] /= -1000.0;
+                                atmo::v_spline.f_vals[nx][ny][nz] /= -1000.0;
+                            } else {
+                                atmo::u_spline.f_vals[nx][ny][nz] /= 1000.0;
+                                atmo::v_spline.f_vals[nx][ny][nz] /= 1000.0;
+                            }
+                            nz++;
+                        }
+                    }
+                    file_in.close();
+                }
+                if(result == 0) break;
             }
-            MPI_Barrier(MPI_COMM_WORLD);
+            cout << '\n';
         }
-    }}
-    
-    interp::set(atmo::c_spline);    interp::set(atmo::u_spline);
-    interp::set(atmo::rho_spline);  interp::set(atmo::v_spline);
-    
-    geoac::set_limits();
-    topo::set_bndlyr();
-
-    if(rank == 0){
-        cout << '\t' << "Propagation region limits:" << '\n';
-        cout << '\t' << '\t' << "x = " << geoac::x_min << ", " << geoac::x_max << '\n';
-        cout << '\t' << '\t' << "y = " << geoac::y_min << ", " << geoac::y_max << '\n';
-        cout << '\t' << '\t' << "z = " << topo::z0 << ", " << geoac::alt_max << '\n';
     }
+
+    MPI_Bcast(&result, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if(result == 1){
+        int spline_len [3];
+        double spline_vals [7];
+    
+        if(rank == 0){
+            spline_len[0] = atmo::c_spline.length_x;
+            spline_len[1] = atmo::c_spline.length_y;
+            spline_len[2] = atmo::c_spline.length_z;
+        }
+        MPI_Bcast(&spline_len, 3, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
+        if(rank != 0){
+            interp::prep(atmo::c_spline, spline_len[0], spline_len[1], spline_len[2]);
+            interp::prep(atmo::u_spline, spline_len[0], spline_len[1], spline_len[2]);
+            interp::prep(atmo::v_spline, spline_len[0], spline_len[1], spline_len[2]);
+            interp::prep(atmo::rho_spline, spline_len[0], spline_len[1], spline_len[2]);
+        }
+
+        for(int nx = 0; nx < spline_len[0]; nx++){
+            for(int ny = 0; ny < spline_len[1]; ny++){
+                for(int nz = 0; nz < spline_len[2]; nz++){
+                    if(rank == 0){
+                        spline_vals[0] = atmo::c_spline.x_vals[nx];
+                        spline_vals[1] = atmo::c_spline.y_vals[ny];
+                        spline_vals[2] = atmo::c_spline.z_vals[nz];
+                        spline_vals[3] = atmo::c_spline.f_vals[nx][ny][nz];
+                        spline_vals[4] = atmo::u_spline.f_vals[nx][ny][nz];
+                        spline_vals[5] = atmo::v_spline.f_vals[nx][ny][nz];
+                        spline_vals[6] = atmo::rho_spline.f_vals[nx][ny][nz];
+                    }
+                    MPI_Bcast(&spline_vals, 7, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                    MPI_Barrier(MPI_COMM_WORLD);
+            
+                    if(rank != 0){
+                        atmo::c_spline.x_vals[nx] = spline_vals[0];     atmo::c_spline.y_vals[ny] = spline_vals[1];     atmo::c_spline.z_vals[nz] = spline_vals[2];     atmo::c_spline.f_vals[nx][ny][nz] = spline_vals[3];
+                        atmo::u_spline.x_vals[nx] = spline_vals[0];     atmo::u_spline.y_vals[ny] = spline_vals[1];     atmo::u_spline.z_vals[nz] = spline_vals[2];     atmo::u_spline.f_vals[nx][ny][nz] = spline_vals[4];
+                        atmo::v_spline.x_vals[nx] = spline_vals[0];     atmo::v_spline.y_vals[ny] = spline_vals[1];     atmo::v_spline.z_vals[nz] = spline_vals[2];     atmo::v_spline.f_vals[nx][ny][nz] = spline_vals[5];
+                        atmo::rho_spline.x_vals[nx] = spline_vals[0];   atmo::rho_spline.y_vals[ny] = spline_vals[1];   atmo::rho_spline.z_vals[nz] = spline_vals[2];   atmo::rho_spline.f_vals[nx][ny][nz] = spline_vals[6];
+                    }
+                    MPI_Barrier(MPI_COMM_WORLD);
+                }
+            }
+        }
+    
+        interp::set(atmo::c_spline);    interp::set(atmo::u_spline);
+        interp::set(atmo::rho_spline);  interp::set(atmo::v_spline);
+    
+        geoac::set_limits();
+        topo::set_bndlyr();
+
+        if(rank == 0){
+            cout << '\t' << "Propagation region limits:" << '\n';
+            cout << '\t' << '\t' << "x = " << geoac::x_min << ", " << geoac::x_max << '\n';
+            cout << '\t' << '\t' << "y = " << geoac::y_min << ", " << geoac::y_max << '\n';
+            cout << '\t' << '\t' << "z = " << topo::z0 << ", " << geoac::alt_max << '\n';
+        }
+    }
+    return result;
 }
 
 
 int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* topo_file, char* atmo_format, bool invert_winds, int rank){
+    int result = 1;
     if(rank == 0){
         cout << "Interpolating atmosphere data in '" << atmo_prefix << "#' and topography data in '" << topo_file << "'..." << '\n';
     
@@ -235,217 +263,250 @@ int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* to
         interp::prep(topo::spline, x_cnt, y_cnt);
     
         file_in.open(topo_file);
-        for (int nx = 0; nx < topo::spline.length_x; nx++){
-        for (int ny = 0; ny < topo::spline.length_y; ny++){
-            file_in >> topo::spline.x_vals[nx];
-            file_in >> topo::spline.y_vals[ny];
-            file_in >> topo::spline.f_vals[nx][ny];
-        }}
+        if(!file_in.is_open()){
+            cout << '\t' << "ERROR: Invalid terrain file (" << topo_file << ")" << '\n' << '\n';
+            result = 0;
+        } else {
+            for (int nx = 0; nx < topo::spline.length_x; nx++){
+                for (int ny = 0; ny < topo::spline.length_y; ny++){
+                    file_in >> topo::spline.x_vals[nx];
+                    file_in >> topo::spline.y_vals[ny];
+                    file_in >> topo::spline.f_vals[nx][ny];
+                }
+            }
+        }
         file_in.close();
     
         x_cnt = file_length(atmo_locs_x);
         y_cnt = file_length(atmo_locs_y);
-    
+        if(x_cnt < 2 || y_cnt < 2){
+            cout << '\t' << "ERROR: Invalid grid specifications (check grid node files)" << '\n' << '\n';
+            result = 0;
+        }
+
         sprintf(output_buffer, "%s%i.met", atmo_prefix, 0);
-        z_cnt = file_length(output_buffer);
+        file_in.open(output_buffer);
+        if(!file_in.is_open()){
+            cout << '\t' << "ERROR: Invalid atmospheric specification (" << output_buffer << ")" << '\n' << '\n';
+            result = 0;
+        } else {
+            file_in.close();
+            z_cnt = file_length(output_buffer);
     
-        interp::prep(atmo::c_spline, x_cnt, y_cnt, z_cnt);
-        interp::prep(atmo::u_spline, x_cnt, y_cnt, z_cnt);
-        interp::prep(atmo::v_spline, x_cnt, y_cnt, z_cnt);
-        interp::prep(atmo::rho_spline, x_cnt, y_cnt, z_cnt);
+            interp::prep(atmo::c_spline, x_cnt, y_cnt, z_cnt);
+            interp::prep(atmo::u_spline, x_cnt, y_cnt, z_cnt);
+            interp::prep(atmo::v_spline, x_cnt, y_cnt, z_cnt);
+            interp::prep(atmo::rho_spline, x_cnt, y_cnt, z_cnt);
     
-        file_in.open(atmo_locs_x);
-        for (int nx = 0; nx < x_cnt; nx++){
-            file_in >> atmo::c_spline.x_vals[nx];
-            atmo::u_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
-            atmo::v_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
-            atmo::rho_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
-        }
-        file_in.close();
-    
-        file_in.open(atmo_locs_y);
-        for (int ny = 0; ny < y_cnt; ny++){
-            file_in >> atmo::c_spline.y_vals[ny];
-            atmo::u_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
-            atmo::v_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
-            atmo::rho_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
-        }
-        file_in.close();
-    
-        for(int nx = 0; nx < x_cnt; nx++){
-        for(int ny = 0; ny < y_cnt; ny++){
-            sprintf(output_buffer, "%s%i.met", atmo_prefix, nx * y_cnt + ny);
-            if((nx < 3) && (ny < 3)){
-                cout << '\t' << "Setting grid node at (" << atmo::c_spline.x_vals[nx] << ", " << atmo::c_spline.y_vals[ny];
-                cout << ") with profile " << output_buffer << '\n';
-            } else if((nx < 3) && (ny == 3)) {
-                cout << '\t' << "..." << '\n';
-            }
-            
-            int nz = 0;
-            file_in.open(output_buffer);
-            while(!file_in.eof() && nz < z_cnt){
-                getline (file_in, line);
-                if(line.find("#") != 0){
-                    stringstream ss(line);
-                    if(strncmp(atmo_format, "zTuvdp", 6) == 0){
-                        ss >> atmo::c_spline.z_vals[nz];        // Extract z_i value
-                        ss >> temp;                                     // Extract T(z_i) but don't store it
-                        ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
-                        ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
-                        ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
-                        ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract p(z_i) into c(z_i) and convert below
-                    } else if (strncmp(atmo_format, "zuvwTdp", 7) == 0){
-                        ss >> atmo::c_spline.z_vals[nz];        // Extract z_i value
-                        ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
-                        ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
-                        ss >> temp;                                     // Extract w(z_i) but don't store it
-                        ss >> temp;                                     // Extract T(z_i) but don't store it
-                        ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
-                        ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract p(z_i) into c(z_i) and convert below
-                    } else if (strncmp(atmo_format, "zcuvd", 5) == 0){
-                        ss >> atmo::c_spline.z_vals[nz];        // Extract z_i value
-                        ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract c(z_i)
-                        ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
-                        ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
-                        ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
-                    } else {
-                        cout << "Unrecognized profile option: " << atmo_format << ".  Valid options are: zTuvdp, zuvwTdp, or zcuvd" << '\n';
-                        break;
-                    }
-                
-                    // Copy altitude values to other interpolations
-                    atmo::u_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
-                    atmo::v_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
-                    atmo::rho_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
-                
-                    // Convert pressure and density to adiabatic sound speed unless c is specified and scale winds from m/s to km/s
-                    if (strncmp(atmo_format, "zTuvdp", 6) == 0 || strncmp(atmo_format, "zuvwTdp", 7) == 0){
-                        atmo::c_spline.f_vals[nx][ny][nz] = sqrt(0.1 * atmo::gam * atmo::c_spline.f_vals[nx][ny][nz] / atmo::rho_spline.f_vals[nx][ny][nz]) / 1000.0;
-                    } else {
-                        atmo::c_spline.f_vals[nx][ny][nz] /= 1000.0;
-                    }
-                
-                    if(invert_winds){
-                        atmo::u_spline.f_vals[nx][ny][nz] /= -1000.0;
-                        atmo::v_spline.f_vals[nx][ny][nz] /= -1000.0;
-                    } else {
-                        atmo::u_spline.f_vals[nx][ny][nz] /= 1000.0;
-                        atmo::v_spline.f_vals[nx][ny][nz] /= 1000.0;
-                    }
-                    nz++;
-                }
+            file_in.open(atmo_locs_x);
+            for (int nx = 0; nx < x_cnt; nx++){
+                file_in >> atmo::c_spline.x_vals[nx];
+                atmo::u_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
+                atmo::v_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
+                atmo::rho_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
             }
             file_in.close();
-        }}
-        cout << '\n';
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
     
-    int spline_len [3];
-    double spline_vals [7];
+            file_in.open(atmo_locs_y);
+            for (int ny = 0; ny < y_cnt; ny++){
+                file_in >> atmo::c_spline.y_vals[ny];
+                atmo::u_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
+                atmo::v_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
+                atmo::rho_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
+            }
+            file_in.close();
     
-    // Broadcast topography spline
-    if(rank == 0){
-        spline_len[0] = topo::spline.length_x;
-        spline_len[1] = topo::spline.length_y;
-    }
-    MPI_Bcast(&spline_len, 2, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
-    if(rank != 0){
-        interp::prep(topo::spline, spline_len[0], spline_len[1]);
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-    
-    for (int nx = 0; nx < topo::spline.length_x; nx++){
-    for (int ny = 0; ny < topo::spline.length_y; ny++){
-        if(rank == 0){
-            spline_vals[0] = topo::spline.x_vals[nx];
-            spline_vals[1] = topo::spline.y_vals[ny];
-            spline_vals[2] = topo::spline.f_vals[nx][ny];
+            for(int nx = 0; nx < x_cnt; nx++){
+                for(int ny = 0; ny < y_cnt; ny++){
+                    sprintf(output_buffer, "%s%i.met", atmo_prefix, nx * y_cnt + ny);
+                    file_in.open(output_buffer);
+                    if(!file_in.is_open()){
+                        cout << '\t' << "ERROR: Invalid atmospheric specification (" << output_buffer << ")" << '\n' << '\n';
+                        result = 0;
+                        break;
+                    }
+
+                    if((nx < 3) && (ny < 3)){
+                        cout << '\t' << "Setting grid node at (" << atmo::c_spline.x_vals[nx] << ", " << atmo::c_spline.y_vals[ny];
+                        cout << ") with profile " << output_buffer << '\n';
+                    } else if((nx < 3) && (ny == 3)) {
+                        cout << '\t' << "..." << '\n';
+                    }
+            
+                    int nz = 0;
+                    while(!file_in.eof() && nz < z_cnt){
+                        getline (file_in, line);
+                        if(line.find("#") != 0){
+                            stringstream ss(line);
+                            if(strncmp(atmo_format, "zTuvdp", 6) == 0){
+                                ss >> atmo::c_spline.z_vals[nz];        // Extract z_i value
+                                ss >> temp;                                     // Extract T(z_i) but don't store it
+                                ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
+                                ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
+                                ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
+                                ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract p(z_i) into c(z_i) and convert below
+                            } else if (strncmp(atmo_format, "zuvwTdp", 7) == 0){
+                                ss >> atmo::c_spline.z_vals[nz];        // Extract z_i value
+                                ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
+                                ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
+                                ss >> temp;                                     // Extract w(z_i) but don't store it
+                                ss >> temp;                                     // Extract T(z_i) but don't store it
+                                ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
+                                ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract p(z_i) into c(z_i) and convert below
+                            } else if (strncmp(atmo_format, "zcuvd", 5) == 0){
+                                ss >> atmo::c_spline.z_vals[nz];        // Extract z_i value
+                                ss >> atmo::c_spline.f_vals[nx][ny][nz];        // Extract c(z_i)
+                                ss >> atmo::u_spline.f_vals[nx][ny][nz];        // Extract u(z_i)
+                                ss >> atmo::v_spline.f_vals[nx][ny][nz];        // Extract v(z_i)
+                                ss >> atmo::rho_spline.f_vals[nx][ny][nz];      // Extract rho(z_i)
+                            } else {
+                                cout << "Unrecognized profile option: " << atmo_format << ".  Valid options are: zTuvdp, zuvwTdp, or zcuvd" << '\n';
+                                break;
+                            }
+                
+                            // Copy altitude values to other interpolations
+                            atmo::u_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
+                            atmo::v_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
+                            atmo::rho_spline.z_vals[nz] = atmo::c_spline.z_vals[nz];
+
+                            // Convert pressure and density to adiabatic sound speed unless c is specified and scale winds from m/s to km/s
+                            if (strncmp(atmo_format, "zTuvdp", 6) == 0 || strncmp(atmo_format, "zuvwTdp", 7) == 0){
+                                atmo::c_spline.f_vals[nx][ny][nz] = sqrt(0.1 * atmo::gam * atmo::c_spline.f_vals[nx][ny][nz] / atmo::rho_spline.f_vals[nx][ny][nz]) / 1000.0;
+                            } else {
+                                atmo::c_spline.f_vals[nx][ny][nz] /= 1000.0;
+                            }
+                
+                            if(invert_winds){
+                                atmo::u_spline.f_vals[nx][ny][nz] /= -1000.0;
+                                atmo::v_spline.f_vals[nx][ny][nz] /= -1000.0;
+                            } else {
+                                atmo::u_spline.f_vals[nx][ny][nz] /= 1000.0;
+                                atmo::v_spline.f_vals[nx][ny][nz] /= 1000.0;
+                            }
+                            nz++;
+                        }
+                    }
+                    file_in.close();
+                }
+                if(result == 0) break;
+            }
+            cout << '\n';
         }
-        MPI_Bcast(&spline_vals, 5, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    }
+
+    MPI_Bcast(&result, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
+    
+    if(result == 1){
+        int spline_len [3];
+        double spline_vals [7];
+    
+        // Broadcast topography spline
+        if(rank == 0){
+            spline_len[0] = topo::spline.length_x;
+            spline_len[1] = topo::spline.length_y;
+        }
+       MPI_Bcast(&spline_len, 2, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Barrier(MPI_COMM_WORLD);
         if(rank != 0){
-            topo::spline.x_vals[nx] = spline_vals[0];
-            topo::spline.y_vals[ny] = spline_vals[1];
-            topo::spline.f_vals[nx][ny] = spline_vals[2];
+            interp::prep(topo::spline, spline_len[0], spline_len[1]);
+        }     
+        MPI_Barrier(MPI_COMM_WORLD);
+    
+        for (int nx = 0; nx < topo::spline.length_x; nx++){
+            for (int ny = 0; ny < topo::spline.length_y; ny++){
+                if(rank == 0){
+                    spline_vals[0] = topo::spline.x_vals[nx];
+                    spline_vals[1] = topo::spline.y_vals[ny];
+                    spline_vals[2] = topo::spline.f_vals[nx][ny];
+                }
+                MPI_Bcast(&spline_vals, 5, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                MPI_Barrier(MPI_COMM_WORLD);
+                if(rank != 0){
+                    topo::spline.x_vals[nx] = spline_vals[0];
+                    topo::spline.y_vals[ny] = spline_vals[1];
+                    topo::spline.f_vals[nx][ny] = spline_vals[2];
+                }
+                MPI_Barrier(MPI_COMM_WORLD);
+            }
         }
         MPI_Barrier(MPI_COMM_WORLD);
-    }}
-    MPI_Barrier(MPI_COMM_WORLD);
     
-    // Broadcast atmosphere spline
-    if(rank == 0){
-        spline_len[0] = atmo::c_spline.length_x;
-        spline_len[1] = atmo::c_spline.length_y;
-        spline_len[2] = atmo::c_spline.length_z;
-    }
-    MPI_Bcast(&spline_len, 3, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
-    if(rank != 0){
-        interp::prep(atmo::c_spline, spline_len[0], spline_len[1], spline_len[2]);
-        interp::prep(atmo::u_spline, spline_len[0], spline_len[1], spline_len[2]);
-        interp::prep(atmo::v_spline, spline_len[0], spline_len[1], spline_len[2]);
-        interp::prep(atmo::rho_spline, spline_len[0], spline_len[1], spline_len[2]);
-    }
-    
-    if(rank == 0){
-        spline_len[0] = atmo::c_spline.length_x;
-        spline_len[1] = atmo::c_spline.length_y;
-        spline_len[2] = atmo::c_spline.length_z;
-    }
-    MPI_Bcast(&spline_len, 3, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
-    if(rank != 0){
-        interp::prep(atmo::c_spline, spline_len[0], spline_len[1], spline_len[2]);
-        interp::prep(atmo::u_spline, spline_len[0], spline_len[1], spline_len[2]);
-        interp::prep(atmo::v_spline, spline_len[0], spline_len[1], spline_len[2]);
-        interp::prep(atmo::rho_spline, spline_len[0], spline_len[1], spline_len[2]);
-    }
-    
-    for(int nx = 0; nx < spline_len[0]; nx++){
-    for(int ny = 0; ny < spline_len[1]; ny++){
-        for(int nz = 0; nz < spline_len[2]; nz++){
-            if(rank == 0){
-                spline_vals[0] = atmo::c_spline.x_vals[nx];
-                spline_vals[1] = atmo::c_spline.y_vals[ny];
-                spline_vals[2] = atmo::c_spline.z_vals[nz];
-                spline_vals[3] = atmo::c_spline.f_vals[nx][ny][nz];
-                spline_vals[4] = atmo::u_spline.f_vals[nx][ny][nz];
-                spline_vals[5] = atmo::v_spline.f_vals[nx][ny][nz];
-                spline_vals[6] = atmo::rho_spline.f_vals[nx][ny][nz];
-            }
-            MPI_Bcast(&spline_vals, 7, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            MPI_Barrier(MPI_COMM_WORLD);
-                
-            if(rank != 0){
-                atmo::c_spline.x_vals[nx] = spline_vals[0];     atmo::c_spline.y_vals[ny] = spline_vals[1];     atmo::c_spline.z_vals[nz] = spline_vals[2];     atmo::c_spline.f_vals[nx][ny][nz] = spline_vals[3];
-                atmo::u_spline.x_vals[nx] = spline_vals[0];     atmo::u_spline.y_vals[ny] = spline_vals[1];     atmo::u_spline.z_vals[nz] = spline_vals[2];     atmo::u_spline.f_vals[nx][ny][nz] = spline_vals[4];
-                atmo::v_spline.x_vals[nx] = spline_vals[0];     atmo::v_spline.y_vals[ny] = spline_vals[1];     atmo::v_spline.z_vals[nz] = spline_vals[2];     atmo::v_spline.f_vals[nx][ny][nz] = spline_vals[5];
-                atmo::rho_spline.x_vals[nx] = spline_vals[0];   atmo::rho_spline.y_vals[ny] = spline_vals[1];   atmo::rho_spline.z_vals[nz] = spline_vals[2];   atmo::rho_spline.f_vals[nx][ny][nz] = spline_vals[6];
-            }
-            MPI_Barrier(MPI_COMM_WORLD);
+        // Broadcast atmosphere spline
+        if(rank == 0){
+            spline_len[0] = atmo::c_spline.length_x;
+            spline_len[1] = atmo::c_spline.length_y;
+            spline_len[2] = atmo::c_spline.length_z;
         }
-    }}
+        MPI_Bcast(&spline_len, 3, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
+        if(rank != 0){
+            interp::prep(atmo::c_spline, spline_len[0], spline_len[1], spline_len[2]);
+            interp::prep(atmo::u_spline, spline_len[0], spline_len[1], spline_len[2]);
+            interp::prep(atmo::v_spline, spline_len[0], spline_len[1], spline_len[2]);
+            interp::prep(atmo::rho_spline, spline_len[0], spline_len[1], spline_len[2]);
+        }
     
-    interp::set(topo::spline);
-    interp::set(atmo::c_spline);    interp::set(atmo::u_spline);
-    interp::set(atmo::rho_spline);  interp::set(atmo::v_spline);
+        if(rank == 0){
+            spline_len[0] = atmo::c_spline.length_x;
+            spline_len[1] = atmo::c_spline.length_y;
+            spline_len[2] = atmo::c_spline.length_z;
+        }
+        MPI_Bcast(&spline_len, 3, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
+        if(rank != 0){
+            interp::prep(atmo::c_spline, spline_len[0], spline_len[1], spline_len[2]);
+            interp::prep(atmo::u_spline, spline_len[0], spline_len[1], spline_len[2]);
+            interp::prep(atmo::v_spline, spline_len[0], spline_len[1], spline_len[2]);
+            interp::prep(atmo::rho_spline, spline_len[0], spline_len[1], spline_len[2]);
+        }
     
-    geoac::set_limits();
-    topo::set_bndlyr();
+        for(int nx = 0; nx < spline_len[0]; nx++){
+            for(int ny = 0; ny < spline_len[1]; ny++){
+                for(int nz = 0; nz < spline_len[2]; nz++){
+                    if(rank == 0){
+                        spline_vals[0] = atmo::c_spline.x_vals[nx];
+                        spline_vals[1] = atmo::c_spline.y_vals[ny];
+                        spline_vals[2] = atmo::c_spline.z_vals[nz];
+                        spline_vals[3] = atmo::c_spline.f_vals[nx][ny][nz];
+                        spline_vals[4] = atmo::u_spline.f_vals[nx][ny][nz];
+                        spline_vals[5] = atmo::v_spline.f_vals[nx][ny][nz];
+                        spline_vals[6] = atmo::rho_spline.f_vals[nx][ny][nz];
+                    }
+                    MPI_Bcast(&spline_vals, 7, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                    MPI_Barrier(MPI_COMM_WORLD);
+                
+                    if(rank != 0){
+                        atmo::c_spline.x_vals[nx] = spline_vals[0];     atmo::c_spline.y_vals[ny] = spline_vals[1];     atmo::c_spline.z_vals[nz] = spline_vals[2];     atmo::c_spline.f_vals[nx][ny][nz] = spline_vals[3];
+                        atmo::u_spline.x_vals[nx] = spline_vals[0];     atmo::u_spline.y_vals[ny] = spline_vals[1];     atmo::u_spline.z_vals[nz] = spline_vals[2];     atmo::u_spline.f_vals[nx][ny][nz] = spline_vals[4];
+                        atmo::v_spline.x_vals[nx] = spline_vals[0];     atmo::v_spline.y_vals[ny] = spline_vals[1];     atmo::v_spline.z_vals[nz] = spline_vals[2];     atmo::v_spline.f_vals[nx][ny][nz] = spline_vals[5];
+                        atmo::rho_spline.x_vals[nx] = spline_vals[0];   atmo::rho_spline.y_vals[ny] = spline_vals[1];   atmo::rho_spline.z_vals[nz] = spline_vals[2];   atmo::rho_spline.f_vals[nx][ny][nz] = spline_vals[6];
+                    }
+                    MPI_Barrier(MPI_COMM_WORLD);
+                }
+            }
+        }
+    
+        interp::set(topo::spline);
+        interp::set(atmo::c_spline);    interp::set(atmo::u_spline);
+        interp::set(atmo::rho_spline);  interp::set(atmo::v_spline);
+    
+        geoac::set_limits();
+        topo::set_bndlyr();
 
-    if(rank == 0){
-        cout << '\t' << "Propagation region limits:" << '\n';
-        cout << '\t' << '\t' << "x = " << geoac::x_min << ", " << geoac::x_max << '\n';
-        cout << '\t' << '\t' << "y = " << geoac::y_min << ", " << geoac::y_max << '\n';
-        cout << '\t' << '\t' << "z = " << topo::z0  << ", " << geoac::alt_max << '\n' << '\n';
+        if(rank == 0){
+            cout << '\t' << "Propagation region limits:" << '\n';
+            cout << '\t' << '\t' << "x = " << geoac::x_min << ", " << geoac::x_max << '\n';
+            cout << '\t' << '\t' << "y = " << geoac::y_min << ", " << geoac::y_max << '\n';
+            cout << '\t' << '\t' << "z = " << topo::z0  << ", " << geoac::alt_max << '\n' << '\n';
     
-        cout << '\t' << "Maximum topography height: " << topo::z_max << '\n';
-        cout << '\t' << "Boundary layer height: " << topo::z_bndlyr << '\n';
+            cout << '\t' << "Maximum topography height: " << topo::z_max << '\n';
+            cout << '\t' << "Boundary layer height: " << topo::z_bndlyr << '\n';
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
     }
-    MPI_Barrier(MPI_COMM_WORLD);
+    return result;
+
 
 }
 

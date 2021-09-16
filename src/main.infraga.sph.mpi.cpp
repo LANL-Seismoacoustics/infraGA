@@ -1004,11 +1004,10 @@ void run_eig_search(char* inputs[], int count){
 int main(int argc, char* argv[]){
     if (argc < 3){ usage();}
     else {
-        if ((strncmp(argv[1], "--version", 9) == 0) || (strncmp(argv[1], "-v", 2) == 0)){           version();}
-        else if ((strncmp(argv[1], "--usage", 7) == 0) || (strncmp(argv[1], "-u", 2) == 0)){        usage();}
-        
-        else if ((strncmp(argv[1], "-prop", 5) == 0)|| (strncmp(argv[1], "-p", 2) == 0)){           run_prop(argv, argc);}
-        else if ((strncmp(argv[1], "-eig_search", 11) == 0)|| (strncmp(argv[1], "-es", 2) == 0)){   run_eig_search(argv, argc);}
+        if ((strncmp(argv[1], "-version", 8) == 0) || (strncmp(argv[1], "-v", 2) == 0)){            version();}
+        else if ((strncmp(argv[1], "-usage", 6) == 0) || (strncmp(argv[1], "-u", 2) == 0)){         usage();}
+        else if ((strncmp(argv[1], "-prop", 5) == 0) || (strncmp(argv[1], "-p", 2) == 0)){          run_prop(argv, argc);}
+        else if ((strncmp(argv[1], "-eig_search", 11) == 0) || (strncmp(argv[1], "-s", 2) == 0)){   run_eig_search(argv, argc);}
         else {                                                                                      cout << "Unrecognized option." << '\n';}
     }
     return 0;
