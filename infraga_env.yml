@@ -1,0 +1,21 @@
+name: infraga_env_new
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - cartopy
+  - matplotlib-base
+  - click
+  - netCDF4
+  - numpy
+  - python=3.8
+  - pyproj
+  - scipy
+  - ipython
+  - pip
+
+  - pip:
+    - -e .
+

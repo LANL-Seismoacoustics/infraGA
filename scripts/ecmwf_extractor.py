@@ -20,7 +20,7 @@ from netCDF4 import Dataset
 
 sph_proj = Geod(ellps='sphere')
 
-etopo_file = "/path/to/ETOPO1_Ice_g_gmt4.grd"
+etopo_file = "ETOPO1_Ice_g_gmt4.grd"
 
 ##############################
 ##  US standard atmosphere  ##
@@ -208,8 +208,8 @@ def extract_grid(ecmwf_file, lat_llc, lon_llc, lat_urc, lon_urc, output_id, grid
     grid_n_lats = np.array([np.where(lat_vals==val)[0] for val in grid_lats]).flatten() 
     grid_n_lons = np.array([np.where(lon_vals==val)[0] for val in grid_lons]).flatten() 
 
-    np.savetxt(output_id + "_lats.dat", grid_lats)
-    np.savetxt(output_id + "_lons.dat", grid_lons)
+    np.savetxt(output_id + "lats.dat", grid_lats)
+    np.savetxt(output_id + "lons.dat", grid_lons)
 
     grnd_lvl_interp = interp_etopo((lat_llc, lon_llc), (lat_urc, lon_urc))
 
@@ -271,6 +271,17 @@ def print_usage():
     print('\n' + "Examples:")
     print('\t' + "python ecmwf_extractor.py -single ecmwf_file 30.2 -120.1 test.met")
     print('\t' + "python ecmwf_extractor.py -grid ecmwf_file 25.0 -130.0 35.0 -120.0 grid/test 2" + '\n')
+
+
+def run(ecmwf_file, option, lat1, lon1, lat2, lon2, output_file, sampling):
+    if os.path.isfile(etopo_file):
+        if option == "single":
+            extract_single(ecmwf_file, lat1, lon1, output_file)
+        else:
+            extract_grid(ecmwf_file, lat1, lon1, lat2, lon2, output_file, sampling)
+    else:
+        print("Topography file not found.  Download at https://www.ngdc.noaa.gov/mgg/global/ and")
+        print('\t' + "update location in script header if not placed here.")
 
 
 if __name__ == '__main__':

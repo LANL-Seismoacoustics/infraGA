@@ -359,6 +359,22 @@ def print_usage():
     print('\t' + "python topo_extractor.py -xy_grid 40.0 -102.5 35.0 -110.0 45.0 -100.0 xy_topo.dat")
     print('\t' + "python topo_extractor.py -latlon_grid 35.0 -110.0 45.0 -100.0 sph_topo.dat" + '\n')
 
+
+def run(option, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file):
+    if os.path.isfile(etopo_file):
+        if option == "-line":
+            pull_line((lat1, lon1), azimuth, range, output_file)
+        elif option == "-pnt2pnt":
+            pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file)
+        elif option == "-xy_grid":
+            pull_xy_grid((lat1, lon1), (lat2, lon2), (ref_lat, ref_lon), output_file)
+        else:
+            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file)    
+    else:
+        print("Topography file not found.  Download at https://www.ngdc.noaa.gov/mgg/global/ and")
+        print('\t' + "update location in script header if not placed here.")
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print_usage()

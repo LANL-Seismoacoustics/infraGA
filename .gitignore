@@ -6,9 +6,11 @@
 <<<<<<< HEAD
 bin/*
 *.dat
+infraga.egg-info*
 examples/*.dat
 examples/*/*.dat
 dev_tests/*
+scripts/__pycache*
 scripts/grid/
 scripts/*.grd
 doc/*.aux

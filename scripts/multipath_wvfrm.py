@@ -137,7 +137,7 @@ def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
     return result * W**(1.0 / 3.0) / 1e3
 
 
-def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1):
+def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max=1, incl_min=incl_min, incl_max=incl_max, incl_step_max=incl_step_max, rng_max=rng_max, verbose_output=verbose_output, wvfrm_ref=wvfrm_ref, wvfrm_yld=wvfrm_yld, wvfrm_file=wvfrm_file, cpu_cnt=None):
     """
         Computes eigenrays for a source and receiver separated
             by specified distances and then calculates waveform
@@ -295,7 +295,7 @@ def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max
     else:
         print('\n' + "No waveforms to compute.")
 
-def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114.0, 0.0], bnc_max=1):
+def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114.0, 0.0], bnc_max=1, incl_min=incl_min, incl_max=incl_max, incl_step_max=incl_step_max, rng_max=rng_max, verbose_output=verbose_output, wvfrm_ref=wvfrm_ref, wvfrm_yld=wvfrm_yld, wvfrm_file=wvfrm_file, cpu_cnt=None):
     """
         Computes eigenrays for a source and receiver at specified
             latitude and longitude points and then calculates
@@ -452,7 +452,7 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114
     else:
         print('\n' + "No waveforms to compute.")
 
-def print_usage():
+def usage():
     print('\n\t' + "#" * 32)
     print('\t' + "#" * 2 + "  InfraGA/GeoAc Multi-Path  " + "#" * 2)
     print('\t' + "#" * 2 + "     Waveform Calculator    " + "#" * 2)
@@ -491,13 +491,24 @@ def print_usage():
     print('\t' + "python multipath_wvfrm.py -sph ../examples/ToyAtmo.met 30.0 -110.0 0.0 30.0 -114.0 1.0 1" + '\n')
 
 
+
+
+def run(specification, option, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rcvr_lat, rcvr_lon, z_grnd, bnc_max, incl_min=0.5, incl_max=45.0, incl_step_max=0.1, rng_max=2000.0, verbose_output=True, wvfrm_ref=1.0, wvfrm_yield=10.0e3, wvfrm_file=None, cpu_cnt=None):
+    if option == "3d":
+        compute_3d_wvfrm(specification, src_alt=src_alt, rcvr_loc=(rcvr_x, rcvr_y, z_grnd), bnc_max=bnc_max, incl_min=incl_min, incl_max=incl_max, incl_step_max=incl_step_max, rng_max=rng_max, verbose_output=verbose_output, wvfrm_ref=wvfrm_ref, wvfrm_yld=wvfrm_yld, wvfrm_file=wvfrm_file, cpu_cnt=cpu_cnt)
+    elif option == "sph":
+        compute_sph_wvfrm(specification, src_loc=(src_lat, src_lon, src_alt), rcvr_loc=(rcvr_lat, rcvr_lon, z_grnd), bnc_max=bnc_max, incl_min=incl_min, incl_max=incl_max, incl_step_max=incl_step_max, rng_max=rng_max, verbose_output=verbose_output, wvfrm_ref=wvfrm_ref, wvfrm_yld=wvfrm_yld, wvfrm_file=wvfrm_file, cpu_cnt=cpu_cnt)
+
+
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print_usage()
+        usage()
     else:
         if sys.argv[1] == "-3d":
             compute_3d_wvfrm(sys.argv[2], src_alt=float(sys.argv[3]), rcvr_loc=(float(sys.argv[4]), float(sys.argv[5]), float(sys.argv[6])), bnc_max=int(sys.argv[7]))
         elif sys.argv[1] == "-sph":
             compute_sph_wvfrm(sys.argv[2], src_loc=(float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5])), rcvr_loc=(float(sys.argv[6]), float(sys.argv[7]), float(sys.argv[8])), bnc_max=int(sys.argv[9]))
         else:
-            print_usage()
+            usage()
