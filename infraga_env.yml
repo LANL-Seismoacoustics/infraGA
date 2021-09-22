@@ -1,4 +1,4 @@
-name: infraga_env_new
+name: infraga_env
 
 channels:
   - conda-forge

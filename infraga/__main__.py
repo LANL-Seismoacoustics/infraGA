@@ -81,8 +81,8 @@ def run_map(arrivals, plot_option, figure_name, rcvrs_file, title):
 @click.option("--incl-step-max", help="Maximum inclination angle step during for eigenray search", default=0.1)
 @click.option("--rng-max", help="Maximum range for eigenray search calculation", default=1000.0)
 @click.option("--verbose", help="Option to output verbose information about eigenray search", default=True)
-@click.option("--wvfrm-ref", help="Reference distance from source for initiating waveform calculation", default=1.0)
-@click.option("--wvfrm-yld", help="Source yield [kg eq. TNT] (use either yield specification or wvfrm_file option)", default=10.0e3)
+@click.option("--wvfrm-ref", help="Reference distance from source for initiating waveform calculation (used with wvfrm-file)", default=1.0)
+@click.option("--wvfrm-yld", help="Source yield [kg eq. TNT] (default: 10 tons)", default=10.0e3)
 @click.option("--wvfrm-file", help="File containing a starting waveform for reference", default=None)
 @click.option("--cpu-cnt", help="CPUs to use in calculation (requires OpenMPI methods to be installed)", default=None)
 
@@ -98,7 +98,7 @@ def run_wvfrm(specification, geom, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rc
 
     '''
     click.echo("Running multi-waveform methods with specification '" + specification + "' and option: '" + geom + "'...")
-    mltwvfrm.run(specification, geom, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rcvr_lat, rcvr_lon, z_grnd, bnc_max, incl_min, incl_max, incl_step_max, rng_max, verbose, wvfrm_ref, wvfrm_yld, wvfrm_file, cpu_cnt)
+    mltwvfrm.run(specification, geom, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rcvr_lat, rcvr_lon, z_grnd, bnc_max, incl_min=incl_min, incl_max=incl_max, incl_step_max=incl_step_max, rng_max=rng_max, verbose_output=verbose, wvfrm_ref=wvfrm_ref, wvfrm_yld=wvfrm_yld, wvfrm_file=wvfrm_file, cpu_cnt=cpu_cnt)
 
 
 @main.command('extract-terrain')

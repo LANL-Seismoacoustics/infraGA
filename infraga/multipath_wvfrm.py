@@ -13,6 +13,8 @@ Philip Blom (pblom@lanl.gov)
 import sys
 import os
 
+from importlib.util import find_spec 
+
 import numpy as np
 
 from scipy.interpolate import interp1d
@@ -158,9 +160,9 @@ def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max
     
     # run eigenray analysis
     if cpu_cnt:
-        command = "mpirun -np " + str(int(cpu_cnt)) + " infraga-accel-3d -eig_search " + profile 
+        command = "mpirun -np " + str(int(cpu_cnt)) + " " + find_spec('infraga').submodule_search_locations[0][:-8] + "/bin/infraga-accel-3d -eig_search " + profile 
     else :
-        command = "infraga-3d -eig_search " + profile
+        command =  find_spec('infraga').submodule_search_locations[0][:-8] + "/bin/infraga-3d -eig_search " + profile
 
     command = command + " src_alt=" + str(src_alt)
     command = command + " rcvr_x=" + str(rcvr_loc[0]) + " rcvr_y=" + str(rcvr_loc[1])
@@ -217,15 +219,13 @@ def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max
             command = command + " z_grnd=" + str(rcvr_loc[2]) + " bounces=" + str(int(line[2]))
             command = command + " write_ray=true"
 
-            if wvfrm_yld:
+            if wvfrm_file:
+                command = command + " wvfrm_file=" + wvfrm_file + " wvfrm_ref=" + str(wvfrm_ref)
+            else:
+                wvfrm_ref = 0.035 * wvfrm_yld**(1.0 / 3.0)
                 p0, t0 = kg_op(wvfrm_yld, wvfrm_ref), kg_ppd(wvfrm_yld, wvfrm_ref)
                 command = command + " wvfrm_p0=" + str(p0) + " wvfrm_t0="  + str(t0)
                 command = command + " wvfrm_alpha=0.0 wvfrm_ref=" + str(wvfrm_ref)
-            elif wvfrm_file:
-                command = command + " wvfrm_file=" + wvfrm_file + " wvfrm_ref=" + str(wvfrm_ref)
-            else:
-                command = command + " wvfrm_p0=" + str(wvfrm_p0) + " wvfrm_t0="  + str(wvfrm_t0)
-                command = command + " wvfrm_alpha=" + str(wvfrm_alpha) + " wvfrm_ref=" + str(wvfrm_ref)
 
             print(command)
             os.system(command)
@@ -240,11 +240,10 @@ def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max
                 print(*line, file=file_out)
             print('\n', file=file_out)
 
-
             command = "rm " + profile_id + ".wvfrm_out.dat"
             command = command + " " + profile_id + ".raypaths.dat"
-            if not keep_wvfrm_init:
-                command = command + " " + profile_id + ".wvfrm_init.dat"
+            command = command + " " + profile_id + ".wvfrm_init.dat"
+            command = command + " " + profile_id + ".arrivals.dat"
             os.system(command)
         
         file_out.close()
@@ -318,9 +317,10 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114
     
     # run eigenray analysis
     if cpu_cnt:
-        command = "mpirun -np " + str(int(cpu_cnt)) + " infraga-accel-sph -eig_search " + profile 
+        command = "mpirun -np " + str(int(cpu_cnt)) +  " " + find_spec('infraga').submodule_search_locations[0][:-8] + "/bin/infraga-accel-sph -eig_search " + profile 
     else :
-        command = "infraga-sph -eig_search " + profile
+        command =  find_spec('infraga').submodule_search_locations[0][:-8] + "/bin/infraga-sph -eig_search " + profile
+
     command = command + " src_lat=" + str(src_lat) + " src_lon=" + str(src_lon) + " src_alt=" + str(src_alt)
     command = command + " rcvr_lat=" + str(rcvr_lat) + " rcvr_lon=" + str(rcvr_lon) + " z_grnd=" + str(rcvr_loc[2])
     command = command + " bnc_max=" + str(bnc_max) + " rng_max=" + str(rng_max)
@@ -375,15 +375,13 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114
             command = command + " inclination=" + str(line[0]) + " azimuth=" + str(line[1]) + " z_grnd=" + str(rcvr_loc[2])
             command = command + " bounces=" + str(int(line[2])) + " write_ray=true"
 
-            if wvfrm_yld:
-                p0, t0 = kg_op(wvfrm_yld, wvfrm_ref), kg_ppd(wvfrm_yld, wvfrm_ref)
-                command = command + " wvfrm_p0=" + str(p0) + " wvfrm_t0="  + str(t0)
-                command = command + " wvfrm_alpha=0.0 wvfrm_ref=" + str(wvfrm_ref)
-            elif wvfrm_file:
+            if wvfrm_file:
                 command = command + " wvfrm_file=" + wvfrm_file + " wvfrm_ref=" + str(wvfrm_ref)
             else:
-                command = command + " wvfrm_p0=" + str(wvfrm_p0) + " wvfrm_t0="  + str(wvfrm_t0)
-                command = command + " wvfrm_alpha=" + str(wvfrm_alpha) + " wvfrm_ref=" + str(wvfrm_ref)
+                wvfrm_ref = 0.035 * wvfrm_yld**(1.0 / 3.0)
+                p0, t0 = kg_op(wvfrm_yld, wvfrm_ref), kg_ppd(wvfrm_yld, wvfrm_ref)
+                command = command + " wvfrm_p0=" + str(p0) + " wvfrm_t0="  + str(t0)
+                command = command + " wvfrm_alpha=0.1 wvfrm_ref=" + str(wvfrm_ref)
 
             print(command)
             os.system(command)
@@ -400,13 +398,17 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114
 
             command = "rm " + profile_id + ".wvfrm_out.dat"
             command = command + " " + profile_id + ".raypaths.dat"
-            if not keep_wvfrm_init:
-                command = command + " " + profile_id + ".wvfrm_init.dat"
+            command = command + " " + profile_id + ".wvfrm_init.dat"
+            command = command + " " + profile_id + ".arrivals.dat"
             os.system(command)
         file_out.close()
  
         # combine waveforms and write to file
         print("Interpolating and merging waveforms...")
+        print('\t' + "Eigenrays written into " + profile_id + ".eigenrays.dat")
+        print('\t' + "Arrival waveform written into " + profile_id + ".wvfrms.dat")
+
+
         t_vals = np.arange(t_lims[0], t_lims[1], 1.0 / float(wvfrm_sps))
     
         file_out = open(profile_id + ".wvfrms.dat", 'w')
@@ -493,7 +495,7 @@ def usage():
 
 
 
-def run(specification, option, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rcvr_lat, rcvr_lon, z_grnd, bnc_max, incl_min=0.5, incl_max=45.0, incl_step_max=0.1, rng_max=2000.0, verbose_output=True, wvfrm_ref=1.0, wvfrm_yield=10.0e3, wvfrm_file=None, cpu_cnt=None):
+def run(specification, option, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rcvr_lat, rcvr_lon, z_grnd, bnc_max, incl_min=0.5, incl_max=45.0, incl_step_max=0.1, rng_max=2000.0, verbose_output=True, wvfrm_ref=1.0, wvfrm_yld=10.0e3, wvfrm_file=None, cpu_cnt=None):
     if option == "3d":
         compute_3d_wvfrm(specification, src_alt=src_alt, rcvr_loc=(rcvr_x, rcvr_y, z_grnd), bnc_max=bnc_max, incl_min=incl_min, incl_max=incl_max, incl_step_max=incl_step_max, rng_max=rng_max, verbose_output=verbose_output, wvfrm_ref=wvfrm_ref, wvfrm_yld=wvfrm_yld, wvfrm_file=wvfrm_file, cpu_cnt=cpu_cnt)
     elif option == "sph":
