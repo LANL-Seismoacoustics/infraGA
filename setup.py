@@ -15,13 +15,18 @@ setup(
     author = "LANL Seismoacoustics Infrasound (LANL-SA) Team",
     author_email = 'pblom@lanl.gov',
 
-    packages = ['scripts'],
+    packages = ['infraga'],
 
-    entry_points = {'console_scripts':['infraga=scripts.__main__.__main__']},
+    entry_points = {'console_scripts':['infraga=infraga.__main__:main']},
 
-    install_requires = ['click',
+    install_requires = ['cartopy',
+                        'click',
+                        'netCDF4',
                         'numpy',
+                        'matplotlib',
+                        'pyproj',
                         'scipy',
                         'ipython',
-                        'matplotlib']
+                        'pip',
+                        'wget']
 )

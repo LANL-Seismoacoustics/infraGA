@@ -12,6 +12,10 @@ Author: pblom@lanl.gov
 
 import os
 import sys 
+import wget
+
+from importlib.util import find_spec 
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -20,8 +24,6 @@ from scipy import interpolate
 from netCDF4 import Dataset
 
 sph_proj = Geod(ellps='sphere')
-
-etopo_file = "ETOPO1_Ice_g_gmt4.grd"
 
 def interp_etopo(ll_corner, ur_corner):
     """
@@ -45,13 +47,13 @@ def interp_etopo(ll_corner, ur_corner):
     """
 
     # load etopo_file and extract grid information
-    etopo1 = Dataset(etopo_file)
+    etopo1 = Dataset(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd")
     grid_lons = etopo1.variables['x'][:]
     grid_lats = etopo1.variables['y'][:]
     grid_elev = etopo1.variables['z'][:]
 
-    lat_mask = np.logical_and(ll_corner[0] - 1.0 <= grid_lats, grid_lats <= ur_corner[0] + 1.0).nonzero()[0]
-    lon_mask = np.logical_and(ll_corner[1] - 1.0 <= grid_lons, grid_lons <= ur_corner[1] + 1.0).nonzero()[0]
+    lat_mask = np.logical_and(ll_corner[0] - 2.0 <= grid_lats, grid_lats <= ur_corner[0] + 2.0).nonzero()[0]
+    lon_mask = np.logical_and(ll_corner[1] - 2.0 <= grid_lons, grid_lons <= ur_corner[1] + 2.0).nonzero()[0]
 
     region_lat = grid_lats[lat_mask]
     region_lon = grid_lons[lon_mask]
@@ -273,7 +275,7 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out):
     print(" to " + str(ur_corner[0]) + ", " + str(ur_corner[1]))
 
     # load etopo_file and extract grid information
-    etopo1 = Dataset(etopo_file)
+    etopo1 = Dataset(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd")
     grid_lons = etopo1.variables['x'][:]
     grid_lats = etopo1.variables['y'][:]
     grid_elev = etopo1.variables['z'][:]
@@ -361,25 +363,34 @@ def print_usage():
 
 
 def run(option, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file):
-    if os.path.isfile(etopo_file):
-        if option == "-line":
+    if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
+        if option == "line":
             pull_line((lat1, lon1), azimuth, range, output_file)
-        elif option == "-pnt2pnt":
+        elif option == "pnt2pnt":
             pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file)
-        elif option == "-xy_grid":
-            pull_xy_grid((lat1, lon1), (lat2, lon2), (ref_lat, ref_lon), output_file)
+        elif option == "xy_grid":
+            pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file)
         else:
             pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file)    
     else:
-        print("Topography file not found.  Download at https://www.ngdc.noaa.gov/mgg/global/ and")
-        print('\t' + "update location in script header if not placed here.")
+        print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
+        download_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
+        destination = find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd.gz"
+        try:
+            wget.download(download_url, destination)
+            print("Extracting...")
+            os.system("gzip -d " + destination)
+            print("ETOPO file downloaded.  Run request again.")
+        except:
+            print("Download failed.")
+
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print_usage()
     else:
-        if os.path.isfile(etopo_file):
+        if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
             if sys.argv[1] == "-line":
                 pull_line((float(sys.argv[2]), float(sys.argv[3])), float(sys.argv[4]), float(sys.argv[5]), sys.argv[6])
             elif sys.argv[1] == "-pnt2pnt":
@@ -391,7 +402,16 @@ if __name__ == '__main__':
             else:
                 print_usage()  
         else:
-            print("Topography file not found.  Download at https://www.ngdc.noaa.gov/mgg/global/ and")
-            print('\t' + "update location in script header if not placed here.")
+            print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
+            download_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
+            destination = find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd.gz"
+            try:
+                wget.download(download_url, destination)
+                print("Extracting...")
+                os.system("gzip -d " + destination)
+                print("ETOPO file downloaded.  Run request again.")
+
+            except:
+                print("Download failed.")
 
 

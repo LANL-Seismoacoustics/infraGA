@@ -6,16 +6,18 @@ channels:
 
 dependencies:
   - cartopy
-  - matplotlib-base
   - click
   - netCDF4
   - numpy
-  - python=3.8
+  - matplotlib
+  - python
   - pyproj
   - scipy
   - ipython
   - pip
+  - wget
 
   - pip:
+    - importlib
     - -e .
 

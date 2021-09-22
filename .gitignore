@@ -10,9 +10,9 @@ infraga.egg-info*
 examples/*.dat
 examples/*/*.dat
 dev_tests/*
-scripts/__pycache*
-scripts/grid/
-scripts/*.grd
+infraga/__pycache*
+infraga/grid/
+infraga/*.grd
 doc/*.aux
 doc/*.log
 doc/*.out
@@ -22,3 +22,4 @@ doc/*.toc
 =======
 
 >>>>>>> 9e7a29d15bd033ce16b72a9447ca93debf150550
+
