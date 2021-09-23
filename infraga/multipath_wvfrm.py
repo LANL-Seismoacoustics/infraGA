@@ -243,7 +243,6 @@ def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max
             command = "rm " + profile_id + ".wvfrm_out.dat"
             command = command + " " + profile_id + ".raypaths.dat"
             command = command + " " + profile_id + ".wvfrm_init.dat"
-            command = command + " " + profile_id + ".arrivals.dat"
             os.system(command)
         
         file_out.close()
@@ -293,6 +292,7 @@ def compute_3d_wvfrm(profile, src_alt=0.0, rcvr_loc=[-400.0, 50.0, 0.0], bnc_max
         file_out.close()
     else:
         print('\n' + "No waveforms to compute.")
+    os.system("rm " + profile_id + ".arrivals.dat")
 
 def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114.0, 0.0], bnc_max=1, incl_min=incl_min, incl_max=incl_max, incl_step_max=incl_step_max, rng_max=rng_max, verbose_output=verbose_output, wvfrm_ref=wvfrm_ref, wvfrm_yld=wvfrm_yld, wvfrm_file=wvfrm_file, cpu_cnt=None):
     """
@@ -399,7 +399,6 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114
             command = "rm " + profile_id + ".wvfrm_out.dat"
             command = command + " " + profile_id + ".raypaths.dat"
             command = command + " " + profile_id + ".wvfrm_init.dat"
-            command = command + " " + profile_id + ".arrivals.dat"
             os.system(command)
         file_out.close()
  
@@ -407,7 +406,6 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114
         print("Interpolating and merging waveforms...")
         print('\t' + "Eigenrays written into " + profile_id + ".eigenrays.dat")
         print('\t' + "Arrival waveform written into " + profile_id + ".wvfrms.dat")
-
 
         t_vals = np.arange(t_lims[0], t_lims[1], 1.0 / float(wvfrm_sps))
     
@@ -453,6 +451,8 @@ def compute_sph_wvfrm(profile, src_loc=[30.0, -110.0, 0.0], rcvr_loc=[30.0, -114
         file_out.close()
     else:
         print('\n' + "No waveforms to compute.")
+    os.system("rm " + profile_id + ".arrivals.dat")
+
 
 def usage():
     print('\n\t' + "#" * 32)

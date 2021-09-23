@@ -18,15 +18,15 @@ def main(args=None):
 
     infraga - Python interface for various infraGA/GeoAc features
     
-    Methods are included here to enable visualization of infraga-sph output on a map, identification of all eigenrays and compute the combined waveform for a given source-receiver geometry, extraction of the terrain along a propagation path or within a grid, and extraction of ECMWF atmospheric files from netCDF format files
+    Methods are included here to enable visualization of infraga-sph output on a map, identification of all eigenrays and computation of the combined waveform for a given source-receiver geometry, extraction of the terrain along a propagation path or within a grid, and extraction of usable atmospheric specifications from ECMWF netCDF format files
 
     -------------------------------------------------------------------------
 
-    Note: the methods here are Python supplements to the C++ implementation of propagation simulation methods that are the core of infraGA/GeoAc.  To use the propagation simulation methods, run one of the following:
+    Note: the methods here are Python supplements to the C++ implementation of propagation simulation methods that are the core of infraGA/GeoAc.  To view usage of the propagation simulation methods, run one of the following on the command line:
 
     \b
-    \t infraga-2d
-    \t infraga-3d
+    \t infraga-2d  
+    \t infraga-3d  
     \t infraga-3d-rngdep
     \t infraga-sph
     \t infraga-sph-rngdep
@@ -36,7 +36,7 @@ def main(args=None):
     pass
 
 
-@main.command('map-arrivals')
+@main.command('map-arrivals', short_help="Visualize arrivals on a cartopy map")
 @click.option("--arrivals", help="Arrivals file from an infraga-sph simulation (required)", prompt="Specify arrivals file: ")
 @click.option("--plot-option", help="Parameter to visualize ('amplitude', 'turning-height', or 'celerity')", default='amplitude')
 @click.option("--figure-name", help="Name of output figure", default="arrivals.png")
@@ -44,7 +44,7 @@ def main(args=None):
 @click.option("--title", help="Title for the figure", default="infraga-sph arrival predictions")
 def run_map(arrivals, plot_option, figure_name, rcvrs_file, title):
     '''
-    Visualize arrivals on a Cartopy map
+    Visualize arrivals computed using infraga-sph methods on a Cartopy map
 
     \b
     Examples:
@@ -64,7 +64,7 @@ def run_map(arrivals, plot_option, figure_name, rcvrs_file, title):
     else:
         click.echo("Invalid arrivals file: " + arrivals)
 
-@main.command('multi-wvfrm')
+@main.command('multi-wvfrm', short_help="Identify eigenrays and compute a combined waveform ")
 @click.option("--specification", help="Atmospheric specification", prompt = "Specify atmospheric specification file: ")
 @click.option("--geom", help="Geometry('3d' or 'sph')", default='sph', prompt = "Specify geometry ('3d' or 'sph'): ")
 @click.option("--src-lat", help="Source latitude (only for 'sph' methods)", default=30.0)
@@ -85,8 +85,6 @@ def run_map(arrivals, plot_option, figure_name, rcvrs_file, title):
 @click.option("--wvfrm-yld", help="Source yield [kg eq. TNT] (default: 10 tons)", default=10.0e3)
 @click.option("--wvfrm-file", help="File containing a starting waveform for reference", default=None)
 @click.option("--cpu-cnt", help="CPUs to use in calculation (requires OpenMPI methods to be installed)", default=None)
-
-
 def run_wvfrm(specification, geom, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rcvr_lat, rcvr_lon, z_grnd, bnc_max, incl_min, incl_max, incl_step_max, rng_max, verbose, wvfrm_ref, wvfrm_yld, wvfrm_file, cpu_cnt):
     '''
     Identify eigenrays and compute combined waveform by running the -eig_search and -wnl_wvfrm methods in combination
@@ -101,7 +99,7 @@ def run_wvfrm(specification, geom, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rc
     mltwvfrm.run(specification, geom, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rcvr_lat, rcvr_lon, z_grnd, bnc_max, incl_min=incl_min, incl_max=incl_max, incl_step_max=incl_step_max, rng_max=rng_max, verbose_output=verbose, wvfrm_ref=wvfrm_ref, wvfrm_yld=wvfrm_yld, wvfrm_file=wvfrm_file, cpu_cnt=cpu_cnt)
 
 
-@main.command('extract-terrain')
+@main.command('extract-terrain', short_help="Extract a line or grid of terrain information")
 @click.option("--geom", help="Geometry option ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')", prompt="Enter terrain option  ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")
 @click.option("--lat1", help="Latitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=30.0)
 @click.option("--lon1", help="Longitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=-110.0)
@@ -120,15 +118,15 @@ def run_terrain(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, 
     Examples:
     \t infraga extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth -90.0 --range 750.0 --output-file line_topo.dat
     \t infraga extract-terrain --geom pnt2pnt --lat1 40.0 --lon1 -102.5 --lat2 40.0 --lon2 -110.0 --output-file line_topo.dat
-    \t infraga extract-terrain --geom xy_grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
-    \t infraga extract-terrain --geom latlon_grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
+    \t infraga extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
+    \t infraga extract-terrain --geom latlon-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
 
     '''
     terrain.run(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, output_file)
 
 
 
-@main.command('extract-ecmwf')
+@main.command('extract-ecmwf', short_help="Extract atmospheric information from an ECMWF netCDF file")
 @click.option("--ecmwf-file", help="ECMWF netCDF file")
 @click.option("--option", help="Extraction option ('single' or 'grid')", prompt="Enter terrain option  ('single' or 'grid')")
 @click.option("--lat1", help="Latitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=30.0)

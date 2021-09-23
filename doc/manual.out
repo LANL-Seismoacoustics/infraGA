@@ -1,29 +1,30 @@
-\BOOKMARK [1][-]{section.1}{Introduction and Installation}{}% 1
-\BOOKMARK [1][-]{section.2}{Using infraGA}{}% 2
-\BOOKMARK [2][-]{subsection.2.1}{2D Stratified Cartesian Propagation}{section.2}% 3
-\BOOKMARK [2][-]{subsection.2.2}{3D Stratified Cartesian Propagation}{section.2}% 4
-\BOOKMARK [2][-]{subsection.2.3}{3D Stratified Spherical Propagation}{section.2}% 5
-\BOOKMARK [2][-]{subsection.2.4}{Range Dependent Propagation}{section.2}% 6
-\BOOKMARK [1][-]{section.3}{Clarifications}{}% 7
-\BOOKMARK [2][-]{subsection.3.1}{Amplitude Output}{section.3}% 8
-\BOOKMARK [2][-]{subsection.3.2}{Range Dependent Profile Interpolation}{section.3}% 9
-\BOOKMARK [2][-]{subsection.3.3}{Running the Accelerated Methods}{section.3}% 10
-\BOOKMARK [1][-]{section.4}{Additional Parameters}{}% 11
-\BOOKMARK [2][-]{subsection.4.1}{Propagating Specific Frequencies and Modifying Absorption}{section.4}% 12
-\BOOKMARK [2][-]{subsection.4.2}{Modifying the Ground Elevation}{section.4}% 13
-\BOOKMARK [2][-]{subsection.4.3}{Modifying the Profile Format}{section.4}% 14
-\BOOKMARK [2][-]{subsection.4.4}{Writing the Caustic Points to File}{section.4}% 15
-\BOOKMARK [2][-]{subsection.4.5}{Disabling the Calculation of Amplitudes}{section.4}% 16
-\BOOKMARK [2][-]{subsection.4.6}{Modifying the Propagation Region}{section.4}% 17
-\BOOKMARK [2][-]{subsection.4.7}{Incorporating Ground Topography}{section.4}% 18
-\BOOKMARK [2][-]{subsection.4.8}{Computing waveforms along ray paths}{section.4}% 19
-\BOOKMARK [1][-]{section.5}{Plotting the Results}{}% 20
-\BOOKMARK [1][-]{section.6}{Mathematical Background - What Does infraGA Do?}{}% 21
-\BOOKMARK [2][-]{subsection.6.1}{Propagation in two-dimensions using the effective sound speed}{section.6}% 22
-\BOOKMARK [2][-]{subsection.6.2}{Propagation in three-dimensions using an inhomogeneous moving medium}{section.6}% 23
-\BOOKMARK [2][-]{subsection.6.3}{Propagation in spherical coordinates}{section.6}% 24
-\BOOKMARK [2][-]{subsection.6.4}{Eigenray methods}{section.6}% 25
-\BOOKMARK [2][-]{subsection.6.5}{Ground reflections and topography}{section.6}% 26
-\BOOKMARK [2][-]{subsection.6.6}{Weakly non-linear waveform calculation}{section.6}% 27
-\BOOKMARK [1][-]{section.7}{Acknowledgement of Use}{}% 28
-\BOOKMARK [1][-]{section.8}{Citations}{}% 29
+\BOOKMARK [1][-]{section.1}{\376\377\000I\000n\000t\000r\000o\000d\000u\000c\000t\000i\000o\000n\000\040\000a\000n\000d\000\040\000I\000n\000s\000t\000a\000l\000l\000a\000t\000i\000o\000n}{}% 1
+\BOOKMARK [1][-]{section.2}{\376\377\000U\000s\000i\000n\000g\000\040\000i\000n\000f\000r\000a\000G\000A}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{\376\377\0002\000D\000\040\000S\000t\000r\000a\000t\000i\000f\000i\000e\000d\000\040\000C\000a\000r\000t\000e\000s\000i\000a\000n\000\040\000P\000r\000o\000p\000a\000g\000a\000t\000i\000o\000n}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{\376\377\0003\000D\000\040\000S\000t\000r\000a\000t\000i\000f\000i\000e\000d\000\040\000C\000a\000r\000t\000e\000s\000i\000a\000n\000\040\000P\000r\000o\000p\000a\000g\000a\000t\000i\000o\000n}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{\376\377\0003\000D\000\040\000S\000t\000r\000a\000t\000i\000f\000i\000e\000d\000\040\000S\000p\000h\000e\000r\000i\000c\000a\000l\000\040\000P\000r\000o\000p\000a\000g\000a\000t\000i\000o\000n}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{\376\377\000R\000a\000n\000g\000e\000\040\000D\000e\000p\000e\000n\000d\000e\000n\000t\000\040\000P\000r\000o\000p\000a\000g\000a\000t\000i\000o\000n}{section.2}% 6
+\BOOKMARK [1][-]{section.3}{\376\377\000C\000l\000a\000r\000i\000f\000i\000c\000a\000t\000i\000o\000n\000s}{}% 7
+\BOOKMARK [2][-]{subsection.3.1}{\376\377\000A\000m\000p\000l\000i\000t\000u\000d\000e\000\040\000O\000u\000t\000p\000u\000t}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.2}{\376\377\000R\000a\000n\000g\000e\000\040\000D\000e\000p\000e\000n\000d\000e\000n\000t\000\040\000P\000r\000o\000f\000i\000l\000e\000\040\000I\000n\000t\000e\000r\000p\000o\000l\000a\000t\000i\000o\000n}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.3}{\376\377\000R\000u\000n\000n\000i\000n\000g\000\040\000t\000h\000e\000\040\000A\000c\000c\000e\000l\000e\000r\000a\000t\000e\000d\000\040\000M\000e\000t\000h\000o\000d\000s}{section.3}% 10
+\BOOKMARK [1][-]{section.4}{\376\377\000A\000d\000d\000i\000t\000i\000o\000n\000a\000l\000\040\000P\000a\000r\000a\000m\000e\000t\000e\000r\000s}{}% 11
+\BOOKMARK [2][-]{subsection.4.1}{\376\377\000P\000r\000o\000p\000a\000g\000a\000t\000i\000n\000g\000\040\000S\000p\000e\000c\000i\000f\000i\000c\000\040\000F\000r\000e\000q\000u\000e\000n\000c\000i\000e\000s\000\040\000a\000n\000d\000\040\000M\000o\000d\000i\000f\000y\000i\000n\000g\000\040\000A\000b\000s\000o\000r\000p\000t\000i\000o\000n}{section.4}% 12
+\BOOKMARK [2][-]{subsection.4.2}{\376\377\000M\000o\000d\000i\000f\000y\000i\000n\000g\000\040\000t\000h\000e\000\040\000G\000r\000o\000u\000n\000d\000\040\000E\000l\000e\000v\000a\000t\000i\000o\000n}{section.4}% 13
+\BOOKMARK [2][-]{subsection.4.3}{\376\377\000M\000o\000d\000i\000f\000y\000i\000n\000g\000\040\000t\000h\000e\000\040\000P\000r\000o\000f\000i\000l\000e\000\040\000F\000o\000r\000m\000a\000t}{section.4}% 14
+\BOOKMARK [2][-]{subsection.4.4}{\376\377\000W\000r\000i\000t\000i\000n\000g\000\040\000t\000h\000e\000\040\000C\000a\000u\000s\000t\000i\000c\000\040\000P\000o\000i\000n\000t\000s\000\040\000t\000o\000\040\000F\000i\000l\000e}{section.4}% 15
+\BOOKMARK [2][-]{subsection.4.5}{\376\377\000D\000i\000s\000a\000b\000l\000i\000n\000g\000\040\000t\000h\000e\000\040\000C\000a\000l\000c\000u\000l\000a\000t\000i\000o\000n\000\040\000o\000f\000\040\000A\000m\000p\000l\000i\000t\000u\000d\000e\000s}{section.4}% 16
+\BOOKMARK [2][-]{subsection.4.6}{\376\377\000M\000o\000d\000i\000f\000y\000i\000n\000g\000\040\000t\000h\000e\000\040\000P\000r\000o\000p\000a\000g\000a\000t\000i\000o\000n\000\040\000R\000e\000g\000i\000o\000n}{section.4}% 17
+\BOOKMARK [2][-]{subsection.4.7}{\376\377\000I\000n\000c\000o\000r\000p\000o\000r\000a\000t\000i\000n\000g\000\040\000G\000r\000o\000u\000n\000d\000\040\000T\000o\000p\000o\000g\000r\000a\000p\000h\000y}{section.4}% 18
+\BOOKMARK [2][-]{subsection.4.8}{\376\377\000C\000o\000m\000p\000u\000t\000i\000n\000g\000\040\000w\000a\000v\000e\000f\000o\000r\000m\000s\000\040\000a\000l\000o\000n\000g\000\040\000r\000a\000y\000\040\000p\000a\000t\000h\000s}{section.4}% 19
+\BOOKMARK [1][-]{section.5}{\376\377\000P\000l\000o\000t\000t\000i\000n\000g\000\040\000t\000h\000e\000\040\000R\000e\000s\000u\000l\000t\000s}{}% 20
+\BOOKMARK [1][-]{section.6}{\376\377\000S\000u\000p\000p\000l\000e\000m\000e\000n\000t\000a\000l\000\040\000P\000y\000t\000h\000o\000n\000\040\000F\000u\000n\000c\000t\000i\000o\000n\000a\000l\000i\000t\000y}{}% 21
+\BOOKMARK [1][-]{section.7}{\376\377\000M\000a\000t\000h\000e\000m\000a\000t\000i\000c\000a\000l\000\040\000B\000a\000c\000k\000g\000r\000o\000u\000n\000d\000\040\000-\000\040\000W\000h\000a\000t\000\040\000D\000o\000e\000s\000\040\000i\000n\000f\000r\000a\000G\000A\000\040\000D\000o\000?}{}% 22
+\BOOKMARK [2][-]{subsection.7.1}{\376\377\000P\000r\000o\000p\000a\000g\000a\000t\000i\000o\000n\000\040\000i\000n\000\040\000t\000w\000o\000-\000d\000i\000m\000e\000n\000s\000i\000o\000n\000s\000\040\000u\000s\000i\000n\000g\000\040\000t\000h\000e\000\040\000e\000f\000f\000e\000c\000t\000i\000v\000e\000\040\000s\000o\000u\000n\000d\000\040\000s\000p\000e\000e\000d}{section.7}% 23
+\BOOKMARK [2][-]{subsection.7.2}{\376\377\000P\000r\000o\000p\000a\000g\000a\000t\000i\000o\000n\000\040\000i\000n\000\040\000t\000h\000r\000e\000e\000-\000d\000i\000m\000e\000n\000s\000i\000o\000n\000s\000\040\000u\000s\000i\000n\000g\000\040\000a\000n\000\040\000i\000n\000h\000o\000m\000o\000g\000e\000n\000e\000o\000u\000s\000\040\000m\000o\000v\000i\000n\000g\000\040\000m\000e\000d\000i\000u\000m}{section.7}% 24
+\BOOKMARK [2][-]{subsection.7.3}{\376\377\000P\000r\000o\000p\000a\000g\000a\000t\000i\000o\000n\000\040\000i\000n\000\040\000s\000p\000h\000e\000r\000i\000c\000a\000l\000\040\000c\000o\000o\000r\000d\000i\000n\000a\000t\000e\000s}{section.7}% 25
+\BOOKMARK [2][-]{subsection.7.4}{\376\377\000E\000i\000g\000e\000n\000r\000a\000y\000\040\000m\000e\000t\000h\000o\000d\000s}{section.7}% 26
+\BOOKMARK [2][-]{subsection.7.5}{\376\377\000G\000r\000o\000u\000n\000d\000\040\000r\000e\000f\000l\000e\000c\000t\000i\000o\000n\000s\000\040\000a\000n\000d\000\040\000t\000o\000p\000o\000g\000r\000a\000p\000h\000y}{section.7}% 27
+\BOOKMARK [2][-]{subsection.7.6}{\376\377\000W\000e\000a\000k\000l\000y\000\040\000n\000o\000n\000-\000l\000i\000n\000e\000a\000r\000\040\000w\000a\000v\000e\000f\000o\000r\000m\000\040\000c\000a\000l\000c\000u\000l\000a\000t\000i\000o\000n}{section.7}% 28
+\BOOKMARK [1][-]{section.8}{\376\377\000A\000c\000k\000n\000o\000w\000l\000e\000d\000g\000e\000m\000e\000n\000t\000\040\000o\000f\000\040\000U\000s\000e}{}% 29
+\BOOKMARK [1][-]{section.9}{\376\377\000C\000i\000t\000a\000t\000i\000o\000n\000s}{}% 30

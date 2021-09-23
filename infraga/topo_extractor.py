@@ -14,7 +14,7 @@ import os
 import sys 
 import wget
 
-from importlib.util import find_spec 
+from importlib.util import find_spec, spec_from_file_location 
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -220,6 +220,12 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852):
     print("Extracting Cartesian grid from " + str(ll_corner[0]) + ", " + str(ll_corner[1]), end='')
     print(" to " + str(ur_corner[0]) + ", " + str(ur_corner[1]) + " with source at " + str(src_loc[0]) + ", " + str(src_loc[1]))
 
+    src_lat_check = np.logical_or(src_loc[0] < ll_corner[0], ur_corner[0] < src_loc[0])
+    src_lon_check = np.logical_or(src_loc[1] < ll_corner[1], ur_corner[1] < src_loc[1])
+    if src_lat_check or src_lon_check:
+        print("Invalid source location: source must be within region.")
+        return
+
     # load etopo_file and interpolate within region
     elev_interp = interp_etopo(ll_corner, ur_corner)
 
@@ -363,15 +369,19 @@ def print_usage():
 
 
 def run(option, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file):
+
+
     if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
         if option == "line":
             pull_line((lat1, lon1), azimuth, range, output_file)
         elif option == "pnt2pnt":
             pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file)
-        elif option == "xy_grid":
+        elif option == "xy-grid":
             pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file)
+        elif option == "latlon-grid":
+            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file)
         else:
-            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file)    
+            print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")        
     else:
         print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
         download_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
@@ -380,9 +390,21 @@ def run(option, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output
             wget.download(download_url, destination)
             print("Extracting...")
             os.system("gzip -d " + destination)
-            print("ETOPO file downloaded.  Run request again.")
+            print("ETOPO file successfully downloaded.  Running extraction...")
+
+            if option == "line":
+                pull_line((lat1, lon1), azimuth, range, output_file)
+            elif option == "pnt2pnt":
+                pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file)
+            elif option == "xy-grid":
+                pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file)
+            elif option == "latlon-grid":
+                pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file)  
+            else:
+                print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")        
         except:
             print("Download failed.")
+            print("Try manual download: " + download_url)
 
 
 

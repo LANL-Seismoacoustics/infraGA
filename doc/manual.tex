@@ -893,7 +893,8 @@ Included here are several short gnuplot scripts which are useful for displaying 
 
 \verb=set cbrange[-150:-50]=
 
-\verb#splot '{...}.raypaths.dat' u 1:3:($4 +$5) w lines lw 1 palette# \\
+\verb#splot '{...}.raypaths.dat' u 1:3:($4 +$5) w lines lw 1 palette#
+
 \verb#splot '{...}.raypaths.dat' u 2:3:($4 +$5) w lines lw 1 palette#
 
 \vspace{0.015\textheight}
@@ -937,6 +938,30 @@ Note: swap \verb=4:5= to \verb=5:4= for spherical coordinate cases to put longit
 \boxed{\includegraphics[width=0.48\textwidth]{Figures/3DExample2.png}}
 \caption[Travel Time Figure]{Arrival amplitudes and turning heights for 3D propagation.  Similar results for global case.}
 \end{figure}
+
+
+\newpage
+\section{Supplemental Python Functionality}
+\label{Sect:Python}
+
+Several supplemental features of the \verb=InfraGA/GeoAc= package are implemented using a Python interface that can be set up via an Anaconda environment.  Download and install Anaconda from \url{https://docs.anaconda.com/anaconda/install/} and use the included \verb=.yml= file to set up an environment,
+\begin{center}
+ \verb=conda env create -f infraga_env.yml=
+\end{center}
+Activate the environment via \verb=conda activate infraga_env=.  Details of the various supplemental functions are summarized below.  For each option, \verb=infraga [OPTION] --help= displays usage information.
+\begin{itemize}
+ \item \verb=extract-ecmwf=: Extracts atmospheric data from an ECMWF netCDF format file for use in \verb=infraGA/GeoAc=.  Options include extraction of a single location for stratified simulations or a grid formatted for use in \verb=-rngdep= methods. 
+
+ \item \verb=extract-terrain=: Extracts terrain information from an ETOPO1 netCDF file into a line for \verb=infraga-2d= use or a grid for use in the \verb=-3d= or \verb=-sph= methods. The methods will automatically download a copy of ETOPO1 for use.
+
+ \item \verb=map-arrivals=: Utilizes the Python \verb=cartopy= package to visualize arrival information (amplitude, celerity, or turning height) on a map.  
+
+ \item \verb=multi-wvfrm=: Python wrapper for running \verb=-eig_search= and \verb=-wnl-wvfrm= methods to predict the arrival waveform for a given source-receiver geometry.
+ 
+ 
+\end{itemize}
+
+
 
 \newpage
 \section{Mathematical Background - What Does infraGA Do?}

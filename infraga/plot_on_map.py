@@ -55,8 +55,8 @@ def run(arrivals_file, plot_option, file_out, rcvrs_file=None, title_text="infra
     arrival_lats = arrivals[:, 3]
     arrival_lons = arrivals[:, 4]
 
-    lat_min, lat_max = np.floor(min(arrival_lats)), np.ceil(max(arrival_lats))
-    lon_min, lon_max = np.floor(min(arrival_lons)), np.ceil(max(arrival_lons))
+    lat_min, lat_max = np.floor(min(min(arrival_lats), src_loc[0])), np.ceil(max(max(arrival_lats), src_loc[0]))
+    lon_min, lon_max = np.floor(min(min(arrival_lons), src_loc[1])), np.ceil(max(max(arrival_lons), src_loc[1]))
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=map_proj)
