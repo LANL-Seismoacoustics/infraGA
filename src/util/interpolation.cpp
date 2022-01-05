@@ -909,6 +909,10 @@ void interp::prep(struct hybrid_spline_3D & spline, int nx, int ny, int nz){
 }
 
 void interp::set(struct hybrid_spline_3D & spline){
+    int mx_up, mx_dn, my_up, my_dn;
+    double dfdx [spline.length_z];
+    double dfdy [spline.length_z];
+
     double dz1, dz2, ai, bi, ci, di;
     
     double new_c[spline.length_z - 1];
@@ -949,10 +953,6 @@ void interp::set(struct hybrid_spline_3D & spline){
         }
     }
     
-    int mx_up, mx_dn, my_up, my_dn;
-    double dfdx [spline.length_x][spline.length_y][spline.length_z];
-    double dfdy [spline.length_x][spline.length_y][spline.length_z];
-    
     for(int mx = 0; mx < spline.length_x; mx++){
         for(int my = 0; my < spline.length_y; my++){
             for(int mz = 0; mz < spline.length_z; mz++){
@@ -962,18 +962,13 @@ void interp::set(struct hybrid_spline_3D & spline){
                 mx_dn = max(mx - 1, 0);
                 my_dn = max(my - 1, 0);
                 
-                dfdx[mx][my][mz] = (spline.f_vals[mx_up][my][mz] - spline.f_vals[mx_dn][my][mz]) / (spline.x_vals[mx_up] - spline.x_vals[mx_dn]);
-                dfdy[mx][my][mz] = (spline.f_vals[mx][my_up][mz] - spline.f_vals[mx][my_dn][mz]) / (spline.y_vals[my_up] - spline.y_vals[my_dn]);
+                dfdx[mz] = (spline.f_vals[mx_up][my][mz] - spline.f_vals[mx_dn][my][mz]) / (spline.x_vals[mx_up] - spline.x_vals[mx_dn]);
+                dfdy[mz] = (spline.f_vals[mx][my_up][mz] - spline.f_vals[mx][my_dn][mz]) / (spline.y_vals[my_up] - spline.y_vals[my_dn]);
             }
-        }
-    }
 
-    
-    for(int mx = 0; mx < spline.length_x; mx++){
-        for(int my = 0; my < spline.length_y; my++){
             bi = 2.0 / (spline.z_vals[1] - spline.z_vals[0]);
             ci = 1.0 / (spline.z_vals[1] - spline.z_vals[0]);
-            di = 3.0 * (dfdx[mx][my][1] - dfdx[mx][my][0]) / pow(spline.z_vals[1] - spline.z_vals[0], 2);
+            di = 3.0 * (dfdx[1] - dfdx[0]) / pow(spline.z_vals[1] - spline.z_vals[0], 2);
             
             new_c[0] = ci / bi;
             new_d[0] = di / bi;
@@ -983,8 +978,8 @@ void interp::set(struct hybrid_spline_3D & spline){
                 dz2 = spline.z_vals[i + 1] - spline.z_vals[i];
             
                 ai = 1.0 / dz1; bi = 2.0 * (1.0 / dz1 + 1.0 / dz2); ci = 1.0 / dz2;
-                di = 3.0 * ((dfdx[mx][my][i] - dfdx[mx][my][i - 1]) / pow(dz1, 2)
-                          + (dfdx[mx][my][i + 1] - dfdx[mx][my][i]) / pow(dz2, 2));
+                di = 3.0 * ((dfdx[i] - dfdx[i - 1]) / pow(dz1, 2)
+                          + (dfdx[i + 1] - dfdx[i]) / pow(dz2, 2));
                 
                 new_c[i] = ci/(bi - new_c[i - 1] * ai);
                 new_d[i] = (di - new_d[i-1] * ai) / (bi - new_c[i-1] * ai);
@@ -992,7 +987,7 @@ void interp::set(struct hybrid_spline_3D & spline){
             
             ai = 1.0 / (spline.z_vals[spline.length_z - 1] - spline.z_vals[spline.length_z - 2]);
             bi = 2.0 / (spline.z_vals[spline.length_z - 1] - spline.z_vals[spline.length_z - 2]);
-            di = 3.0 * (dfdx[mx][my][spline.length_z - 1] - dfdx[mx][my][spline.length_z - 2])
+            di = 3.0 * (dfdx[spline.length_z - 1] - dfdx[spline.length_z - 2])
                         / pow(spline.z_vals[spline.length_z-1] - spline.z_vals[spline.length_z - 2], 2);
             
             new_d[spline.length_z - 1] = (di - new_d[spline.length_z - 2] * ai) / (bi - new_c[spline.length_z - 2] * ai);
@@ -1005,9 +1000,20 @@ void interp::set(struct hybrid_spline_3D & spline){
     
     for(int mx = 0; mx < spline.length_x; mx++){
         for(int my = 0; my < spline.length_y; my++){
+            for(int mz = 0; mz < spline.length_z; mz++){
+                mx_up = min(mx + 1, spline.length_x - 1);
+                my_up = min(my + 1, spline.length_y - 1);
+                
+                mx_dn = max(mx - 1, 0);
+                my_dn = max(my - 1, 0);
+                
+                dfdx[mz] = (spline.f_vals[mx_up][my][mz] - spline.f_vals[mx_dn][my][mz]) / (spline.x_vals[mx_up] - spline.x_vals[mx_dn]);
+                dfdy[mz] = (spline.f_vals[mx][my_up][mz] - spline.f_vals[mx][my_dn][mz]) / (spline.y_vals[my_up] - spline.y_vals[my_dn]);
+            }
+
             bi = 2.0 / (spline.z_vals[1] - spline.z_vals[0]);
             ci = 1.0 / (spline.z_vals[1] - spline.z_vals[0]);
-            di = 3.0 * (dfdy[mx][my][1] - dfdy[mx][my][0]) / pow(spline.z_vals[1] - spline.z_vals[0], 2);
+            di = 3.0 * (dfdy[1] - dfdy[0]) / pow(spline.z_vals[1] - spline.z_vals[0], 2);
             
             new_c[0] = ci / bi;
             new_d[0] = di / bi;
@@ -1017,8 +1023,8 @@ void interp::set(struct hybrid_spline_3D & spline){
                 dz2 = spline.z_vals[i + 1] - spline.z_vals[i];
             
                 ai = 1.0 / dz1; bi = 2.0 * (1.0 / dz1 + 1.0 / dz2); ci = 1.0 / dz2;
-                di = 3.0 * ((dfdy[mx][my][i] - dfdy[mx][my][i - 1]) / pow(dz1, 2)
-                          + (dfdy[mx][my][i + 1] - dfdy[mx][my][i]) / pow(dz2, 2) );
+                di = 3.0 * ((dfdy[i] - dfdy[i - 1]) / pow(dz1, 2)
+                          + (dfdy[i + 1] - dfdy[i]) / pow(dz2, 2));
                 
                 new_c[i] = ci / (bi - new_c[i - 1] * ai);
                 new_d[i] = (di - new_d[i - 1] * ai) / (bi - new_c[i - 1] * ai);
@@ -1026,7 +1032,7 @@ void interp::set(struct hybrid_spline_3D & spline){
             
             ai = 1.0/(spline.z_vals[spline.length_z - 1] - spline.z_vals[spline.length_z - 2]);
             bi = 2.0/(spline.z_vals[spline.length_z - 1] - spline.z_vals[spline.length_z - 2]);
-            di = 3.0 * (dfdy[mx][my][spline.length_z - 1] - dfdy[mx][my][spline.length_z - 2])
+            di = 3.0 * (dfdy[spline.length_z - 1] - dfdy[spline.length_z - 2])
                     / pow(spline.z_vals[spline.length_z - 1] - spline.z_vals[spline.length_z - 2], 2);
             
             new_d[spline.length_z - 1] = (di - new_d[spline.length_z - 2] * ai) / (bi - new_c[spline.length_z - 2] * ai);
