@@ -238,8 +238,8 @@ void run_prop(char* inputs[], int count){
     for(int i = 3; i < count; i++){
         if ((strncmp(inputs[i], "incl_min=", 9) == 0) || (strncmp(inputs[i], "min_incl=", 9) == 0)){        theta_min = atof(inputs[i] + 9);}
         else if ((strncmp(inputs[i], "incl_max=", 9) == 0) || (strncmp(inputs[i], "max_incl=", 9) == 0)){   theta_max = atof(inputs[i] + 9);}
-        else if ((strncmp(inputs[i], "az_min=", 7) == 0) || (strncmp(inputs[i], "max_az=", 7) == 0)){       phi_min = atof(inputs[i] + 7);}
-        else if ((strncmp(inputs[i], "az_max=", 7) == 0) || (strncmp(inputs[i], "min_az=", 7) == 0)){       phi_max = atof(inputs[i] + 7);}
+        else if ((strncmp(inputs[i], "az_min=", 7) == 0) || (strncmp(inputs[i], "min_az=", 7) == 0)){       phi_min = atof(inputs[i] + 7);}
+        else if ((strncmp(inputs[i], "az_max=", 7) == 0) || (strncmp(inputs[i], "max_az=", 7) == 0)){       phi_max = atof(inputs[i] + 7);}
 
         else if (strncmp(inputs[i], "incl_step=", 10) == 0){                                                theta_step = atof(inputs[i] + 10);}
         else if (strncmp(inputs[i], "az_step=", 8) == 0){                                                   phi_step = atof(inputs[i] + 8);}
