@@ -510,6 +510,12 @@ double geoac::travel_time(double ** solution, int k){
 		dr = solution[n + 1][0] - solution[n][0];   r = solution[n][0] + dr / 2.0;
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
+        if(dp > 2.0 * Pi){
+            dp -= 2.0 * Pi;
+        } else if (dp < -2.0 * Pi){
+            dp += 2.0 * Pi;
+        }
+
         ds = sqrt(pow(dr, 2) + pow(r * dt, 2) + pow(r * cos(t) * dp, 2));
 
 		nu[0] = solution[n][3] + (solution[n + 1][3] - solution[n][3]) / 2.0;
@@ -536,6 +542,13 @@ void geoac::travel_time(double & time, double ** solution, int k1, int k2){
 		dr = solution[n + 1][0] - solution[n][0];   r = solution[n][0] + dr / 2.0;
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
+
+        if(dp > 2.0 * Pi){
+            dp -= 2.0 * Pi;
+        } else if (dp < -2.0 * Pi){
+            dp += 2.0 * Pi;
+        }
+
         ds = sqrt(pow(dr, 2) + pow(r * dt, 2) + pow(r * cos(t) * dp, 2));
         
 		nu[0] = solution[n][3] + (solution[n + 1][3] - solution[n][3]) / 2.0;
@@ -568,6 +581,13 @@ void geoac::travel_time_var(double ** solution, int k, double & tt, double & tt_
 		dr = solution[n + 1][0] - solution[n][0];   r = solution[n][0] + dr / 2.0;
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
+
+        if(dp > 2.0 * Pi){
+            dp -= 2.0 * Pi;
+        } else if (dp < -2.0 * Pi){
+            dp += 2.0 * Pi;
+        }
+
         ds = sqrt(pow(dr, 2) + pow(r * dt, 2) + pow(r * cos(t) * dp, 2));
 		
         // Calculate c_g to define travel time contribution
@@ -644,6 +664,13 @@ void geoac::travel_time_var(double & tt, double & tt_var_incl, double & tt_var_a
 		dr = solution[n + 1][0] - solution[n][0];   r = solution[n][0] + dr / 2.0;
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
+
+        if(dp > 2.0 * Pi){
+            dp -= 2.0 * Pi;
+        } else if (dp < -2.0 * Pi){
+            dp += 2.0 * Pi;
+        }
+
         ds = sqrt(pow(dr, 2) + pow(r * dt, 2) + pow(r * cos(t) * dp, 2));
 		
         // Calculate c_g to define travel time contribution
@@ -722,6 +749,13 @@ double geoac::atten(double ** solution, int k, double freq){
 		dr = solution[n + 1][0] - solution[n][0];   r = solution[n][0] + dr / 2.0;
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
+
+        if(dp > 2.0 * Pi){
+            dp -= 2.0 * Pi;
+        } else if (dp < -2.0 * Pi){
+            dp += 2.0 * Pi;
+        }
+
         ds = sqrt(pow(dr, 2) + pow(r * dt, 2) + pow(r * cos(t) * dp, 2));
         
 		atten += atmo::SB_alpha(r, t, p, freq) * ds;	// Add contribution to the travel time
@@ -735,6 +769,13 @@ void geoac::atten(double & atten, double ** solution, int k1, int k2, double fre
 		dr = solution[n + 1][0] - solution[n][0];   r = solution[n][0] + dr / 2.0;
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
+
+        if(dp > 2.0 * Pi){
+            dp -= 2.0 * Pi;
+        } else if (dp < -2.0 * Pi){
+            dp += 2.0 * Pi;
+        }
+
         ds = sqrt(pow(dr, 2) + pow(r * dt, 2) + pow(r * cos(t) * dp, 2));
         
 		atten += atmo::SB_alpha(r, t, p, freq)*ds;	// Add contribution to the travel time
