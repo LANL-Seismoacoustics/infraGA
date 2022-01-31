@@ -54,6 +54,11 @@ int geoac::prop_rk4(double ** & solution, bool & check, int length){
 			solution[k + 1][i] = solution[k][i] + temp1[i] / 6.0 + temp2[i] / 3.0 + temp3[i] / 3.0 + temp4[i] / 6.0;
 		}
 
+		if(s > s_max){
+			check = true;
+			break;
+		}
+
         if(break_check(solution, k + 1)){
 			check = true;
 			break;

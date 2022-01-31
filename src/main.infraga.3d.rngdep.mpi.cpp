@@ -124,7 +124,7 @@ void usage(){
     cout << '\t' << "output_id"         << '\t' << '\t' << "see manual"         << '\t' << "from profile.met" << '\n';
     cout << '\t' << "calc_amp"          << '\t' << '\t' << "true/false"         << '\t' << "true" << '\n';
     cout << '\t' << "max_alt"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation limits" << '\n';
-    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2000.0" << '\n';
+    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
     cout << '\t' << "min_x"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation limits" << '\n';
     cout << '\t' << "max_x"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation limits" << '\n';
     cout << '\t' << "min_y"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation limits" << '\n';

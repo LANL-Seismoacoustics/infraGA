@@ -124,7 +124,8 @@ void usage(){
     cout << '\t' << "calc_amp"          << '\t' << '\t' << "true/false"         << '\t' << "true" << '\n';
     
     cout << '\t' << "max_alt"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation max" << '\n';
-    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2000.0" << '\n';
+    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
+    cout << '\t' << "max_time"          << '\t' << '\t' << '\t' << "hr"         << '\t' << '\t' << "10.0" << '\n';
     cout << '\t' << "min_lat"           << '\t' << '\t' << '\t' << "degrees"    << '\t' << '\t' << "-90.0" << '\n';
     cout << '\t' << "max_lat"           << '\t' << '\t' << '\t' << "degrees"    << '\t' << '\t' << "+90.0" << '\n';
     cout << '\t' << "min_lon"           << '\t' << '\t' << '\t' << "degrees"    << '\t' << '\t' << "-180.0" << '\n';
@@ -228,6 +229,8 @@ void run_prop(char* inputs[], int count){
         
         else if ((strncmp(inputs[i], "max_alt=", 8) == 0) || (strncmp(inputs[i], "alt_max=", 8) == 0)){     geoac::alt_max = atof(inputs[i] + 8);   if (world_rank == 0){ cout << '\t' << "User selected altitude maximum = " << geoac::alt_max << '\n';}}
         else if ((strncmp(inputs[i], "max_rng=", 8) == 0) || (strncmp(inputs[i], "rng_max=", 8) == 0)){     geoac::rng_max = atof(inputs[i] + 8);   if (world_rank == 0){ cout << '\t' << "User selected range maximum = " << geoac::rng_max << '\n';}}
+        else if ((strncmp(inputs[i], "max_time=", 9) == 0) || (strncmp(inputs[i], "time_max=", 9) == 0)){   geoac::time_max = atof(inputs[i] + 9);  if (world_rank == 0){ cout << '\t' << "User selected propagation time maximum = " << geoac::time_max << '\n';}}
+
         else if ((strncmp(inputs[i], "min_lat=", 8) == 0) || (strncmp(inputs[i], "lat_min=", 8) == 0)){     geoac::lat_min = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected latitude minimum = " << geoac::lat_min * (180.0 / Pi) << '\n';}}
         else if ((strncmp(inputs[i], "max_lat=", 8) == 0) || (strncmp(inputs[i], "lat_max=", 8) == 0)){     geoac::lat_max = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected latitude maximum = " << geoac::lat_max * (180.0 / Pi) << '\n';}}
         else if ((strncmp(inputs[i], "min_lon=", 8) == 0) || (strncmp(inputs[i], "lon_min=", 8) == 0)){     geoac::lon_min = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected longitude minimum = " << geoac::lon_min * (180.0 / Pi) << '\n';}}
@@ -487,11 +490,14 @@ void run_prop(char* inputs[], int count){
                     break_check = true;
                 }
 
+                if(k < 2 || (travel_time_sum / 3600.0) > geoac::time_max){
+                    break_check = true;
+                }
+
                 break_check_int = int(break_check);
                 MPI_Allgather(&break_check_int, 1, MPI_INT, mpi_break_check, 1, MPI_INT, MPI_COMM_WORLD);
             
                 inclination = - asin(atmo::c(solution[k][0], solution[k][1], solution[k][2]) / atmo::c(globe::r0 + z_src, lat_src, lon_src) * solution[k][3]) * (180.0 / Pi);
-
                 back_az = 90.0 - atan2(-solution[k][4], -solution[k][5]) * (180.0 / Pi);
                 if(back_az < -180.0){
                     back_az +=360.0;
@@ -673,14 +679,16 @@ void run_eig_search(char* inputs[], int count){
         
         else if ((strncmp(inputs[i], "max_alt=", 8) == 0) || (strncmp(inputs[i], "alt_max=", 8) == 0)){                 geoac::alt_max = atof(inputs[i] + 8);   if (world_rank == 0){ cout << '\t' << "User selected altitude maximum = " << geoac::alt_max << '\n';}}
         else if ((strncmp(inputs[i], "max_rng=", 8) == 0) || (strncmp(inputs[i], "rng_max=", 8) == 0)){                 geoac::rng_max = atof(inputs[i] + 8);   if (world_rank == 0){ cout << '\t' << "User selected range maximum = " << geoac::rng_max << '\n';}}
+        else if ((strncmp(inputs[i], "max_time=", 9) == 0) || (strncmp(inputs[i], "time_max=", 9) == 0)){               geoac::time_max = atof(inputs[i] + 9);  if (world_rank == 0){ cout << '\t' << "User selected propagation time maximum = " << geoac::time_max << '\n';}}
+
         else if ((strncmp(inputs[i], "min_lat=", 8) == 0) || (strncmp(inputs[i], "lat_min=", 8) == 0)){                 geoac::lat_min = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected latitude minimum = " << geoac::lat_min * (180.0 / Pi) << '\n';}}
         else if ((strncmp(inputs[i], "max_lat=", 8) == 0) || (strncmp(inputs[i], "lat_max=", 8) == 0)){                 geoac::lat_max = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected latitude maximum = " << geoac::lat_max * (180.0 / Pi) << '\n';}}
         else if ((strncmp(inputs[i], "min_lon=", 8) == 0) || (strncmp(inputs[i], "lon_min=", 8) == 0)){                 geoac::lon_min = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected longitude minimum = " << geoac::lon_min * (180.0 / Pi) << '\n';}}
         else if ((strncmp(inputs[i], "max_lon=", 8) == 0) || (strncmp(inputs[i], "lon_max=", 8) == 0)){                 geoac::lon_max = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected longitude maximum = " << geoac::lon_max * (180.0 / Pi) << '\n';}}
 
-        else if ((strncmp(inputs[i], "min_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){                   geoac::ds_min = atof(inputs[i] + 7);    if (world_rank == 0){cout << '\t' << "User selected ds minimum = " << geoac::ds_min << '\n';}}
-        else if ((strncmp(inputs[i], "max_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){                   geoac::ds_max = atof(inputs[i] + 7);    if (world_rank == 0){cout << '\t' << "User selected ds maximum = " << geoac::ds_max << '\n';}}
-        else if ((strncmp(inputs[i], "max_s=", 6) == 0) || (strncmp(inputs[i], "s_max=", 6) == 0)){                     geoac::s_max = atof(inputs[i] + 6);     if(world_rank == 0){cout << '\t' << "User selected s maximum (path length between reflections) = " << geoac::s_max << '\n';}}
+        else if ((strncmp(inputs[i], "min_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){                   geoac::ds_min = atof(inputs[i] + 7);    if (world_rank == 0){ cout << '\t' << "User selected ds minimum = " << geoac::ds_min << '\n';}}
+        else if ((strncmp(inputs[i], "max_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){                   geoac::ds_max = atof(inputs[i] + 7);    if (world_rank == 0){ cout << '\t' << "User selected ds maximum = " << geoac::ds_max << '\n';}}
+        else if ((strncmp(inputs[i], "max_s=", 6) == 0) || (strncmp(inputs[i], "s_max=", 6) == 0)){                     geoac::s_max = atof(inputs[i] + 6);     if(world_rank == 0){ cout << '\t' << "User selected s maximum (path length between reflections) = " << geoac::s_max << '\n';}}
         
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                                           write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=",12) == 0){                                                           prof_format = inputs[i] + 12;}

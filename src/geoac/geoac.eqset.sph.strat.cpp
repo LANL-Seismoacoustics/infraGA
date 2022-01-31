@@ -510,9 +510,9 @@ double geoac::travel_time(double ** solution, int k){
 		dr = solution[n + 1][0] - solution[n][0];   r = solution[n][0] + dr / 2.0;
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
-        if(dp > 2.0 * Pi){
+        if(dp > Pi){
             dp -= 2.0 * Pi;
-        } else if (dp < -2.0 * Pi){
+        } else if (dp < -Pi){
             dp += 2.0 * Pi;
         }
 
@@ -543,9 +543,9 @@ void geoac::travel_time(double & time, double ** solution, int k1, int k2){
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
 
-        if(dp > 2.0 * Pi){
+        if(dp > Pi){
             dp -= 2.0 * Pi;
-        } else if (dp < -2.0 * Pi){
+        } else if (dp < -Pi){
             dp += 2.0 * Pi;
         }
 
@@ -582,9 +582,9 @@ void geoac::travel_time_var(double ** solution, int k, double & tt, double & tt_
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
 
-        if(dp > 2.0 * Pi){
+        if(dp > Pi){
             dp -= 2.0 * Pi;
-        } else if (dp < -2.0 * Pi){
+        } else if (dp < -Pi){
             dp += 2.0 * Pi;
         }
 
@@ -665,9 +665,9 @@ void geoac::travel_time_var(double & tt, double & tt_var_incl, double & tt_var_a
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
 
-        if(dp > 2.0 * Pi){
+        if(dp > Pi){
             dp -= 2.0 * Pi;
-        } else if (dp < -2.0 * Pi){
+        } else if (dp < -Pi){
             dp += 2.0 * Pi;
         }
 
@@ -750,9 +750,9 @@ double geoac::atten(double ** solution, int k, double freq){
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
 
-        if(dp > 2.0 * Pi){
+        if(dp > Pi){
             dp -= 2.0 * Pi;
-        } else if (dp < -2.0 * Pi){
+        } else if (dp < -Pi){
             dp += 2.0 * Pi;
         }
 
@@ -770,9 +770,9 @@ void geoac::atten(double & atten, double ** solution, int k1, int k2, double fre
 		dt = solution[n + 1][1] - solution[n][1];   t = solution[n][1] + dt / 2.0;
 		dp = solution[n + 1][2] - solution[n][2];   p = solution[n][2] + dp / 2.0;
 
-        if(dp > 2.0 * Pi){
+        if(dp > Pi){
             dp -= 2.0 * Pi;
-        } else if (dp < -2.0 * Pi){
+        } else if (dp < -Pi){
             dp += 2.0 * Pi;
         }
 

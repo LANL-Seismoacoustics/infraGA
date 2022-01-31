@@ -34,6 +34,7 @@ namespace  geoac{
     //-------------------------------------//
     extern double   alt_max;    // Altitude at which to stop ray tracing
     extern double 	rng_max;    // Range at which to stop ray tracing
+    extern double   time_max;   // Maximum propagation time (for global scale simulations)
 
     extern double 	x_min;      // E-W range at which to stop ray tracing in 3D.RngDep
     extern double 	x_max;      // E-W range at which to stop ray tracing in 3D.RngDep
