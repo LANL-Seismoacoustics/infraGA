@@ -37,12 +37,15 @@ def main(args=None):
 
 
 @main.command('map-arrivals', short_help="Visualize arrivals on a cartopy map")
-@click.option("--arrivals", help="Arrivals file from an infraga-sph simulation (required)", prompt="Specify arrivals file: ")
+@click.option("--arrivals", help="Arrivals file from an infraga-sph simulation", default=None)
+@click.option("--ray-paths", help="Ray path file from an infraga-sph simulation", default=None)
 @click.option("--plot-option", help="Parameter to visualize ('amplitude', 'turning-height', or 'celerity')", default='amplitude')
 @click.option("--figure-name", help="Name of output figure", default="arrivals.png")
 @click.option("--rcvrs-file", help="File containing receiver locations (optional)", default=None)
-@click.option("--title", help="Title for the figure", default="infraga-sph arrival predictions")
-def run_map(arrivals, plot_option, figure_name, rcvrs_file, title):
+@click.option("--title", help="Title for the figure", default="infraga-sph predictions")
+@click.option("--start-time", help="Propagation time [hours] for plotting sub-set of data", default=None, type=float)
+@click.option("--end-time", help="Propagation time [hours] for plotting sub-set of data", default=None, type=float)
+def run_map(arrivals, ray_paths, plot_option, figure_name, rcvrs_file, title, start_time, end_time):
     '''
     Visualize arrivals computed using infraga-sph methods on a Cartopy map
 
@@ -52,17 +55,25 @@ def run_map(arrivals, plot_option, figure_name, rcvrs_file, title):
     \t infraga map-arrivals --arrivals ToyAtmo.arrivals.dat --plot-option celerity --figure-name 'Toy Atmo arrival celerity'
 
     '''
-    click.echo("Plotting arrival information in '" + arrivals + "' with option: '" + plot_option + "'...")
-    if os.path.isfile(arrivals):
+    if arrivals is None and ray_paths is None:
+        click.echo("Mapping requires either arrivals or ray paths file")
+    elif arrivals is not None and ray_paths is not None:
+        click.echo("Mapping cannot use both arrivals and ray paths (only include one)")
+    else:
+        if arrivals:
+            click.echo("Plotting arrival information in '" + arrivals + "' with option: '" + plot_option + "'...")
+        else:
+            click.echo("Plotting ray path information in '" + ray_paths + "'...")
+
+
         option_check = True
         option_check = np.logical_or(np.logical_or(plot_option == 'amplitude', plot_option=='turning-height'), plot_option =='celerity')
         if option_check:    
-            map.run(arrivals, plot_option, figure_name, rcvrs_file=rcvrs_file, title_text=title)
+            map.run(arrivals, ray_paths, plot_option, figure_name, rcvrs_file=rcvrs_file, title_text=title, time1=start_time, time2=end_time)
         else:
             click.echo("Invalid option for plotting: " + plot_option)
             click.echo("Valid options are: 'amplitude', 'turning-height', or 'celerity'")
-    else:
-        click.echo("Invalid arrivals file: " + arrivals)
+
 
 @main.command('multi-wvfrm', short_help="Identify eigenrays and compute a combined waveform ")
 @click.option("--specification", help="Atmospheric specification", prompt = "Specify atmospheric specification file: ")

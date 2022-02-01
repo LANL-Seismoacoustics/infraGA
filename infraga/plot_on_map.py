@@ -41,22 +41,34 @@ def usage():
     print('\t' + "turning-height" + '\t\t' + "Plot the turning height of arrivals (visualize tropospheric, stratospheric, and thermospheric arrivals)")
     print('\t' + "celerity" + '\t\t' + "Plot the celerity (horizontal group velocity) of arrivals" + '\n')
 
-def run(arrivals_file, plot_option, file_out, rcvrs_file=None, title_text="infraga-sph arrival predictions"):
-    # extract source info from the header
-    arrivals_file = open(arrivals_file, 'r')
-    for line in arrivals_file: 
-        if "source location" in line: 
-            src_loc = [float(val) for val in line[35:-1].split(", ")[:2]] 
-            break
+def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, title_text="infraga-sph predictions", time1=None, time2=None):
+    if arrivals_file is not None:
+        # extract source info from the header
+        arrivals_file = open(arrivals_file, 'r')
+        for line in arrivals_file: 
+            if "source location" in line: 
+                src_loc = [float(val) for val in line[35:-1].split(", ")[:2]] 
+                break
 
-    # load data and extract lat/lon info for the map
-    arrivals = np.loadtxt(arrivals_file)
+        # load data and extract lat/lon info for the map
+        arrivals = np.loadtxt(arrivals_file)
 
-    arrival_lats = arrivals[:, 3]
-    arrival_lons = arrivals[:, 4]
+        lats = arrivals[:, 3]
+        lons = arrivals[:, 4]
 
-    lat_min, lat_max = np.floor(min(min(arrival_lats), src_loc[0])), np.ceil(max(max(arrival_lats), src_loc[0]))
-    lon_min, lon_max = np.floor(min(min(arrival_lons), src_loc[1])), np.ceil(max(max(arrival_lons), src_loc[1]))
+        lat_min, lat_max = np.floor(min(min(lats), src_loc[0])), np.ceil(max(max(lats), src_loc[0]))
+        lon_min, lon_max = np.floor(min(min(lons), src_loc[1])), np.ceil(max(max(lons), src_loc[1]))
+    else:
+        src_loc = None
+
+        # load data and extract lat/lon info for the map
+        ray_paths = np.loadtxt(ray_paths_file)
+
+        lats = ray_paths[:, 0]
+        lons = ray_paths[:, 1]
+
+        lat_min, lat_max = np.floor(min(lats)), np.ceil(max(lats))
+        lon_min, lon_max = np.floor(min(lons)), np.ceil(max(lons))
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=map_proj)
@@ -91,53 +103,104 @@ def run(arrivals_file, plot_option, file_out, rcvrs_file=None, title_text="infra
     '''
 
     # Plot data
-    if plot_option == "turning-height":
-        ht_mask = arrivals[:,7] > 80.0
-        ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,7][ht_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+    if arrivals_file is not None:
+        if plot_option == "turning-height":
+            ht_mask = arrivals[:,7] > 80.0
+            if time1 is not None:
+                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
+            if time2 is not None:
+                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
+            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,7][ht_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
-        ht_mask = np.logical_and(arrivals[:,7] > 12.0, arrivals[:,7] < 80.0)
-        ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,7][ht_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+            ht_mask = np.logical_and(arrivals[:,7] > 12.0, arrivals[:,7] < 80.0)
+            if time1 is not None:
+                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
+            if time2 is not None:
+                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
+            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,7][ht_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
-        ht_mask = np.logical_and(arrivals[:,7] > 1.8, arrivals[:,7] < 12.0)
-        sc = ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,7][ht_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+            ht_mask = np.logical_and(arrivals[:,7] > 1.8, arrivals[:,7] < 12.0)
+            if time1 is not None:
+                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
+            if time2 is not None:
+                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
+            sc = ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,7][ht_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
-        divider = make_axes_locatable(ax)
-        ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
-        fig.add_axes(ax_cb)
-        cbar = plt.colorbar(sc, cax=ax_cb)
-        cbar.set_label('Turning Height [km]')
-    elif plot_option == "amplitude":
-        ht_mask = arrivals[:,7] > 80.0
-        ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=(arrivals[:, 10] + arrivals[:, 11])[ht_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-80.0, vmax=0.0)
+            divider = make_axes_locatable(ax)
+            ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
+            fig.add_axes(ax_cb)
+            cbar = plt.colorbar(sc, cax=ax_cb)
+            cbar.set_label('Turning Height [km]')
+        elif plot_option == "amplitude":
+            ht_mask = arrivals[:,7] > 80.0
+            if time1 is not None:
+                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
+            if time2 is not None:
+                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
+            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=(arrivals[:, 10] + arrivals[:, 11])[ht_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-80.0, vmax=0.0)
 
-        ht_mask = np.logical_and(arrivals[:,7] > 12.0, arrivals[:,7] < 80.0)
-        ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=(arrivals[:, 10] + arrivals[:, 11])[ht_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-80.0, vmax=0.0)
+            ht_mask = np.logical_and(arrivals[:,7] > 12.0, arrivals[:,7] < 80.0)
+            if time1 is not None:
+                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
+            if time2 is not None:
+                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
+            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=(arrivals[:, 10] + arrivals[:, 11])[ht_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-80.0, vmax=0.0)
 
-        ht_mask = np.logical_and(arrivals[:,7] > 1.8, arrivals[:,7] < 12.0)
-        sc = ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=(arrivals[:, 10] + arrivals[:, 11])[ht_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-80.0, vmax=0.0)
+            ht_mask = np.logical_and(arrivals[:,7] > 1.8, arrivals[:,7] < 12.0)
+            if time1 is not None:
+                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
+            if time2 is not None:
+                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
+            sc = ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=(arrivals[:, 10] + arrivals[:, 11])[ht_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-80.0, vmax=0.0)
 
-        divider = make_axes_locatable(ax)
-        ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
-        fig.add_axes(ax_cb)
-        cbar = plt.colorbar(sc, cax=ax_cb)
-        cbar.set_label('Amplitude (power rel. 1 km) [dB]')
+            divider = make_axes_locatable(ax)
+            ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
+            fig.add_axes(ax_cb)
+            cbar = plt.colorbar(sc, cax=ax_cb)
+            cbar.set_label('Amplitude (power rel. 1 km) [dB]')
+        else:
+            ht_mask = arrivals[:,7] > 80.0
+            if time1 is not None:
+                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
+            if time2 is not None:
+                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
+            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,6][ht_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+
+            ht_mask = np.logical_and(arrivals[:,7] > 12.0, arrivals[:,7] < 80.0)
+            if time1 is not None:
+                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
+            if time2 is not None:
+                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
+            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,6][ht_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+
+            ht_mask = np.logical_and(arrivals[:,7] > 1.8, arrivals[:,7] < 12.0)
+            if time1 is not None:
+                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
+            if time2 is not None:
+                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
+            sc = ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,6][ht_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+
+            divider = make_axes_locatable(ax)
+            ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
+            fig.add_axes(ax_cb)
+            cbar = plt.colorbar(sc, cax=ax_cb)
+            cbar.set_label('Celerity [m/s]')
+
+        ax.plot([src_loc[1]], [src_loc[0]], 'r*', markersize=5.0, transform=map_proj)
     else:
-        ht_mask = arrivals[:,7] > 80.0
-        ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,6][ht_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+        ht_mask = np.ones_like(ray_paths[:, 0], dtype=bool)
+        if time1 is not None:
+            ht_mask = np.logical_and(ht_mask, time1 < ray_paths[:, 5] / 3600.0)
+        if time2 is not None:
+            ht_mask = np.logical_and(ht_mask, ray_paths[:, 5] / 3600.0 < time2)
 
-        ht_mask = np.logical_and(arrivals[:,7] > 12.0, arrivals[:,7] < 80.0)
-        ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,6][ht_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
-
-        ht_mask = np.logical_and(arrivals[:,7] > 1.8, arrivals[:,7] < 12.0)
-        sc = ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,6][ht_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+        sc = ax.scatter(ray_paths[:, 1][ht_mask][::5], ray_paths[:, 0][ht_mask][::5], c=(ray_paths[:,5][ht_mask][::5] / 3600.0), transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none')
 
         divider = make_axes_locatable(ax)
         ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
         fig.add_axes(ax_cb)
         cbar = plt.colorbar(sc, cax=ax_cb)
-        cbar.set_label('Celerity [m/s]')
-
-    ax.plot([src_loc[1]], [src_loc[0]], 'r*', markersize=5.0, transform=map_proj)
+        cbar.set_label('Propagation Time [hrs]')
 
     if rcvrs_file:
         try:
