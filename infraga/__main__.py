@@ -36,10 +36,10 @@ def main(args=None):
     pass
 
 
-@main.command('map-arrivals', short_help="Visualize arrivals on a cartopy map")
+@main.command('map-results', short_help="Visualize results on a cartopy map")
 @click.option("--arrivals", help="Arrivals file from an infraga-sph simulation", default=None)
 @click.option("--ray-paths", help="Ray path file from an infraga-sph simulation", default=None)
-@click.option("--plot-option", help="Parameter to visualize ('amplitude', 'turning-height', or 'celerity')", default='amplitude')
+@click.option("--plot-option", help="Parameter to visualize for arrivals ('amplitude', 'turning-height', or 'celerity')", default='amplitude')
 @click.option("--figure-name", help="Name of output figure", default="arrivals.png")
 @click.option("--rcvrs-file", help="File containing receiver locations (optional)", default=None)
 @click.option("--title", help="Title for the figure", default="infraga-sph predictions")
@@ -47,12 +47,13 @@ def main(args=None):
 @click.option("--end-time", help="Propagation time [hours] for plotting sub-set of data", default=None, type=float)
 def run_map(arrivals, ray_paths, plot_option, figure_name, rcvrs_file, title, start_time, end_time):
     '''
-    Visualize arrivals computed using infraga-sph methods on a Cartopy map
+    Visualize arrivals or ray paths computed using infraga-sph methods on a Cartopy map
 
     \b
     Examples:
-    \t infraga map-arrivals --arrivals ToyAtmo.arrivals.dat --plot-option amplitude --figure-name 'Toy Atmo arrival amplitudes'
-    \t infraga map-arrivals --arrivals ToyAtmo.arrivals.dat --plot-option celerity --figure-name 'Toy Atmo arrival celerity'
+    \t infraga map-results --arrivals ToyAtmo.arrivals.dat --plot-option amplitude --figure-name 'Toy Atmo arrival amplitudes'
+    \t infraga map-results --arrivals ToyAtmo.arrivals.dat --plot-option celerity --figure-name 'Toy Atmo arrival celerity'
+    \t infraga map-results --ray-paths ToyAtmo.raypaths.dat --figure-name 'Toy Tamo ray paths'
 
     '''
     if arrivals is None and ray_paths is None:

@@ -89,8 +89,9 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
 
     # Add features (coast lines, borders)
     ax.add_feature(cfeature.COASTLINE, linewidth=0.5)
-    ax.add_feature(cfeature.STATES, linewidth=0.5)
     ax.add_feature(cfeature.BORDERS, linewidth=0.5)
+    if (lon_max - lon_min) < 10.0:
+        ax.add_feature(cfeature.STATES, linewidth=0.5)
 
     '''
     # these adjustable resolution calls aren't working...
@@ -104,27 +105,21 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
 
     # Plot data
     if arrivals_file is not None:
+        time_mask = np.ones_like(arrivals[:, 0])
+        if time1 is not None:
+            time_mask = np.logical_and(time_mask, time1 < arrivals[:, 5] / 3600.0)
+        if time2 is not None:
+            time_mask = np.logical_and(time_mask, arrivals[:, 5] / 3600.0 < time2)
+
         if plot_option == "turning-height":
-            ht_mask = arrivals[:,7] > 80.0
-            if time1 is not None:
-                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
-            if time2 is not None:
-                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
-            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,7][ht_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+            combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
+            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:,7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
-            ht_mask = np.logical_and(arrivals[:,7] > 12.0, arrivals[:,7] < 80.0)
-            if time1 is not None:
-                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
-            if time2 is not None:
-                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
-            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,7][ht_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 12.0, arrivals[:, 7] < 80.0))
+            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:,7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
-            ht_mask = np.logical_and(arrivals[:,7] > 1.8, arrivals[:,7] < 12.0)
-            if time1 is not None:
-                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
-            if time2 is not None:
-                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
-            sc = ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,7][ht_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 1.8, arrivals[:, 7] < 12.0))
+            sc = ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:, 7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
             divider = make_axes_locatable(ax)
             ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
@@ -132,26 +127,14 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
             cbar = plt.colorbar(sc, cax=ax_cb)
             cbar.set_label('Turning Height [km]')
         elif plot_option == "amplitude":
-            ht_mask = arrivals[:,7] > 80.0
-            if time1 is not None:
-                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
-            if time2 is not None:
-                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
-            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=(arrivals[:, 10] + arrivals[:, 11])[ht_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-80.0, vmax=0.0)
+            combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
+            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=(arrivals[:, 10] + arrivals[:, 11])[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
 
-            ht_mask = np.logical_and(arrivals[:,7] > 12.0, arrivals[:,7] < 80.0)
-            if time1 is not None:
-                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
-            if time2 is not None:
-                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
-            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=(arrivals[:, 10] + arrivals[:, 11])[ht_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-80.0, vmax=0.0)
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 12.0, arrivals[:, 7] < 80.0))
+            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=(arrivals[:, 10] + arrivals[:, 11])[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
 
-            ht_mask = np.logical_and(arrivals[:,7] > 1.8, arrivals[:,7] < 12.0)
-            if time1 is not None:
-                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
-            if time2 is not None:
-                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
-            sc = ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=(arrivals[:, 10] + arrivals[:, 11])[ht_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-80.0, vmax=0.0)
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 1.8, arrivals[:, 7] < 12.0))
+            sc = ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=(arrivals[:, 10] + arrivals[:, 11])[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
 
             divider = make_axes_locatable(ax)
             ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
@@ -159,26 +142,14 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
             cbar = plt.colorbar(sc, cax=ax_cb)
             cbar.set_label('Amplitude (power rel. 1 km) [dB]')
         else:
-            ht_mask = arrivals[:,7] > 80.0
-            if time1 is not None:
-                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
-            if time2 is not None:
-                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
-            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,6][ht_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+            combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
+            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
 
-            ht_mask = np.logical_and(arrivals[:,7] > 12.0, arrivals[:,7] < 80.0)
-            if time1 is not None:
-                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
-            if time2 is not None:
-                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
-            ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,6][ht_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 12.0, arrivals[:, 7] < 80.0))
+            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
 
-            ht_mask = np.logical_and(arrivals[:,7] > 1.8, arrivals[:,7] < 12.0)
-            if time1 is not None:
-                ht_mask = np.logical_and(ht_mask, time1 < arrivals[:, 5] / 3600)
-            if time2 is not None:
-                ht_mask = np.logical_and(ht_mask, arrivals[:, 5] / 3600.0 < time2)
-            sc = ax.scatter(arrivals[:,4][ht_mask], arrivals[:,3][ht_mask], c=arrivals[:,6][ht_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 1.8, arrivals[:, 7] < 12.0))
+            sc = ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
 
             divider = make_axes_locatable(ax)
             ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
@@ -188,13 +159,13 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
 
         ax.plot([src_loc[1]], [src_loc[0]], 'r*', markersize=5.0, transform=map_proj)
     else:
-        ht_mask = np.ones_like(ray_paths[:, 0], dtype=bool)
+        time_mask = np.ones_like(ray_paths[:, 0])
         if time1 is not None:
-            ht_mask = np.logical_and(ht_mask, time1 < ray_paths[:, 5] / 3600.0)
+            time_mask = np.logical_and(time_mask, time1 < ray_paths[:, 5] / 3600.0)
         if time2 is not None:
-            ht_mask = np.logical_and(ht_mask, ray_paths[:, 5] / 3600.0 < time2)
+            time_mask = np.logical_and(time_mask, ray_paths[:, 5] / 3600.0 < time2)
 
-        sc = ax.scatter(ray_paths[:, 1][ht_mask][::5], ray_paths[:, 0][ht_mask][::5], c=(ray_paths[:,5][ht_mask][::5] / 3600.0), transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none')
+        sc = ax.scatter(ray_paths[:, 1][time_mask], ray_paths[:, 0][time_mask], c=(ray_paths[:,5][time_mask] / 3600.0), transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=time1, vmax=time2)
 
         divider = make_axes_locatable(ax)
         ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
