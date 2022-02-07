@@ -41,7 +41,7 @@ def usage():
     print('\t' + "turning-height" + '\t\t' + "Plot the turning height of arrivals (visualize tropospheric, stratospheric, and thermospheric arrivals)")
     print('\t' + "celerity" + '\t\t' + "Plot the celerity (horizontal group velocity) of arrivals" + '\n')
 
-def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, title_text="infraga-sph predictions", time1=None, time2=None):
+def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, title_text="infraga-sph predictions", time1=None, time2=None, include_absorp=True):
     if arrivals_file is not None:
         # extract source info from the header
         arrivals_file = open(arrivals_file, 'r')
@@ -128,20 +128,25 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
             cbar.set_label('Turning Height [km]')
         elif plot_option == "amplitude":
             combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
-            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=(arrivals[:, 10] + arrivals[:, 11])[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
+            if include_absorp:
+                tloss = arrivals[:, 10] + arrivals[:, 11]
+            else:
+                tloss = arrivals[:, 10]
+
+            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 12.0, arrivals[:, 7] < 80.0))
-            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=(arrivals[:, 10] + arrivals[:, 11])[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
+            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 1.8, arrivals[:, 7] < 12.0))
-            sc = ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=(arrivals[:, 10] + arrivals[:, 11])[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
+            sc = ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
 
             divider = make_axes_locatable(ax)
             ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
             fig.add_axes(ax_cb)
             cbar = plt.colorbar(sc, cax=ax_cb)
             cbar.set_label('Amplitude (power rel. 1 km) [dB]')
-        else:
+        elif plot_option == "celerity":
             combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
             ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
 
@@ -156,6 +161,9 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
             fig.add_axes(ax_cb)
             cbar = plt.colorbar(sc, cax=ax_cb)
             cbar.set_label('Celerity [m/s]')
+
+        else:
+            ax.plot(arrivals[:,4][time_mask], arrivals[:,3][time_mask], "b.", transform=map_proj, markersize=marker_size / 2.0)
 
         ax.plot([src_loc[1]], [src_loc[0]], 'r*', markersize=5.0, transform=map_proj)
     else:
