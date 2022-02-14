@@ -346,7 +346,7 @@ void run_prop(char* inputs[], int count){
             if(write_caustics) caustics.close();
             
             for(int m = 0; m < k ; m++){
-                z_max = max (z_max, solution[m][0]);
+                z_max = max (z_max, solution[m][1]);
             }
 
     		if(break_check || k < 2){
