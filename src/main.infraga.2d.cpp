@@ -132,7 +132,7 @@ void run_prop(char* inputs[], int count){
     double theta_min = 0.5, theta_max=45.0, theta_step=0.5, azimuth=-90.0;
     double r_src = 0.0, z_src = 0.0, freq = 0.1, turn_ht_min = 0.05;
     int bounces=2, file_check;
-    bool write_atmo=false, write_caustics=false, custom_output_id=false;
+    bool write_atmo=false, write_caustics=false, custom_output_id=false, print_resid=false;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
     char* output_id;
@@ -191,6 +191,8 @@ void run_prop(char* inputs[], int count){
                                                                                                                 cout << '\t' << "Note: cannot adjust ground elevation with topography." << '\n';
                                                                                                             }}
         else if (strncmp(inputs[i], "topo_file=",10) == 0){                                                 topo_file = inputs[i] + 10; geoac::is_topo=true;}
+        else if (strncmp(inputs[i], "print_resid=", 12) == 0){                                              print_resid = string2bool(inputs[i] + 12);}
+
         else{
             cout << "***WARNING*** Unrecognized parameter entry: " << inputs[i] << '\n';
             cout << "Continue? (y/n):"; cin >> input_check;
@@ -313,6 +315,10 @@ void run_prop(char* inputs[], int count){
 		for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){
             
 			k = geoac::prop_rk4(solution, break_check, length);
+            if(print_resid){
+                cout << '\t' << "Residuals at Ray Termination (region boundary or reflection):" << '\n';
+                cout << '\t' << '\t' << "Eikonal residual: " << geoac::eval_eikonal(solution, k - 1) << '\n';
+            }
 
             if(write_caustics) {
                 sprintf(output_buffer, "%s.caustics-%i.dat", output_id, bnc_cnt);

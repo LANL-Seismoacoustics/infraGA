@@ -207,7 +207,7 @@ void run_prop(char* inputs[], int count){
     double phi_min = -90.0, phi_max = -90.0, phi_step = 1.0;
     int bounces=2, file_check;
     double lat_src = 30.0, lon_src = 0.0, z_src = 0.0;
-    bool write_atmo=false, write_rays=true, write_caustics=false, write_topo=false, custom_output_id=false;
+    bool write_atmo=false, write_rays=true, write_caustics=false, write_topo=false, custom_output_id=false, print_resid=false;
     double freq = 0.1, turn_ht_min = 0.2;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
@@ -294,6 +294,9 @@ void run_prop(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){                                                topo_file = inputs[i] + 10; geoac::is_topo=true;}
         else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){                                             topo::use_BLw = string2bool(inputs[i] + 13);}
         else if (strncmp(inputs[i], "write_topo=", 11) == 0){                                               write_topo = string2bool(inputs[i] + 11);}
+
+        else if (strncmp(inputs[i], "print_resid=", 12) == 0){                                              print_resid = string2bool(inputs[i] + 12);}
+
         else{
             cout << "***WARNING*** Unrecognized parameter entry: " << inputs[i] << '\n';
             cout << "Continue? (y/n):"; cin >> input_check;
@@ -439,7 +442,12 @@ void run_prop(char* inputs[], int count){
 
             for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){
                 k = geoac::prop_rk4(solution, break_check, length);
-            
+                if(print_resid){
+                    cout << '\t' << "Residuals at Ray Termination (region boundary or reflection):" << '\n';
+                    cout << '\t' << '\t' << "Eikonal residual: " << geoac::eval_eikonal(solution, k - 1) << '\n';
+                    cout << '\t' << '\t' << "Aux. param. residual: " << geoac::eval_eikonal_deriv(solution, k - 1) << '\n';
+                }
+
                 if(write_rays || write_caustics){
                     if(write_caustics){
                         sprintf(output_buffer, "%s.caustics-%i.dat", output_id, bnc_cnt);
