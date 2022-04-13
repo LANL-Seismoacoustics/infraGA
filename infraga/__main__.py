@@ -11,6 +11,7 @@ from . import plot_on_map as map
 from . import multipath_wvfrm as mltwvfrm
 from . import topo_extractor as terrain 
 from . import ecmwf_extractor as ecmwf
+from . import g2s_grid
 
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
@@ -145,7 +146,7 @@ def run_terrain(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, 
 
 def run_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, output_path, sample_skips):
     '''
-    Identify eigenrays and compute combined waveform (run -eig_search and -wnl_wvfrm methods) 
+    Extract vertical profiles from an ECMWF NetCDF format file.  Able to extract a single file or a range dependent grid.
 
     \b
     Examples:
@@ -154,6 +155,29 @@ def run_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, output_path, sample_sk
 
     '''
     ecmwf.run(ecmwf_file, option, lat1, lon1, lat2, lon2, output_path, sample_skips)
+
+
+
+@main.command('build-g2s-grid', short_help="Build grid for -rngdep analysis from G2S grid")
+@click.option("--g2s-path", help="Path to G2S specifications", prompt="Specify directory containing G2S specifications: ")
+@click.option("--output-path", help="Output dir + label", prompt="Specify output directory and label: ")
+@click.option("--src-info", help="Source info (lat, lon, time) (optional)", default=None)
+@click.option("--celerity-est", help="Celerity estimate [km/s] (optional)", default=0.29)
+def run_ecmwf(g2s_path, output_path, src_info, celerity_est):
+    '''
+    Construct the numbered specifications and grid files needed to run -rngdep methods.
+    Assumes file format from https://g2s.ncpa.olemiss.edu/ (e.g., g2stxt_2022011506_-3.0000_-54.0000.dat)
+
+    Inclusion of source info (location and time), an estimated celerity, and profiles at multiple reference times enables construction of a temporally varying grid where a node at a distance, r, from the source has an estimated time delay of, dt = r / cel, and uses the appropriate atmospheric information
+
+    \b
+    Examples:
+    \t infraga build-g2s-grid --g2s-path g2s_dir/ --output-path grid/g2s_grid
+    \t infraga build-g2s-grid --g2s-path g2s_dir/ --output-path grid/g2s_grid --src-info '[-20.56989, -175.379975, 2022-01-15T04:14:45]' --celerity-est 0.29
+
+    '''
+
+    g2s_grid.run(g2s_path, output_path, src_info, celerity_est)
 
 
 
