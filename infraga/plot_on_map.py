@@ -90,8 +90,10 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
     # Add features (coast lines, borders)
     ax.add_feature(cfeature.COASTLINE, linewidth=0.5)
     ax.add_feature(cfeature.BORDERS, linewidth=0.5)
-    if (lon_max - lon_min) < 10.0:
+    if (lon_max - lon_min) < 20.0:
         ax.add_feature(cfeature.STATES, linewidth=0.5)
+        ax.add_feature(cfeature.RIVERS, edgecolor='dodgerblue', alpha=0.3)
+        ax.add_feature(cfeature.LAKES, facecolor='dodgerblue', edgecolor='dodgerblue', alpha=0.3)
 
     '''
     # these adjustable resolution calls aren't working...
@@ -99,8 +101,6 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
     ax.add_feature(cfeature.STATES.with_scale(resol))
     ax.add_feature(cfeature.BORDERS.with_scale(resol))
 
-    ax.add_feature(cfeature.RIVERS.with_scale(resol), edgecolor="blue")
-    ax.add_feature(cfeature.LAKES.with_scale(resol), edgecolor='0.25')
     '''
 
     # Plot data
