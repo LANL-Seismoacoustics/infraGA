@@ -54,9 +54,9 @@ def run_map(arrivals, ray_paths, plot_option, figure_name, rcvrs_file, title, st
 
     \b
     Examples:
-    \t infraga map-results --arrivals ToyAtmo.arrivals.dat --plot-option amplitude --figure-name 'Toy Atmo arrival amplitudes'
-    \t infraga map-results --arrivals ToyAtmo.arrivals.dat --plot-option celerity --figure-name 'Toy Atmo arrival celerity'
-    \t infraga map-results --ray-paths ToyAtmo.raypaths.dat --figure-name 'Toy Tamo ray paths'
+    \t infraga map-results --arrivals ToyAtmo.arrivals.dat --plot-option amplitude --title 'Toy Atmo arrival amplitudes' --figure-name ToyAtmo.arrivals.png
+    \t infraga map-results --arrivals ToyAtmo.arrivals.dat --plot-option celerity --title 'Toy Atmo arrival celerity' --figure-name ToyAtmo.celerities.png
+    \t infraga map-results --ray-paths ToyAtmo.raypaths.dat --title 'Toy Atmo ray paths' --figure-name ToyAtmo.raypaths.png
 
     '''
     if arrivals is None and ray_paths is None:
