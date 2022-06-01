@@ -101,9 +101,12 @@ def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=1.852):
     line_pnts = sph_proj.npts(src_loc[1], src_loc[0], rcvr_loc[1], rcvr_loc[0], N, radians=False)
 
     output = open(file_out, 'w')
-    # print("# Rng [km]" + '\t' + "Elev [km]", file=output)
-    # note: infraGA methods to ingest topo file can't recognize header notation yet, so no header in these files
-    print(0.0, '\t', elev_interp(src_loc[1], src_loc[0])[0], file=output)
+
+    print("# 'infraga extract-terrain --geom pnt2pnt' summary:", file=output)
+    print("# src_loc:", src_loc, file=output)
+    print("# rcvr_loc:", rcvr_loc, file=output)
+    print('#% r, km', file=output)
+    print('#% z, km', file=output)
     for n in range(N):
         print(sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0, file=output, end='\t')
         print(elev_interp(line_pnts[n][0], line_pnts[n][1])[0], file=output)
@@ -166,9 +169,14 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852):
     rng_vals, elev_vals = np.empty(N), np.empty(N)
 
     output = open(file_out, 'w')
-    # print("# Rng [km]" + '\t' + "Elev [km]", file=output)
-    # note: infraGA methods to ingest topo file can't recognize header notation yet, so no header in these files
-    print('{}\t{}\t{}'.format(src_loc[0], src_loc[1], elev_interp(src_loc[1], src_loc[0])[0]), file=output)
+    print("# 'infraga extract-terrain --geom line' summary:", file=output)
+    print("# lat: " + str(src_loc[0]), file=output)
+    print("# lon: " + str(src_loc[1]), file=output)
+    print("# azimuth: " + str(azimuth), file=output)
+    print("# range: " + str(rng_max), file=output)
+    print('#% r, km', file=output)
+    print('#% z, km', file=output)
+
     for n in range(N):
         print(sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0, file=output, end='\t')
         print(elev_interp(line_pnts[n][0], line_pnts[n][1])[0], file=output)

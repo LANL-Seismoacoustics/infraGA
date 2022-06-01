@@ -135,13 +135,21 @@ int set_region(char* atmo_file, char* atmo_format, bool invert_winds){
 int set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert_winds){
     cout << "Interpolating atmosphere data in '" << atmo_file << "' and topography data in '" << topo_file << "'..." << '\n';
 
+    int n = 0;
+    double temp;
+    string line;
     ifstream file_in;
-    
+
     interp::prep(topo::spline, file_length(topo_file));
     file_in.open(topo_file);
-    for (int n = 0; n < topo::spline.length; n++){
-        file_in >> topo::spline.x_vals[n];
-        file_in >> topo::spline.f_vals[n];
+    while(!file_in.eof() && n < topo::spline.length){
+        getline (file_in, line);
+        if(line.find("#") != 0){
+            stringstream ss(line);
+            ss >> topo::spline.x_vals[n];
+            ss >> topo::spline.f_vals[n];
+            n++;
+        }
     }
     file_in.close();
 
@@ -149,11 +157,8 @@ int set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert_
     interp::prep(atmo::u_spline,    atmo::c_spline.length);
     interp::prep(atmo::v_spline,    atmo::c_spline.length);
     interp::prep(atmo::rho_spline,  atmo::c_spline.length);
-
-    int n = 0;
-    double temp;
-    string line;
    
+    n = 0;
     file_in.open(atmo_file);
     if(!file_in.is_open()){
         cout << '\t' << "ERROR: Invalid atmospheric specification (" << atmo_file << ")" << '\n' << '\n';
