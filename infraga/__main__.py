@@ -118,7 +118,8 @@ def run_wvfrm(specification, geom, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rc
 @click.option("--azimuth", help="Azimuth of great circle path for line option", default=-90.0)
 @click.option("--range", help="Great circle distance for line option", default=1000.0)
 @click.option("--output-file", help="Output file", prompt="Specify output file: ")
-def run_terrain(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, output_file):
+@click.option("--show-terrain", help="Visualize terrain results", default=True)
+def run_terrain(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, output_file, show_terrain):
     '''
     Extract lines or grids of terrain information from an ETOPO1 file
 
@@ -130,7 +131,7 @@ def run_terrain(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, 
     \t infraga extract-terrain --geom latlon-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
 
     '''
-    terrain.run(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, output_file)
+    terrain.run(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, output_file, show_terrain)
 
 
 

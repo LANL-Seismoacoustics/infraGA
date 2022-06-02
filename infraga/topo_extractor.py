@@ -65,7 +65,7 @@ def interp_etopo(ll_corner, ur_corner):
     return interpolate.interp2d(region_lon, region_lat, region_elev / 1000.0, kind='linear')
 
     
-def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=1.852):
+def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=1.852, show_fig=True):
     """
         Extract topography information along a line defined
             by source and receiver locations (latitude, 
@@ -112,22 +112,23 @@ def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=1.852):
         print(elev_interp(line_pnts[n][0], line_pnts[n][1])[0], file=output)
     output.close()
 
-    # interpolate at 2x resolution to plot
-    N_highres = 2 * N
-    line_pnts = sph_proj.npts(src_loc[1], src_loc[0], rcvr_loc[1], rcvr_loc[0], N_highres, radians=False)
-    rng_vals, elev_vals = np.empty(N_highres), np.empty(N_highres)
+    if show_fig:
+        # interpolate at 2x resolution to plot
+        N_highres = 2 * N
+        line_pnts = sph_proj.npts(src_loc[1], src_loc[0], rcvr_loc[1], rcvr_loc[0], N_highres, radians=False)
+        rng_vals, elev_vals = np.empty(N_highres), np.empty(N_highres)
 
-    for n in range(N_highres):
-        rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
-        elev_vals[n] = elev_interp(line_pnts[n][0], line_pnts[n][1])[0]
+        for n in range(N_highres):
+            rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
+            elev_vals[n] = elev_interp(line_pnts[n][0], line_pnts[n][1])[0]
 
-    plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.25')
-    plt.xlabel("Range [km]")
-    plt.ylabel("Elevation [km]")
-    plt.show()
+        plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.25')
+        plt.xlabel("Range [km]")
+        plt.ylabel("Elevation [km]")
+        plt.show()
 
 
-def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852):
+def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852, show_fig=True):
     """
         Extract topography information along a line defined
             by a great circle path from a source location 
@@ -182,23 +183,24 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852):
         print(elev_interp(line_pnts[n][0], line_pnts[n][1])[0], file=output)
     output.close()
 
-    # interpolate at 4x resolution to plot
-    N = int(rng_max / resol * 4)
-    line_pnts = sph_proj.npts(src_loc[1], src_loc[0], end_loc[0], end_loc[1], N, radians=False)
-    rng_vals, elev_vals = np.empty(N), np.empty(N)
+    if show_fig:
+        # interpolate at 4x resolution to plot
+        N = int(rng_max / resol * 4)
+        line_pnts = sph_proj.npts(src_loc[1], src_loc[0], end_loc[0], end_loc[1], N, radians=False)
+        rng_vals, elev_vals = np.empty(N), np.empty(N)
 
-    for n in range(N):
-        rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
-        elev_vals[n] = elev_interp(line_pnts[n][0], line_pnts[n][1])[0]
-  
-    plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.25')
-    plt.xlabel("Range [km]")
-    plt.ylabel("Elevation [km]")
-    plt.show()
+        for n in range(N):
+            rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
+            elev_vals[n] = elev_interp(line_pnts[n][0], line_pnts[n][1])[0]
+    
+        plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.25')
+        plt.xlabel("Range [km]")
+        plt.ylabel("Elevation [km]")
+        plt.show()
     
     
 
-def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852):
+def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852, show_fig=True):
     """
         Extract topography information across a region defined
             by the lower-left and upper-right corner latitudes
@@ -258,16 +260,17 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852):
             print(x_vals[n], y_vals[m], xy_elev[n][m], file=output)
     output.close()
 
-    XX, YY = np.meshgrid(x_vals, y_vals)
-    plt.pcolormesh(XX, YY, xy_elev.T, cmap=plt.cm.terrain, vmin=0.0)
-    plt.xlabel("Range (E/W) [km]")
-    plt.ylabel("Range (N/S) [km]")
-    plt.colorbar(label="Elevation [km]")
+    if show_fig:
+        XX, YY = np.meshgrid(x_vals, y_vals)
+        plt.pcolormesh(XX, YY, xy_elev.T, cmap=plt.cm.terrain, vmin=0.0)
+        plt.xlabel("Range (E/W) [km]")
+        plt.ylabel("Range (N/S) [km]")
+        plt.colorbar(label="Elevation [km]")
 
-    plt.show()
+        plt.show()
 
 
-def pull_latlon_grid(ll_corner, ur_corner, file_out):
+def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True):
     """
         Extract topography information across a region defined
             by the lower-left and upper-right corner latitudes
@@ -309,12 +312,13 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out):
             print(region_lat[n], region_lon[m], max(region_elev[n][m], 0.0) / 1.0e3, file=output)
     output.close()
 
-    LON, LAT = np.meshgrid(region_lon, region_lat)
-    plt.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, vmin=0.0)
-    plt.xlabel("Longitude [deg]")
-    plt.ylabel("Latitude [deg]")
-    plt.colorbar(label="Elevation [km]")
-    plt.show()
+    if show_fig:
+        LON, LAT = np.meshgrid(region_lon, region_lat)
+        plt.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, vmin=0.0)
+        plt.xlabel("Longitude [deg]")
+        plt.ylabel("Latitude [deg]")
+        plt.colorbar(label="Elevation [km]")
+        plt.show()
 
 
 def print_usage():
@@ -376,18 +380,18 @@ def print_usage():
     print('\t' + "python topo_extractor.py -latlon_grid 35.0 -110.0 45.0 -100.0 sph_topo.dat" + '\n')
 
 
-def run(option, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file):
+def run(option, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file, show_fig):
 
 
     if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
         if option == "line":
-            pull_line((lat1, lon1), azimuth, range, output_file)
+            pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_fig)
         elif option == "pnt2pnt":
-            pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file)
+            pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)
         elif option == "xy-grid":
-            pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file)
+            pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)
         elif option == "latlon-grid":
-            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file)
+            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)
         else:
             print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")        
     else:
@@ -401,13 +405,13 @@ def run(option, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output
             print("ETOPO file successfully downloaded.  Running extraction...")
 
             if option == "line":
-                pull_line((lat1, lon1), azimuth, range, output_file)
+                pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_fig)
             elif option == "pnt2pnt":
-                pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file)
+                pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)
             elif option == "xy-grid":
-                pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file)
+                pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)
             elif option == "latlon-grid":
-                pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file)  
+                pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)  
             else:
                 print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")        
         except:
