@@ -194,7 +194,8 @@ def run_visualize_atmo(specification, format, max_alt):
 
     \b
     Examples:
-    \t infraga visualize_atmo --specification examples/G2S_example.met
+    \t infraga visualize-atmo --specification examples/ToyAtmo.met
+    \t infraga visualize-atmo --specification examples/G2S_example.met
 
     '''
 
