@@ -12,6 +12,7 @@ from . import multipath_wvfrm as mltwvfrm
 from . import topo_extractor as terrain 
 from . import ecmwf_extractor as ecmwf
 from . import g2s_grid
+from . import analyze_atmo
 
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
@@ -181,6 +182,24 @@ def run_ecmwf(g2s_path, output_path, src_info, celerity_est):
     g2s_grid.run(g2s_path, output_path, src_info, celerity_est)
 
 
+
+@main.command('visualize-atmo', short_help="Visualize information about an atmospheric specification")
+@click.option("--specification", help="Atmospheric specification file")
+@click.option("--max-alt", help="Maximum altitude for analysis (default: 120 km)", default=120)
+@click.option("--format", help="Atmospheric specification format (default: 'zTuvdp')", default='zTuvdp')
+def run_visualize_atmo(specification, format, max_alt):
+    '''
+    Visualize the sound speed, wind fields, and effective sound speed ratio ducting information for an atmospheric specification
+
+
+    \b
+    Examples:
+    \t infraga visualize_atmo --specification examples/G2S_example.met
+
+    '''
+
+    analyze_atmo.run(specification, format, max_alt)
+    
 
 if __name__ == '__main__':
     main()
