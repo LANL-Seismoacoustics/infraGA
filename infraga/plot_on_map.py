@@ -112,6 +112,7 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
             time_mask = np.logical_and(time_mask, arrivals[:, 5] / 3600.0 < time2)
 
         if plot_option == "turning-height":
+            print('\t' + "Generating map with turning height info....")
             combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
             ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:,7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
@@ -127,6 +128,7 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
             cbar = plt.colorbar(sc, cax=ax_cb)
             cbar.set_label('Turning Height [km]')
         elif plot_option == "amplitude":
+            print('\t' + "Generating map with amplitude info....")
             combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
             if include_absorp:
                 tloss = arrivals[:, 10] + arrivals[:, 11]
@@ -147,6 +149,7 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
             cbar = plt.colorbar(sc, cax=ax_cb)
             cbar.set_label('Amplitude (power rel. 1 km) [dB]')
         elif plot_option == "celerity":
+            print('\t' + "Generating map with celerity info....")
             combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
             ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
 
@@ -186,9 +189,11 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
             rcvr_locs = np.loadtxt(rcvrs_file)
             ax.plot(rcvr_locs[:, 1], rcvr_locs[:, 0], 'k^', markersize=3.0, transform=map_proj)
         except:
-            print("Invalid receivers file.  Omitting from plot.")
+            print('\t\t' + "Invalid receivers file.  Omitting from plot.")
 
+    print('\t' + "Saving map to " + file_out)
     plt.savefig(file_out, dpi=250)
+    plt.show()
 
 
 if __name__ == '__main__':

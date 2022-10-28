@@ -101,7 +101,7 @@ def run_wvfrm(specification, geom, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rc
     \b
     Examples:
     \t infraga multi-wvfrm --specification ToyAtmo.met --geom 3d --rcvr-x 175.0 --rcvr-y 75.0 --bnc-max 0 --wvfrm-yld 10.0e3
-    \t infraga multi-wvfrm --specification ToyAtmo.met --geom sph --src-lat 30.0 --src-lon -110.0 --rcvr-lat 30.5 --rcvr-lon 115.0 --bnc-max 1 --wvfrm-yld 1.0e3
+    \t infraga multi-wvfrm --specification ToyAtmo.met --geom sph --src-lat 30.0 --src-lon -110.0 --rcvr-lat 30.5 --rcvr-lon -114.0 --bnc-max 1 --wvfrm-yld 1.0e3
 
     '''
     click.echo("Running multi-waveform methods with specification '" + specification + "' and option: '" + geom + "'...")

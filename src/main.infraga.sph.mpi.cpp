@@ -266,10 +266,8 @@ void run_prop(char* inputs[], int count){
     lat_src *= Pi / 180.0;
     lon_src *= Pi / 180.0;
     
-    // Use WGS84 to set the radius if using the spherical model
-    // and set the source height at topographical ground above sea level
+    // Set the source height at topographical ground above sea level
     z_src = max(z_src, topo::z(lat_src, lon_src) - globe::r0);
-    
     geoac::configure();
 
     if (world_rank == 0){
