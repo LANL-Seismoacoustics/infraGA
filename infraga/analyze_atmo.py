@@ -72,7 +72,7 @@ def run(specification, spec_format='zTuvdp', alt_max=None):
 
     incl_vals = np.arange(0.0, 50.0, 0.2)
     for az in np.arange(-180.0, 180.0, 1.0):
-        ceff = (c + np.sin(np.radians(az)) * u + np.cos(np.radians(az)))[ht_mask]
+        ceff = (c + u * np.sin(np.radians(az)) + v * np.cos(np.radians(az)))[ht_mask]
         refract_ht = [z[ht_mask][np.min(np.where((ceff / ceff[0]) * np.cos(np.radians(incl)) > 1.0)[0])] if len(np.where((ceff / ceff[0]) * np.cos(np.radians(incl)) > 1.0)[0]) > 0 else alt_max for incl in incl_vals]
         sc = ax[2].scatter([az] * len(refract_ht), incl_vals, c=refract_ht, cmap=cm.jet_r, marker="s", s=5.0, alpha=0.75, edgecolor='none', vmin=grnd_ht, vmax=120.0)
 
