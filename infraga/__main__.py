@@ -49,7 +49,8 @@ def main(args=None):
 @click.option("--start-time", help="Propagation time [hours] for plotting sub-set of data", default=None, type=float)
 @click.option("--end-time", help="Propagation time [hours] for plotting sub-set of data", default=None, type=float)
 @click.option("--include-absorption", help="Include Sutherland & Bass losses", default=True)
-def run_map(arrivals, ray_paths, plot_option, figure_name, rcvrs_file, title, start_time, end_time, include_absorption):
+@click.option("--cartopy-data-dir", help="Path for pre-existing Cartopy data", default=None)
+def run_map(arrivals, ray_paths, plot_option, figure_name, rcvrs_file, title, start_time, end_time, include_absorption, cartopy_data_dir):
     '''
     Visualize arrivals or ray paths computed using infraga-sph methods on a Cartopy map
 
@@ -70,7 +71,7 @@ def run_map(arrivals, ray_paths, plot_option, figure_name, rcvrs_file, title, st
         else:
             click.echo("Plotting ray path information in '" + ray_paths + "'...")
 
-        map.run(arrivals, ray_paths, plot_option, figure_name, rcvrs_file=rcvrs_file, title_text=title, time1=start_time, time2=end_time, include_absorp=include_absorption)
+        map.run(arrivals, ray_paths, plot_option, figure_name, rcvrs_file=rcvrs_file, title_text=title, time1=start_time, time2=end_time, include_absorp=include_absorption, cartopy_data_dir=cartopy_data_dir)
 
 
 @main.command('multi-wvfrm', short_help="Identify eigenrays and compute a combined waveform ")
