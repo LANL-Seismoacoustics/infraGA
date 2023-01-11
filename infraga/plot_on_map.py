@@ -85,7 +85,8 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
     gl.top_labels = False
     gl.right_labels = False
 
-    lat_tick, lon_tick = int((lat_max - lat_min) / 5), int((lon_max - lon_min) / 5)
+    lat_tick, lon_tick = max(2, int((lat_max - lat_min) / 5.0)), max(2, int((lon_max - lon_min) / 5.0))
+
     gl.xlocator = mticker.FixedLocator(np.arange(lon_min - np.ceil(lon_tick / 2), lon_max + lon_tick, lon_tick))
     gl.ylocator = mticker.FixedLocator(np.arange(lat_min - np.ceil(lat_tick / 2), lat_max + lat_tick, lat_tick))
     gl.xformatter = LONGITUDE_FORMATTER
