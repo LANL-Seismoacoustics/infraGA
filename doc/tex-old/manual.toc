@@ -1,0 +1,30 @@
+\contentsline {section}{\numberline {1}Introduction and Installation}{3}{section.1}%
+\contentsline {section}{\numberline {2}Using infraGA}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}2D Stratified Cartesian Propagation}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}3D Stratified Cartesian Propagation}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}3D Stratified Spherical Propagation}{7}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Range Dependent Propagation}{9}{subsection.2.4}%
+\contentsline {section}{\numberline {3}Clarifications}{11}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Amplitude Output}{11}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Range Dependent Profile Interpolation}{11}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Running the Accelerated Methods}{11}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Additional Parameters}{13}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Propagating Specific Frequencies and Modifying Absorption}{13}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Modifying the Ground Elevation}{13}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Modifying the Profile Format}{13}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Writing the Caustic Points to File}{13}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Disabling the Calculation of Amplitudes}{14}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Modifying the Propagation Region}{14}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}Incorporating Ground Topography}{14}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}Computing waveforms along ray paths}{15}{subsection.4.8}%
+\contentsline {section}{\numberline {5}Plotting the Results}{17}{section.5}%
+\contentsline {section}{\numberline {6}Supplemental Python Functionality}{19}{section.6}%
+\contentsline {section}{\numberline {7}Mathematical Background - What Does infraGA Do?}{20}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Propagation in two-dimensions using the effective sound speed}{22}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Propagation in three-dimensions using an inhomogeneous moving medium}{22}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Propagation in spherical coordinates}{22}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Eigenray methods}{22}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Ground reflections and topography}{23}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}Weakly non-linear waveform calculation}{23}{subsection.7.6}%
+\contentsline {section}{\numberline {8}Acknowledgement of Use}{25}{section.8}%
+\contentsline {section}{\numberline {9}Citations}{25}{section.9}%
