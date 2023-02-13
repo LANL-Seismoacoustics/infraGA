@@ -7,6 +7,7 @@ import click
 
 import numpy as np 
 
+from . import run_infraga
 from . import plot_on_map as map
 from . import multipath_wvfrm as mltwvfrm
 from . import topo_extractor as terrain 
@@ -39,7 +40,51 @@ def main(args=None):
     pass
 
 
-@main.command('map-results', short_help="Visualize results on a cartopy map")
+@click.group('2d', short_help="Run 2d (effective sound speed) ray tracing", context_settings={'help_option_names': ['-h', '--help']})
+def run_2d():
+    '''
+    infraga 2d - run effective sound speed ray tracing in an azimuthal plane (r vs. z)
+    
+    '''
+    pass 
+
+@click.group('3d', short_help="Run 3d (moving medium) ray tracing", context_settings={'help_option_names': ['-h', '--help']})
+def run_3d():
+    '''
+    infraga 3d - run Cartesian (x, y, z) geometry ray tracing
+    
+    '''
+    pass 
+
+@click.group('sph', short_help="Run spherical layer (moving medium) ray tracing", context_settings={'help_option_names': ['-h', '--help']})
+def run_sph():
+    '''
+    infraga sph - run spherical atmosphere layer geometry (latitude, longitude, altitude) ray tracing
+    
+    '''
+    pass 
+
+@click.group('utils', short_help="Various utility functions", context_settings={'help_option_names': ['-h', '--help']})
+def utils():
+    '''
+    infraga utils - various utility functions for infraga usage
+    
+    '''
+    pass 
+
+main.add_command(run_2d)
+main.add_command(run_3d)
+main.add_command(run_sph)
+main.add_command(utils)
+
+run_2d.add_command(run_infraga.run_2d_prop)
+
+run_3d.add_command(run_infraga.run_3d_prop)
+
+run_sph.add_command(run_infraga.run_sph_prop)
+
+
+@utils.command('map-results', short_help="Visualize results on a cartopy map")
 @click.option("--arrivals", help="Arrivals file from an infraga-sph simulation", default=None)
 @click.option("--ray-paths", help="Ray path file from an infraga-sph simulation", default=None)
 @click.option("--plot-option", help="Parameter to visualize for arrivals ('amplitude', 'turning-height', 'celerity', or 'none')", default='amplitude')
@@ -55,9 +100,9 @@ def run_map(arrivals, ray_paths, plot_option, figure_name, rcvrs_file, title, st
 
     \b
     Examples:
-    \t infraga map-results --arrivals ToyAtmo.arrivals.dat --plot-option amplitude --title 'Toy Atmo arrival amplitudes' --figure-name ToyAtmo.arrivals.png
-    \t infraga map-results --arrivals ToyAtmo.arrivals.dat --plot-option celerity --title 'Toy Atmo arrival celerity' --figure-name ToyAtmo.celerities.png
-    \t infraga map-results --ray-paths ToyAtmo.raypaths.dat --title 'Toy Atmo ray paths' --figure-name ToyAtmo.raypaths.png
+    \t infraga utils map-results --arrivals ToyAtmo.arrivals.dat --plot-option amplitude --title 'Toy Atmo arrival amplitudes' --figure-name ToyAtmo.arrivals.png
+    \t infraga utils map-results --arrivals ToyAtmo.arrivals.dat --plot-option celerity --title 'Toy Atmo arrival celerity' --figure-name ToyAtmo.celerities.png
+    \t infraga utils map-results --ray-paths ToyAtmo.raypaths.dat --title 'Toy Atmo ray paths' --figure-name ToyAtmo.raypaths.png
 
     '''
     if arrivals is None and ray_paths is None:
@@ -73,7 +118,7 @@ def run_map(arrivals, ray_paths, plot_option, figure_name, rcvrs_file, title, st
         map.run(arrivals, ray_paths, plot_option, figure_name, rcvrs_file=rcvrs_file, title_text=title, time1=start_time, time2=end_time, include_absorp=include_absorption)
 
 
-@main.command('multi-wvfrm', short_help="Identify eigenrays and compute a combined waveform ")
+@utils.command('multi-wvfrm', short_help="Identify eigenrays and compute a combined waveform ")
 @click.option("--specification", help="Atmospheric specification", prompt = "Specify atmospheric specification file: ")
 @click.option("--geom", help="Geometry('3d' or 'sph')", default='sph', prompt = "Specify geometry ('3d' or 'sph'): ")
 @click.option("--src-lat", help="Source latitude (only for 'sph' methods)", default=30.0)
@@ -100,15 +145,15 @@ def run_wvfrm(specification, geom, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rc
 
     \b
     Examples:
-    \t infraga multi-wvfrm --specification ToyAtmo.met --geom 3d --rcvr-x 175.0 --rcvr-y 75.0 --bnc-max 0 --wvfrm-yld 10.0e3
-    \t infraga multi-wvfrm --specification ToyAtmo.met --geom sph --src-lat 30.0 --src-lon -110.0 --rcvr-lat 30.5 --rcvr-lon -114.0 --bnc-max 1 --wvfrm-yld 1.0e3
+    \t infraga utils multi-wvfrm --specification ToyAtmo.met --geom 3d --rcvr-x 175.0 --rcvr-y 75.0 --bnc-max 0 --wvfrm-yld 10.0e3
+    \t infraga utils multi-wvfrm --specification ToyAtmo.met --geom sph --src-lat 30.0 --src-lon -110.0 --rcvr-lat 30.5 --rcvr-lon -114.0 --bnc-max 1 --wvfrm-yld 1.0e3
 
     '''
     click.echo("Running multi-waveform methods with specification '" + specification + "' and option: '" + geom + "'...")
     mltwvfrm.run(specification, geom, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rcvr_lat, rcvr_lon, z_grnd, bnc_max, incl_min=incl_min, incl_max=incl_max, incl_step_max=incl_step_max, rng_max=rng_max, verbose_output=verbose, wvfrm_ref=wvfrm_ref, wvfrm_yld=wvfrm_yld, wvfrm_file=wvfrm_file, cpu_cnt=cpu_cnt)
 
 
-@main.command('extract-terrain', short_help="Extract a line or grid of terrain information")
+@utils.command('extract-terrain', short_help="Extract a line or grid of terrain information")
 @click.option("--geom", help="Geometry option ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')", prompt="Enter terrain option  ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")
 @click.option("--lat1", help="Latitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=30.0)
 @click.option("--lon1", help="Longitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=-110.0)
@@ -126,17 +171,17 @@ def run_terrain(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, 
 
     \b
     Examples:
-    \t infraga extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth -90.0 --range 750.0 --output-file line_topo.dat
-    \t infraga extract-terrain --geom pnt2pnt --lat1 40.0 --lon1 -102.5 --lat2 40.0 --lon2 -110.0 --output-file line_topo.dat
-    \t infraga extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
-    \t infraga extract-terrain --geom latlon-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
+    \t infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth -90.0 --range 750.0 --output-file line_topo.dat
+    \t infraga utils extract-terrain --geom pnt2pnt --lat1 40.0 --lon1 -102.5 --lat2 40.0 --lon2 -110.0 --output-file line_topo.dat
+    \t infraga utils extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
+    \t infraga utils extract-terrain --geom latlon-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
 
     '''
     terrain.run(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, output_file, show_terrain)
 
 
 
-@main.command('extract-ecmwf', short_help="Extract atmospheric information from an ECMWF netCDF file")
+@utils.command('extract-ecmwf', short_help="Extract atmospheric information from an ECMWF netCDF file")
 @click.option("--ecmwf-file", help="ECMWF netCDF file")
 @click.option("--option", help="Extraction option ('single' or 'grid')", prompt="Enter terrain option  ('single' or 'grid')")
 @click.option("--lat1", help="Latitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=30.0)
@@ -160,7 +205,7 @@ def run_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, output_path, sample_sk
 
 
 
-@main.command('build-g2s-grid', short_help="Build grid for -rngdep analysis from G2S grid")
+@utils.command('build-g2s-grid', short_help="Build grid for -rngdep analysis from G2S grid")
 @click.option("--g2s-path", help="Path to G2S specifications", prompt="Specify directory containing G2S specifications: ")
 @click.option("--output-path", help="Output dir + label", prompt="Specify output directory and label: ")
 @click.option("--src-info", help="Source info (lat, lon, time) (optional)", default=None)
@@ -174,8 +219,8 @@ def run_ecmwf(g2s_path, output_path, src_info, celerity_est):
 
     \b
     Examples:
-    \t infraga build-g2s-grid --g2s-path g2s_dir/ --output-path grid/g2s_grid
-    \t infraga build-g2s-grid --g2s-path g2s_dir/ --output-path grid/g2s_grid --src-info '[-20.56989, -175.379975, 2022-01-15T04:14:45]' --celerity-est 0.29
+    \t infraga utils build-g2s-grid --g2s-path g2s_dir/ --output-path grid/g2s_grid
+    \t infraga utils build-g2s-grid --g2s-path g2s_dir/ --output-path grid/g2s_grid --src-info '[-20.56989, -175.379975, 2022-01-15T04:14:45]' --celerity-est 0.29
 
     '''
 
@@ -183,7 +228,7 @@ def run_ecmwf(g2s_path, output_path, src_info, celerity_est):
 
 
 
-@main.command('visualize-atmo', short_help="Visualize information about an atmospheric specification")
+@utils.command('visualize-atmo', short_help="Visualize information about an atmospheric specification")
 @click.option("--specification", help="Atmospheric specification file")
 @click.option("--max-alt", help="Maximum altitude for analysis (default: 120 km)", default=120)
 @click.option("--format", help="Atmospheric specification format (default: 'zTuvdp')", default='zTuvdp')
@@ -194,8 +239,8 @@ def run_visualize_atmo(specification, format, max_alt):
 
     \b
     Examples:
-    \t infraga visualize-atmo --specification examples/ToyAtmo.met
-    \t infraga visualize-atmo --specification examples/G2S_example.met
+    \t infraga utils visualize-atmo --specification examples/ToyAtmo.met
+    \t infraga utils visualize-atmo --specification examples/G2S_example.met
 
     '''
 
