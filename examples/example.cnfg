@@ -1,0 +1,32 @@
+[GENERAL]
+max_rng = 1000.0
+
+[PROP]
+incl_min = 1.0
+incl_max = 60.0
+incl_step = 1.0
+
+bounces = 100
+
+[EIGENRAY]
+src_lat = 30.0
+src_lon = -100.0
+
+rcvr_x = -175.0
+rcvr_y = 75.0
+
+rcvr_lat = 30.25
+rcvr_lon = -104.25
+
+bnc_max = 1
+verbose = true
+
+[WAVEFORM]
+src_lat = 30.0
+src_lon = -100.0
+
+inclination = 4.1314876
+azimuth = -84.969455
+bounces = 1
+
+wvfrm_p0 = 500.0
