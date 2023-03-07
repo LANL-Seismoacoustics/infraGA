@@ -64,6 +64,14 @@ def run_sph():
     '''
     pass 
 
+@click.group('plot', short_help="Various visualization functions", context_settings={'help_option_names': ['-h', '--help']})
+def plot():
+    '''
+    infraga plot - various visualization functions for atmospheric data and infraga results
+    
+    '''
+    pass 
+
 @click.group('utils', short_help="Various utility functions", context_settings={'help_option_names': ['-h', '--help']})
 def utils():
     '''
@@ -75,6 +83,7 @@ def utils():
 main.add_command(run_2d)
 main.add_command(run_3d)
 main.add_command(run_sph)
+main.add_command(plot)
 main.add_command(utils)
 
 run_2d.add_command(run_infraga.run_2d_prop)
