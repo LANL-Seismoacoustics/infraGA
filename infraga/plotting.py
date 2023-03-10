@@ -317,6 +317,134 @@ def plot_azimuthal(specification, arrivals, ray_paths, plot_option, reduced_tm_v
     print('')
     plt.show()
 
+@click.command("eig_wvfrms", short_help="Visualize eigenrays and predicted waveform")
+@click.option("--eigenrays", help="Eigenrays file from an eig_wvfrm simulation", default=None)
+@click.option("--wvfrms", help="Waveforms file from an eig_wvfrm simulation", default=None)
+@click.option("--tr-vel-ref", help="Reference velocity for trace velocity calculation", default=330.0)
+@click.option("--y-axis-option", help="Arrival parameter to plot on y-axis", default="back-azimuth")
+@click.option("--cmap-option", help="Arrival parameter to plot on colormap", default="trace-velocity")
+@click.option("--figure-out", help="Name of output figure", default=None)
+def plot_eig_wvfrm(eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, figure_out):
+    '''
+    Visualize results for combined eigenray/waveform analysis
+
+    \b
+    Plotting Options:
+    \t trace-velocity \t Trace velocity
+    \t back-azimuth \t\t Back azimuth
+    \t amplitude \t\t Transport equation + absorption losses
+
+    \b
+    Examples:
+    \t infraga plot azimuthal --specification ToyAtmo.met --plot-option celerity
+        
+
+    '''
+    # Extract eigenray arrival info:
+    print("Extracting eigenray information from results...")
+    file_in = open(wvfrms, 'r')
+    arr_tms = []
+    arr_back_az = []
+    arr_trace_vel = []
+    arr_amp = []
+
+    in_arrivals = False
+    for line in file_in:
+        if "infraga" in line:
+            if "3d" in line:
+                geom = '3d'
+            else:
+                geom = 'sph'
+        elif "source location" in line:
+            src_loc = np.array([float(val) for val in line.split(":")[-1].split(",")[:2]])
+
+        if in_arrivals:
+            if len(line) < 2:
+                in_arrivals = False 
+                break
+            line = line[2:].split(' ')
+            arr_tms = arr_tms + [float(line[5])]
+            arr_back_az = arr_back_az + [float(line[9])]
+            arr_trace_vel = arr_trace_vel + [tr_vel_ref / np.cos(np.radians(float(line[8])))]
+            arr_amp = arr_amp + [float(line[10]) + float(line[11])]
+
+        if "# incl" in line:
+            in_arrivals = True 
+
+    # Load data for plotting
+    wvfrm_data = np.loadtxt(wvfrms)
+    eigenray_data = np.loadtxt(eigenrays)
+
+    if geom == '3d':
+        ray_rngs = np.sqrt(eigenray_data[:, 0]**2 + eigenray_data[:, 1]**2)
+    else:
+        ray_rngs = sph_proj.inv([src_loc[1]] * len(eigenray_data), [src_loc[0]] * len(eigenray_data), eigenray_data[:, 1], eigenray_data[:, 0])[2] * 1.0e-3
+
+    print("Plotting...")
+    fig = plt.figure(figsize=(5, 5), layout='constrained')
+    spec = fig.add_gridspec(7)
+
+    print('\t' + "Eigenrays...")
+    ax0 = fig.add_subplot(spec[:2])
+    ax0.set_ylabel("Altitude [km]")
+    ax0.set_xlabel("Range [km]")
+
+    ax0.set_xlim(0.0, np.ceil(max(ray_rngs)))
+
+    indices = np.flatnonzero(np.gradient(eigenray_data[:, 5]) < 0.0)
+    ax0.plot(ray_rngs[:indices[0]], eigenray_data[:, 2][:indices[0]], '-k', linewidth=1.5)
+    for n, j in enumerate(indices):
+        ax0.plot(ray_rngs[indices[n - 1]:j], eigenray_data[:, 2][indices[n - 1]:j], '-k', linewidth=1.5)
+    ax0.plot(ray_rngs[indices[-1]:], eigenray_data[:, 2][indices[-1]:], '-k', linewidth=1.5)
+
+    print('\t' + "Arrival info...")
+    ax2 = fig.add_subplot(spec[5:])
+    ax2.set_xlabel("Time (rel. origin time) [s]")
+
+    if y_axis_option == "amplitude":
+        ax2.set_ylabel("Amplitude (rel. 1 km) [dB]")
+        y_axis_vals = arr_amp
+    elif y_axis_option == "trace-velocity":
+        ax2.set_ylabel("Trace Velocity [m/s]")
+        y_axis_vals = arr_trace_vel
+    else:
+        ax2.set_ylabel("Back Azimuth [deg]")
+        y_axis_vals = arr_back_az
+
+    if cmap_option == "back-azimuth":
+        cmap_label = "Back Azimuth [deg]"
+        cmap_vals = arr_back_az
+    elif cmap_option == "trace-velocity":
+        cmap_label = "Trace Velocity [m/s]"
+        cmap_vals = arr_trace_vel
+    elif cmap_option == "amplitude":
+        cmap_label = "Amp. (rel. 1 km) [dB]"
+        cmap_vals = arr_amp
+    else:
+        cmap_label = None
+        cmap_vals = None
+
+    if cmap_vals is not None: 
+        sc = ax2.scatter(arr_tms, y_axis_vals, c=cmap_vals, cmap=cm.jet, s=25.0)
+        plt.colorbar(sc, label=cmap_label)
+    else:
+        ax2.plot(arr_tms, y_axis_vals, 'ok', markersize=5.0)
+
+    print('\t' + "Waveform predictions...")
+    ax1 = fig.add_subplot(spec[3:5], sharex=ax2)
+    ax1.set_ylabel("Pressure [Pa]")
+    ax1.set_xlabel(" ")
+
+    ax1.set_xlim(25.0 * np.floor(min(arr_tms) / 25.0), 25.0 * np.ceil(max(arr_tms) / 25.0))
+    ax1.plot(wvfrm_data[:, 0], np.sum(wvfrm_data[:, 1:], axis=1), '-k', linewidth=1.5)
+    
+
+    if figure_out is not None:
+        print('\t' + "Saving figure to " + figure_out)
+        plt.savefig(figure_out, dpi=250)
+    
+    plt.show()
+
 
 
 @click.command('map', short_help="Visualize results on a cartopy map")

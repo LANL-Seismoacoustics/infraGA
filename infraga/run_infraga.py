@@ -1206,6 +1206,40 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, 
     cpu_cnt = define_param(user_config, 'GENERAL', 'cpu_cnt', cpu_cnt)
     cpu_cnt = int(cpu_cnt)
 
+
+    # Set parameter values for header output
+    def set_header_val(param, default):
+        if param is None:
+            return default
+        else:
+            return param
+
+    src_x_out = set_header_val(src_x, 0.0)
+    src_y_out = set_header_val(src_y, 0.0)
+    src_alt_out = set_header_val(src_alt, 0.0)
+
+    rcvr_x_out = set_header_val(rcvr_x, 0.0)
+    rcvr_y_out = set_header_val(rcvr_y, 0.0)
+
+    incl_min_out = set_header_val(incl_min, 0.5)
+    incl_max_out = set_header_val(incl_max, 45.0)
+    incl_step_max_out = set_header_val(incl_step_max, 0.1)
+
+    bnc_min_out = set_header_val(bnc_min, 0)
+    bnc_max_out = set_header_val(bnc_max, 0)
+    if bounces is not None:
+        bnc_min_out = bounces
+        bnc_max_out = bounces 
+
+    z_grnd_out = set_header_val(z_grnd, 0.0)
+    damping_out = set_header_val(damping, 1.0e-3)
+    max_rng_out = set_header_val(max_rng, 2500.0)
+
+    wvfrm_opt_out = set_header_val(wvfrm_opt, 'impulse')
+    wvfrm_p0_out = set_header_val(wvfrm_p0, 10.0)
+    wvfrm_t0_out = set_header_val(wvfrm_t0, 1.0)
+    wvfrm_alpha_out = set_header_val(wvfrm_alpha, 1.0)
+
     # Check if eigenray analysis is already done
     if output_id is not None:
         eig_arrivals_file = output_id + ".arrivals.dat"
@@ -1322,17 +1356,19 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, 
             print("# 	profile: " + atmo_prefix, file=file_out)
         else:
             print("# 	profile: " + atmo_file, file=file_out)
-        print("# 	source location: " + str(src_x) + ", " + str(src_y) + ", " + str(src_alt) , file=file_out)
-        print("# 	receiver location: " + str(rcvr_x) + ", " + str(rcvr_y) + ", 0.0", file=file_out)
-        print("# 	inclination range: " + str(incl_min) + ", " + str(incl_max), file=file_out)
-        print("#    inclination step max:", incl_step_max, file=file_out)
-        print("# 	bounces: " + str(bnc_min) + ", " + str(bnc_max), file=file_out)
+        print("#    source location: " + str(src_x_out) + ", " + str(src_y_out) + ", " + str(src_alt_out), file=file_out)
+        print("#    receiver location: " + str(rcvr_x_out) + ", " + str(rcvr_y_out) + ", 0.0", file=file_out)
+        print("#    inclination range: " + str(incl_min_out) + ", " + str(incl_max_out), file=file_out)
+        print("#    inclination step max:", incl_step_max_out, file=file_out)
+        print("# 	bounces: " + str(bnc_min_out) + ", " + str(bnc_max_out), file=file_out)
         if topo_file is not None:
             print("# 	terrain file: " + str(topo_file), file=file_out)        
         else:
-            print("# 	ground elevation: " + str(z_grnd), file=file_out)
-        print("# 	damping:", damping, file=file_out)
-        print("# 	range max:", max_rng, file=file_out)
+            print("# 	ground elevation: " + str(z_grnd_out), file=file_out)
+        print("# 	damping:", damping_out, file=file_out)
+        print("# 	range max:", max_rng_out, '\n#', file=file_out)
+        print("# x [km]	y [km]	z [km]	trans. coeff. [dB]	absorption [dB]	time [s]", file=file_out)
+
 
         wvfrms = []
         t_lims = [np.inf, 0.0]
@@ -1445,22 +1481,22 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, 
 
         t_vals = np.arange(t_lims[0], t_lims[1], dt)
         file_out = open(profile_id + ".wvfrms.dat", 'w')
-        print("# 'infraga 3f eig_wvfrm' waveform results", '\n#', file=file_out)
+        print("# 'infraga 3d eig_wvfrm' waveform results", '\n#', file=file_out)
         if atmo_prefix is not None:
             print("# 	profile: " + atmo_prefix, file=file_out)        
         else:
             print("# 	profile: " + atmo_file, file=file_out)
-        print("# 	source location: " + str(src_x) + ", " + str(src_y) + ", " + str(src_alt) , file=file_out)
-        print("# 	receiver location: " + str(rcvr_x) + ", " + str(rcvr_y) + ", 0.0", file=file_out)
-        print("# 	inclination range: " + str(incl_min) + ", " + str(incl_max), file=file_out)
-        print("#    inclination step max:", incl_step_max, file=file_out)
-        print("# 	bounces: " + str(bnc_min) + ", " + str(bnc_max), file=file_out)
+        print("# 	source location: " + str(src_x_out) + ", " + str(src_y_out) + ", " + str(src_alt_out) , file=file_out)
+        print("# 	receiver location: " + str(rcvr_x_out) + ", " + str(rcvr_y_out) + ", 0.0", file=file_out)
+        print("# 	inclination range: " + str(incl_min_out) + ", " + str(incl_max_out), file=file_out)
+        print("#    inclination step max:", incl_step_max_out, file=file_out)
+        print("# 	bounces: " + str(bnc_min_out) + ", " + str(bnc_max_out), file=file_out)
         if topo_file is not None:
             print("# 	terrain file: " + str(topo_file), file=file_out)        
         else:
-            print("# 	ground elevation: " + str(z_grnd), file=file_out)
-        print("#    damping:", damping, file=file_out)
-        print("#    range max:" + '\n#', max_rng, file=file_out)
+            print("# 	ground elevation: " + str(z_grnd_out), file=file_out)
+        print("#    damping:", damping_out, file=file_out)
+        print("#    range max:", max_rng_out, '\n#', file=file_out)
 
         # Waveform calculation parameters
         if wvfrm_ref is not None:
@@ -1471,19 +1507,19 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, 
         if wvfrm_len is not None:
             print("#    waveform length:", wvfrm_len, file=file_out)
         else:
-            print("#    waveform length: 0.05", wvfrm_len, file=file_out)
+            print("#    waveform length: 2e13", wvfrm_len, file=file_out)
 
-        if wvfrm_yield:
+        if wvfrm_yield is not None:
             print("#    waveform source yield:", wvfrm_yield, file=file_out)
         else:
-            print("#    waveform option:", wvfrm_opt, file=file_out)
-            print("#    waveform peak op:", wvfrm_p0, file=file_out)
-            print("#    waveform time sc.:", wvfrm_t0, file=file_out)
-            print("#    waveform shaping param.:", wvfrm_alpha, file=file_out)
+            print("#    waveform option:", wvfrm_opt_out, file=file_out)
+            print("#    waveform peak op:", wvfrm_p0_out, file=file_out)
+            print("#    waveform time sc.:", wvfrm_t0_out, file=file_out)
+            print("#    waveform shaping param.:", wvfrm_alpha_out, file=file_out)
 
         print("#", file=file_out)
         print("# Eigenray arrivals:", file=file_out)
-        print("# incl [deg]	az [deg]	n_b	x_0 [deg]	y_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]	absorption [dB]", file=file_out)
+        print("# incl [deg]	az [deg]	n_b	x_0 [km]	y_0 [km]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]	absorption [dB]", file=file_out)
         for line in eig_results:
             print("#", *line, file=file_out) 
 
@@ -2256,6 +2292,40 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
     cpu_cnt = define_param(user_config, 'GENERAL', 'cpu_cnt', cpu_cnt)
     cpu_cnt = int(cpu_cnt)
 
+    # Set parameter values for header output
+    def set_header_val(param, default):
+        if param is None:
+            return default
+        else:
+            return param
+
+    src_lat_out = set_header_val(src_lat, 0.0)
+    src_lon_out = set_header_val(src_lon, 0.0)
+    src_alt_out = set_header_val(src_alt, 0.0)
+
+    rcvr_lat_out = set_header_val(rcvr_lat, 0.0)
+    rcvr_lon_out = set_header_val(rcvr_lon, 0.0)
+
+    incl_min_out = set_header_val(incl_min, 0.5)
+    incl_max_out = set_header_val(incl_max, 45.0)
+    incl_step_max_out = set_header_val(incl_step_max, 0.1)
+
+    bnc_min_out = set_header_val(bnc_min, 0)
+    bnc_max_out = set_header_val(bnc_max, 0)
+    if bounces is not None:
+        bnc_min_out = bounces
+        bnc_max_out = bounces 
+
+    z_grnd_out = set_header_val(z_grnd, 0.0)
+    damping_out = set_header_val(damping, 1.0e-3)
+    max_rng_out = set_header_val(max_rng, 2500.0)
+
+    wvfrm_opt_out = set_header_val(wvfrm_opt, 'impulse')
+    wvfrm_p0_out = set_header_val(wvfrm_p0, 10.0)
+    wvfrm_t0_out = set_header_val(wvfrm_t0, 1.0)
+    wvfrm_alpha_out = set_header_val(wvfrm_alpha, 1.0)
+
+
     # Check if eigenray analysis is already done
     if output_id is not None:
         eig_arrivals_file = output_id + ".arrivals.dat"
@@ -2372,17 +2442,18 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
             print("# 	profile: " + atmo_prefix, file=file_out)
         else:
             print("# 	profile: " + atmo_file, file=file_out)
-        print("# 	source location (lat, lon, alt): " + str(src_lat) + ", " + str(src_lon) + ", " + str(src_alt) , file=file_out)
-        print("# 	receiver location (lat, lon, alt): " + str(rcvr_lat) + ", " + str(rcvr_lon) + ", 0.0", file=file_out)
-        print("# 	inclination range: " + str(incl_min) + ", " + str(incl_max), file=file_out)
-        print("#    inclination step max:", incl_step_max, file=file_out)
-        print("# 	bounces: " + str(bnc_min) + ", " + str(bnc_max), file=file_out)
+        print("# 	source location (lat, lon, alt): " + str(src_lat_out) + ", " + str(src_lon_out) + ", " + str(src_alt_out) , file=file_out)
+        print("# 	receiver location (lat, lon, alt): " + str(rcvr_lat_out) + ", " + str(rcvr_lon_out) + ", 0.0", file=file_out)
+        print("# 	inclination range: " + str(incl_min_out) + ", " + str(incl_max_out), file=file_out)
+        print("#    inclination step max:", incl_step_max_out, file=file_out)
+        print("# 	bounces: " + str(bnc_min_out) + ", " + str(bnc_max_out), file=file_out)
         if topo_file is not None:
             print("# 	terrain file: " + str(topo_file), file=file_out)        
         else:
-            print("# 	ground elevation: " + str(z_grnd), file=file_out)
-        print("# 	damping:", damping, file=file_out)
-        print("# 	range max:", max_rng, file=file_out)
+            print("# 	ground elevation: " + str(z_grnd_out), file=file_out)
+        print("# 	damping:", damping_out, file=file_out)
+        print("# 	range max:", max_rng_out, '\n#', file=file_out)
+        print("# lat [deg]	lon [deg]	z [km]	trans. coeff. [dB]	absorption [dB]	time [s]", file=file_out)
 
         wvfrms = []
         t_lims = [np.inf, 0.0]
@@ -2497,17 +2568,17 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
             print("# 	profile: " + atmo_prefix, file=file_out)        
         else:
             print("# 	profile: " + atmo_file, file=file_out)
-        print("# 	source location (lat, lon, alt): " + str(src_lat) + ", " + str(src_lon) + ", " + str(src_alt) , file=file_out)
-        print("# 	receiver location (lat, lon, alt): " + str(rcvr_lat) + ", " + str(rcvr_lon) + ", 0.0", file=file_out)
-        print("# 	inclination range: " + str(incl_min) + ", " + str(incl_max), file=file_out)
-        print("#    inclination step max:", incl_step_max, file=file_out)
-        print("# 	bounces: " + str(bnc_min) + ", " + str(bnc_max), file=file_out)
+        print("# 	source location (lat, lon, alt): " + str(src_lat_out) + ", " + str(src_lon_out) + ", " + str(src_alt_out) , file=file_out)
+        print("# 	receiver location (lat, lon, alt): " + str(rcvr_lat_out) + ", " + str(rcvr_lon_out) + ", 0.0", file=file_out)
+        print("# 	inclination range: " + str(incl_min_out) + ", " + str(incl_max_out), file=file_out)
+        print("# 	inclination step max:", incl_step_max_out, file=file_out)
+        print("# 	bounces: " + str(bnc_min_out) + ", " + str(bnc_max_out), file=file_out)
         if topo_file is not None:
             print("# 	terrain file: " + str(topo_file), file=file_out)        
         else:
-            print("# 	ground elevation: " + str(z_grnd), file=file_out)
-        print("#    damping:", damping, file=file_out)
-        print("#    range max:" + '\n#', max_rng, file=file_out)
+            print("# 	ground elevation: " + str(z_grnd_out), file=file_out)
+        print("# 	damping:", damping_out, file=file_out)
+        print("#    range max:", max_rng_out, '\n#', file=file_out)
 
         # Waveform calculation parameters
         if wvfrm_ref is not None:
@@ -2523,14 +2594,14 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
         if wvfrm_yield:
             print("#    waveform source yield:", wvfrm_yield, file=file_out)
         else:
-            print("#    waveform option:", wvfrm_opt, file=file_out)
-            print("#    waveform peak op:", wvfrm_p0, file=file_out)
-            print("#    waveform time sc.:", wvfrm_t0, file=file_out)
-            print("#    waveform shaping param.:", wvfrm_alpha, file=file_out)
+            print("#    waveform option:", wvfrm_opt_out, file=file_out)
+            print("#    waveform peak op:", wvfrm_p0_out, file=file_out)
+            print("#    waveform time sc.:", wvfrm_t0_out, file=file_out)
+            print("#    waveform shaping param.:", wvfrm_alpha_out, file=file_out)
 
         print("#", file=file_out)
         print("# Eigenray arrivals:", file=file_out)
-        print("# incl [deg]	az [deg]	n_b	x_0 [deg]	y_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]	absorption [dB]", file=file_out)
+        print("# incl [deg]	az [deg]	n_b	lat_0 [deg]	lon_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]	absorption [dB]", file=file_out)
         for line in eig_results:
             print("#", *line, file=file_out) 
 
