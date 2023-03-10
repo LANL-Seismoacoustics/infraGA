@@ -13,6 +13,8 @@ Fill in
 Author: pblom@lanl.gov    
 """
 
+import os 
+import click
 import sys
 import numpy as np
 
@@ -22,24 +24,47 @@ import matplotlib.ticker as mticker
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import cartopy.crs as crs
-import cartopy.feature as cfeature
+import cartopy
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+
+from pyproj import Geod
 
 
 marker_size = 1.0
-map_proj = crs.PlateCarree()
-resol = '100m'  # use data at this scale (not working at the moment)
+map_proj = cartopy.crs.PlateCarree()
+resol = '100m'
+
+sph_proj = Geod(ellps='sphere')
+
+def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
+    # call this function to initialize the use of offline maps.  turn_on will initialize the pre_existing_data_directory
+    if turn_on:
+        cartopy.config['pre_existing_data_dir'] = pre_existing_data_dir
+    else:
+        cartopy.config['pre_existing_data_dir'] = ""
 
 
+@click.command('atmo', short_help="Visualize information about an atmospheric specification")
+@click.option("--specification", help="Atmospheric specification file")
+@click.option("--max-alt", help="Maximum altitude for analysis (default: 120 km)", default=None, type=float)
+@click.option("--format", help="Atmospheric specification format (default: 'zTuvdp')", default='zTuvdp')
+def plot_atmo(specification, max_alt, format):
+    '''
+    Visualize the sound speed, wind fields, and effective sound speed ratio ducting information for an atmospheric specification
 
-def plot_atmo(specification, spec_format='zTuvdp', alt_max=None):
+
+    \b
+    Examples:
+    \t infraga plot atmo --specification examples/ToyAtmo.met
+    \t infraga plot atmo --specification examples/G2S_example.met
+
+    '''
 
     atmo = np.loadtxt(specification)
-    z = atmo[:, spec_format.find('z')]
-    u = atmo[:, spec_format.find('u')]
-    v = atmo[:, spec_format.find('v')]
-    c = np.sqrt(0.14 * atmo[:, spec_format.find('p')] / atmo[:, spec_format.find('d')])
+    z = atmo[:, format.find('z')]
+    u = atmo[:, format.find('u')]
+    v = atmo[:, format.find('v')]
+    c = np.sqrt(0.14 * atmo[:, format.find('p')] / atmo[:, format.find('d')])
 
     grnd_ht = z[0]
     for line in open(specification, 'r'):
@@ -47,23 +72,23 @@ def plot_atmo(specification, spec_format='zTuvdp', alt_max=None):
             grnd_ht = float(line[18:])
             break
 
-    if alt_max is None:
-        alt_max = z[-1]
+    if max_alt is None:
+        max_alt = z[-1]
     else:
-        alt_max = float(alt_max)
+        max_alt = float(max_alt)
 
-    ht_mask = np.logical_and(grnd_ht <= z, z <= alt_max)
+    ht_mask = np.logical_and(grnd_ht <= z, z <= max_alt)
 
     f, ax = plt.subplots(1, 3, gridspec_kw={'width_ratios': [1, 1, 4]}, figsize=(12, 5))
     
     ax[0].grid(color='k', linestyle='--', linewidth=0.5)
     ax[1].grid(color='k', linestyle='--', linewidth=0.5)
 
-    ax[0].set_ylim(grnd_ht, alt_max)
+    ax[0].set_ylim(grnd_ht, max_alt)
     ax[0].set_ylabel("Altitude [km]")
     ax[0].set_xlabel("Sound Speed [m/s]")
 
-    ax[1].set_ylim(grnd_ht, alt_max)
+    ax[1].set_ylim(grnd_ht, max_alt)
     ax[1].set_xlabel("Wind Speed [m/s]")
 
     ax[1].yaxis.set_ticklabels([])
@@ -86,7 +111,7 @@ def plot_atmo(specification, spec_format='zTuvdp', alt_max=None):
     incl_vals = np.arange(0.0, 50.0, 0.2)
     for az in np.arange(-180.0, 180.0, 1.0):
         ceff = (c + u * np.sin(np.radians(az)) + v * np.cos(np.radians(az)))[ht_mask]
-        refract_ht = [z[ht_mask][np.min(np.where((ceff / ceff[0]) * np.cos(np.radians(incl)) > 1.0)[0])] if len(np.where((ceff / ceff[0]) * np.cos(np.radians(incl)) > 1.0)[0]) > 0 else alt_max for incl in incl_vals]
+        refract_ht = [z[ht_mask][np.min(np.where((ceff / ceff[0]) * np.cos(np.radians(incl)) > 1.0)[0])] if len(np.where((ceff / ceff[0]) * np.cos(np.radians(incl)) > 1.0)[0]) > 0 else max_alt for incl in incl_vals]
         sc = ax[2].scatter([az] * len(refract_ht), incl_vals, c=refract_ht, cmap=cm.jet_r, marker="s", s=5.0, alpha=0.75, edgecolor='none', vmin=grnd_ht, vmax=120.0)
 
     f.colorbar(sc, ax=[ax[2]], location='top', label="Estimated Refraction Altitude [km]")
@@ -94,22 +119,238 @@ def plot_atmo(specification, spec_format='zTuvdp', alt_max=None):
     plt.show()
 
 
-def plot_2d():
-    # Plot range vs. altitude results along a single azimuth
+@click.command('azimuthal', short_help="Visualize results for a single azimuth simulation")
+@click.option("--specification", help="Atmospheric specification file")
+@click.option("--arrivals", help="Arrivals file from the simulation (optional)", default=None)
+@click.option("--ray-paths", help="Ray path file from the simulation (optional)", default=None)
+@click.option("--plot-option", help="Plotting option (see usage info below)", default='inclination')
+@click.option("--reduced-tm-vel", help="Reference velocity for reduced time option", default=300.0)
+@click.option("--tr-vel-ref", help="Reference velocity for trace velocity calculation", default=330.0)
+@click.option("--plot-amplitudes", help="Option to plot amplitude along rays", default=True)
+@click.option("--figure-out", help="Name of output figure", default=None)
+def plot_azimuthal(specification, arrivals, ray_paths, plot_option, reduced_tm_vel, tr_vel_ref, plot_amplitudes, figure_out):
+    '''
+    Visualize propagation results for a single azimuthal angle simulation
 
-    return 0
+    \b
+    Plotting Options:
+    \t inclination \t\t Launch inclination angle
+    \t celerity  \t\t Arrival celerity (horizontal group velocity)
+    \t reduced-time \t\t Reduced arrival time (relative to --reduced-tm-vel)
+    \t turning-ht \t\t Turning height
+    \t trace-velocity \t Trace velocity
+    \t back-azimuth \t\t Back azimuth (not available for 2d geometry)
+    \t amplitude \t\t Transport equation + absorption losses
 
-def plot_map(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, title_text=None, time1=None, time2=None, include_absorp=True):
-    if arrivals_file is not None:
+    \b
+    Examples:
+    \t infraga plot azimuthal --specification ToyAtmo.met --plot-option celerity
+
+    '''
+    print("Loading atmospheric data and simulation results for " + specification)
+
+    if arrivals is not None:
+        print('\t' + "Loading specified arrivals file: " + arrivals)
+        arrivals_file = arrivals
+    else:
+        arrivals_file = os.path.splitext(specification)[0] + ".arrivals.dat"
+    
+    if ray_paths is not None:
+        print('\t' + "Loading specified ray paths file: " + ray_paths)
+        raypaths_file = ray_paths
+    else:
+        raypaths_file = os.path.splitext(specification)[0] + ".raypaths.dat"
+
+    if not os.path.isfile(arrivals_file):
+        print('\t' + "Arrivals file (" + arrivals_file + ") not found.")
+        return 0
+    
+    if not os.path.isfile(raypaths_file):
+        print('\t' + "Ray paths file (" + raypaths_file + ") not found.")
+        return 0
+
+    # check geometry (2d, 3d, or sph)
+    for line in open(arrivals_file):
+        if "infraga-" in line:
+            geom_info = line
+        elif "azimuth:" in line:
+            az_info = line
+        elif "source" in line:
+            src_info = line
+    
+    if "2d" in geom_info:
+        geom = '2d'
+    elif "3d" in geom_info:
+        geom = '3d'
+    elif "sph" in geom_info:
+        geom = 'sph'
+
+    # Extract propagation azimuth and source location
+    if geom == '3d' or geom == 'sph':
+        prop_az = float(az_info.split(',')[-2])
+        src_loc = np.array([float(val) for val in src_info.split(":")[-1].split(",")[:2]])
+    else:
+        prop_az = float(az_info.split(":")[-1])
+        src_loc = None
+
+    print('\n' + "Extracted Info:")
+    print('\t' + "Geometry:", geom)
+    print('\t' + "Propagation azimuth:", prop_az)
+    if src_loc is not None:
+        print('\t' + "Source Location:", src_loc)
+
+    atmo_data = np.loadtxt(specification)
+    arr_data = np.loadtxt(arrivals_file)
+    ray_data = np.loadtxt(raypaths_file)
+
+    if geom == '2d':
+        ray_rngs = ray_data[:, 0]
+        ray_alts = ray_data[:, 1]
+        ray_amps = ray_data[:, 2] + ray_data[:, 3]
+
+        indices = np.flatnonzero(np.gradient(ray_data[:, 4]) < 0.0)
+
+        arr_rngs = arr_data[:, 3]
+        incl_vals = arr_data[:, 0]
+        tm_vals = arr_data[:, 4]
+        cel_vals = arr_data[:, 5] * 1.0e3
+        turn_ht_vls = arr_data[:, 6]
+        arr_incl_vals = arr_data[:, 7]
+        amp_vals = arr_data[:, 8] + arr_data[:, 9]
+
+    elif geom == '3d' or geom == 'sph':
+        if geom == '3d':
+            ray_rngs = np.sqrt(ray_data[:, 0]**2 + ray_data[:, 1]**2)
+            arr_rngs = np.sqrt(arr_data[:, 3]**2 + arr_data[:, 4]**2)
+        else:
+            ray_rngs = sph_proj.inv([src_loc[1]] * len(ray_data), [src_loc[0]] * len(ray_data), ray_data[:, 1], ray_data[:, 0])[2] * 1.0e-3
+            arr_rngs = sph_proj.inv([src_loc[1]] * len(arr_data), [src_loc[0]] * len(arr_data), arr_data[:, 4], arr_data[:, 3])[2] * 1.0e-3
+
+        ray_alts = ray_data[:, 2]
+        ray_amps = ray_data[:, 3] + ray_data[:, 4]
+        indices = np.flatnonzero(np.gradient(ray_data[:, 5]) < 0.0)
+
+        incl_vals = arr_data[:, 0]
+        tm_vals = arr_data[:, 5]
+        cel_vals = arr_data[:, 6] * 1.0e3
+        turn_ht_vls = arr_data[:, 7]
+        arr_incl_vals = arr_data[:, 8]
+        back_az_vals = arr_data[:, 9]
+        amp_vals = arr_data[:, 10] + arr_data[:, 11]
+
+    print('\n' + "Plotting...")
+    fig = plt.figure(figsize=(11, 5), layout='constrained')
+    spec = fig.add_gridspec(2, 7)
+
+    ax0 = fig.add_subplot(spec[0, 0])
+    ax0.set_ylabel("Altitude [km]")
+    ax0.set_xlabel("Sound Speed [m/s]")
+    ax0.xaxis.set_label_position('top')
+    ax0.xaxis.set_ticks_position('top')
+
+    print('\t' + "Atmospheric data...")
+    ax0.plot(np.sqrt(0.14 * atmo_data[:, 5] / atmo_data[:, 4]), atmo_data[:, 0], '--k', linewidth=1.5)
+    ax0.plot(np.sqrt(0.14 * atmo_data[:, 5] / atmo_data[:, 4]) + atmo_data[:, 2] * np.sin(np.radians(prop_az)) + atmo_data[:, 3] * np.cos(np.radians(prop_az)), atmo_data[:, 0], '-k', linewidth=3.0)
+
+    ax1 = fig.add_subplot(spec[0, 1:], sharey=ax0)
+    ax1.set_xlabel("Range [km]")
+    ax1.xaxis.set_label_position('top')
+    ax1.xaxis.set_ticks_position('top')
+
+    ax1.set_xlim(0.0, np.max(ray_rngs))    
+    ax1.set_ylim(np.min(ray_alts), np.max(ray_alts))    
+
+    if plot_amplitudes:
+        print('\t' + "Ray path info with amplitudes...")
+        sc = ax1.scatter(ray_rngs, ray_alts, c=ray_amps, cmap=cm.jet, s=0.05, vmax=-20.0, vmin=-120.0)
+        plt.colorbar(sc, label="Amp. (rel. 1 km) [dB]")
+
+    else:
+        print('\t' + "Ray path info without amplitudes...")
+        ax1.plot(ray_rngs[:indices[0]], ray_alts[:indices[0]], '-k', linewidth=0.75)
+        for n, j in enumerate(indices):
+            ax1.plot(ray_rngs[indices[n - 1]:j], ray_alts[indices[n - 1]:j], '-k', linewidth=0.75)
+
+    ax2 = fig.add_subplot(spec[1, 1:], sharex=ax1)
+    ax2.set_xlabel("Range [km]")
+
+    if plot_option == 'inclination':
+        print('\t' + "Launch inclination info...")
+        ax2.set_ylabel("Launch Inclination [deg]")
+        ax2.plot(arr_rngs, incl_vals, 'ok', markersize=3.0)
+    elif plot_option == 'celerity':
+        print('\t' + "Arrival celerity info...")
+        ax2.set_ylabel("Celerity [m/s]")
+        ax2.plot(arr_rngs, cel_vals, 'ok', markersize=3.0)
+    elif plot_option == "reduced-time":
+        print('\t' + "Arrival reduced time relative to " + str(reduced_tm_vel) + " m/s...")
+        ax2.set_ylabel("Reduced Time (rel. " + str(int(reduced_tm_vel)) + " m/s) [s]")
+        ax2.plot(arr_rngs, tm_vals - arr_rngs / (reduced_tm_vel * 1.0e-3), 'ok', markersize=3.0)
+    elif plot_option == "turning-ht":
+        print('\t' + "Turning height info...")
+        ax2.set_ylabel("Turning Height [km]")
+        ax2.plot(arr_rngs, turn_ht_vls, 'ok', markersize=3.0)
+    elif plot_option == "trace-velocity":
+        print('\t' + "Trace velocity info...")
+        ax2.set_ylabel("Trace Velocity [m/s]")
+        ax2.plot(arr_rngs, tr_vel_ref / np.cos(np.radians(arr_incl_vals)), 'ok', markersize=3.0)
+    elif plot_option == "back-azimuth":
+        if geom == '2d':
+            print('\t' + "Can't plot back azimuth deviation from 2d simulation")
+        else:
+            print('\t' + "Back azimuth info...")
+            ax2.set_ylabel("Back Azimuth [deg]")
+            ax2.plot(arr_rngs, back_az_vals, 'ok', markersize=3.0)
+    elif plot_option == "amplitude":
+        print('\t' + "Amplitude info...")
+        ax2.set_ylabel("Amplitude (rel. 1 km) [dB]")
+        ax2.plot(arr_rngs, amp_vals, 'ok', markersize=3.0)    
+    else:
+        print('\t' + "WARNING!  Bad plot option provided." + '\n\t' + "Plotting launch angle inclination info...")
+        ax2.set_ylabel("Inclination [deg]")
+        ax2.plot(arr_rngs, incl_vals, 'ok', markersize=3.0)
+
+    if figure_out is not None:
+        print('\t' + "Saving figure to " + figure_out)
+        plt.savefig(figure_out, dpi=250)
+
+    print('')
+    plt.show()
+
+
+
+@click.command('map', short_help="Visualize results on a cartopy map")
+@click.option("--arrivals", help="Arrivals file from an infraga-sph simulation", default=None)
+@click.option("--ray-paths", help="Ray path file from an infraga-sph simulation", default=None)
+@click.option("--plot-option", help="Parameter to visualize for arrivals ('amplitude', 'turning-height', 'celerity', or 'none')", default='amplitude')
+@click.option("--figure-out", help="Name of output figure", default="arrivals.png")
+@click.option("--rcvrs-file", help="File containing receiver locations (optional)", default=None)
+@click.option("--title", help="Title for the figure", default=None)
+@click.option("--start-time", help="Propagation time [hours] for plotting sub-set of data", default=None, type=float)
+@click.option("--end-time", help="Propagation time [hours] for plotting sub-set of data", default=None, type=float)
+@click.option("--include-absorption", help="Include Sutherland & Bass losses", default=True)
+@click.option("--offline-maps-dir", help="Use directory for offline cartopy maps", default=None)
+def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, start_time, end_time, include_absorption, offline_maps_dir):
+    '''
+    Visualize arrivals or ray paths computed using infraga spherical methods on a Cartopy map
+
+    \b
+    Examples:
+    \t infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option amplitude --title 'Toy Atmo arrival amplitudes' --figure-name ToyAtmo.arrivals.png
+    \t infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option celerity --title 'Toy Atmo arrival celerity' --figure-name ToyAtmo.celerities.png
+    \t infraga plot map --ray-paths ToyAtmo.raypaths.dat --title 'Toy Atmo ray paths' --figure-name ToyAtmo.raypaths.png
+
+    '''
+    if arrivals is not None:
         # extract source info from the header
-        arrivals_file = open(arrivals_file, 'r')
-        for line in arrivals_file: 
+        arrivals = open(arrivals, 'r')
+        for line in arrivals: 
             if "source location" in line: 
                 src_loc = [float(val) for val in line[35:-1].split(", ")[:2]] 
                 break
 
         # load data and extract lat/lon info for the map
-        arrivals = np.loadtxt(arrivals_file)
+        arrivals = np.loadtxt(arrivals)
 
         lats = arrivals[:, 3]
         lons = arrivals[:, 4]
@@ -120,7 +361,7 @@ def plot_map(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=No
         src_loc = None
 
         # load data and extract lat/lon info for the map
-        ray_paths = np.loadtxt(ray_paths_file)
+        ray_paths = np.loadtxt(ray_paths)
 
         lats = ray_paths[:, 0]
         lons = ray_paths[:, 1]
@@ -128,9 +369,13 @@ def plot_map(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=No
         lat_min, lat_max = np.floor(min(lats)), np.ceil(max(lats))
         lon_min, lon_max = np.floor(min(lons)), np.ceil(max(lons))
 
+    if offline_maps_dir is not None:
+        use_offline_maps(offline_maps_dir)
+
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=map_proj)
-    plt.title(title_text)
+    if title is not None:
+        plt.title(title)
 
     ax.set_xlim(lon_min, lon_max)
     ax.set_ylim(lat_min, lat_max)
@@ -146,20 +391,20 @@ def plot_map(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=No
     gl.yformatter = LATITUDE_FORMATTER
 
     # Add features (coast lines, borders)
-    ax.add_feature(cfeature.COASTLINE, linewidth=0.5)
-    ax.add_feature(cfeature.BORDERS, linewidth=0.5)
+    ax.add_feature(cartopy.feature.COASTLINE, linewidth=0.5)
+    ax.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
     if (lon_max - lon_min) < 20.0:
-        ax.add_feature(cfeature.STATES, linewidth=0.5)
-        ax.add_feature(cfeature.RIVERS, edgecolor='dodgerblue', alpha=0.3)
-        ax.add_feature(cfeature.LAKES, facecolor='dodgerblue', edgecolor='dodgerblue', alpha=0.3)
+        ax.add_feature(cartopy.feature.STATES, linewidth=0.5)
+        ax.add_feature(cartopy.feature.RIVERS, edgecolor='dodgerblue', alpha=0.3)
+        ax.add_feature(cartopy.feature.LAKES, facecolor='dodgerblue', edgecolor='dodgerblue', alpha=0.3)
 
     # Plot data
-    if arrivals_file is not None:
+    if arrivals is not None:
         time_mask = np.ones_like(arrivals[:, 0])
-        if time1 is not None:
-            time_mask = np.logical_and(time_mask, time1 < arrivals[:, 5] / 3600.0)
-        if time2 is not None:
-            time_mask = np.logical_and(time_mask, arrivals[:, 5] / 3600.0 < time2)
+        if start_time is not None:
+            time_mask = np.logical_and(time_mask, start_time < arrivals[:, 5] / 3600.0)
+        if end_time is not None:
+            time_mask = np.logical_and(time_mask, arrivals[:, 5] / 3600.0 < end_time)
 
         if plot_option == "turning-height":
             print('\t' + "Generating map with turning height info....")
@@ -180,7 +425,7 @@ def plot_map(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=No
         elif plot_option == "amplitude":
             print('\t' + "Generating map with amplitude info....")
             combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
-            if include_absorp:
+            if include_absorption:
                 tloss = arrivals[:, 10] + arrivals[:, 11]
             else:
                 tloss = arrivals[:, 10]
@@ -221,10 +466,10 @@ def plot_map(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=No
         ax.plot([src_loc[1]], [src_loc[0]], 'r*', markersize=5.0, transform=map_proj)
     else:
         time_mask = np.ones_like(ray_paths[:, 0])
-        if time1 is not None:
-            time_mask = np.logical_and(time_mask, time1 < ray_paths[:, 5] / 3600.0)
-        if time2 is not None:
-            time_mask = np.logical_and(time_mask, ray_paths[:, 5] / 3600.0 < time2)
+        if start_time is not None:
+            time_mask = np.logical_and(time_mask, start_time < ray_paths[:, 5] / 3600.0)
+        if end_time is not None:
+            time_mask = np.logical_and(time_mask, ray_paths[:, 5] / 3600.0 < end_time)
 
         sc = ax.scatter(ray_paths[:, 1][time_mask], ray_paths[:, 0][time_mask], c=(ray_paths[:,5][time_mask] / 3600.0), transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=time1, vmax=time2)
 
@@ -241,7 +486,7 @@ def plot_map(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=No
         except:
             print('\t\t' + "Invalid receivers file.  Omitting from plot.")
 
-    print('\t' + "Saving map to " + file_out)
-    plt.savefig(file_out, dpi=250)
+    print('\t' + "Saving map to " + figure_out)
+    plt.savefig(figure_out, dpi=250)
     plt.show()
 

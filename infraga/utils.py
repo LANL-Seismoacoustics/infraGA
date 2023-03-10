@@ -10,6 +10,7 @@ latitude/longitude)
 Author: pblom@lanl.gov    
 """
 
+import click
 import os
 import sys 
 import wget
@@ -19,7 +20,13 @@ import subprocess
 from importlib.util import find_spec, spec_from_file_location 
 
 import numpy as np
+
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+import cartopy
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 from pyproj import Geod
 from scipy import interpolate
@@ -27,18 +34,42 @@ from netCDF4 import Dataset
 
 sph_proj = Geod(ellps='sphere')
 
+def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
+    # call this function to initialize the use of offline maps.  turn_on will initialize the pre_existing_data_directory
+    if turn_on:
+        cartopy.config['pre_existing_data_dir'] = pre_existing_data_dir
+    else:
+        cartopy.config['pre_existing_data_dir'] = ""
+
+
 ################################
 ##    Range Dependent Grid    ##
 ################################
-def build_g2s_grid(profiles_path, output_path, src_info=None, celerity_est=0.29):
+@click.command('build-g2s-grid', short_help="Build grid for range dependent analysis from G2S files")
+@click.option("--g2s-path", help="Path to G2S specifications", prompt="Specify directory containing G2S specifications: ")
+@click.option("--output-path", help="Output dir + label", prompt="Specify output directory and label: ")
+@click.option("--src-info", help="Source info (lat, lon, time) (optional)", default=None)
+@click.option("--celerity-est", help="Celerity estimate [km/s] (optional)", default=0.29)
+def build_g2s_grid(g2s_path, output_path, src_info=None, celerity_est=0.29):
+    '''
+    Construct the numbered specifications and grid files needed to run -rngdep methods.
+    Assumes file format from https://g2s.ncpa.olemiss.edu/ (e.g., g2stxt_2022011506_-3.0000_-54.0000.dat)
 
+    Inclusion of source info (location and time), an estimated celerity, and profiles at multiple reference times enables construction of a temporally varying grid where a node at a distance, r, from the source has an estimated time delay of, dt = r / cel, and uses the appropriate atmospheric information
+
+    \b
+    Examples:
+    \t infraga utils build-g2s-grid --g2s-path g2s_dir/ --output-path grid/g2s_grid
+    \t infraga utils build-g2s-grid --g2s-path g2s_dir/ --output-path grid/g2s_grid --src-info '[-20.56989, -175.379975, 2022-01-15T04:14:45]' --celerity-est 0.29
+
+    '''
     # Parse profiles
     print("Parsing file list to determine grid and available datetimes...")
     dt_vals = []
     grid_lats = []
     grid_lons = []
     
-    dir_files = os.listdir(profiles_path)
+    dir_files = os.listdir(g2s_path)
     for file in np.sort(dir_files):
         if fnmatch.fnmatch(file, "g2stxt_*.dat"):
             temp = file.split("_")
@@ -92,14 +123,14 @@ def build_g2s_grid(profiles_path, output_path, src_info=None, celerity_est=0.29)
             datetime_info = datetime_info + "{:02d}".format(temp_datetime.day)
             datetime_info = datetime_info + "{:02d}".format(temp_datetime.hour)
 
-            if profiles_path[-1] != "/":
-                print('\t' + "Writing atmosphere " + profiles_path + "/g2stxt_" + datetime_info + "_{:.4f}".format(lat) + "_{:.4f}.dat".format(lon) + "  -->  " + output_path + "." + str(prof_index) + ".met")
-                command = "cp " + profiles_path + "/g2stxt_" + datetime_info + "_{:.4f}".format(lat) + "_{:.4f}.dat".format(lon)
+            if g2s_path[-1] != "/":
+                print('\t' + "Writing atmosphere " + g2s_path + "/g2stxt_" + datetime_info + "_{:.4f}".format(lat) + "_{:.4f}.dat".format(lon) + "  -->  " + output_path + "." + str(prof_index) + ".met")
+                command = "cp " + g2s_path + "/g2stxt_" + datetime_info + "_{:.4f}".format(lat) + "_{:.4f}.dat".format(lon)
                 command = command + " " + output_path + "." + str(prof_index) + ".met"
 
             else:
-                print('\t' + "Writing atmosphere " + profiles_path + "g2stxt_" + datetime_info + "_{:.4f}".format(lat) + "_{:.4f}.dat".format(lon) + "  -->  " + output_path + "." + str(prof_index) + ".met")
-                command = "cp " + profiles_path + "g2stxt_" + datetime_info + "_{:.4f}".format(lat) + "_{:.4f}.dat".format(lon)
+                print('\t' + "Writing atmosphere " + g2s_path + "g2stxt_" + datetime_info + "_{:.4f}".format(lat) + "_{:.4f}.dat".format(lon) + "  -->  " + output_path + "." + str(prof_index) + ".met")
+                command = "cp " + g2s_path + "g2stxt_" + datetime_info + "_{:.4f}".format(lat) + "_{:.4f}.dat".format(lon)
                 command = command + " " + output_path + "." + str(prof_index) + ".met"
 
             subprocess.call(command, shell=True)
@@ -116,7 +147,7 @@ def build_g2s_grid(profiles_path, output_path, src_info=None, celerity_est=0.29)
     file_out.close()
 
     print('\n' + "Finished grid construction." + '\n' + "Run propagation simulations using:")
-    print('\t' + "infraga sph prop --atmo-prefix " + output_path + ". --grid-lats " + output_path + ".lats.dat --grid-lons" + output_path + ".lons.dat" + '\n')
+    print('\t' + "infraga sph prop --atmo-prefix " + output_path + ". --grid-lats " + output_path + ".lats.dat --grid-lons " + output_path + ".lons.dat" + '\n')
 
 
 ############################
@@ -337,12 +368,41 @@ def extract_grid(ecmwf_file, lat_llc, lon_llc, lat_urc, lon_urc, output_id, grid
 
             np.savetxt(output_id + str(n1 * len(grid_n_lons) + n2) + ".met", atmo.T)
 
-def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, output_file, sampling):
+
+@click.command('extract-ecmwf', short_help="Extract atmospheric information from an ECMWF netCDF file")
+@click.option("--ecmwf-file", help="ECMWF netCDF file")
+@click.option("--option", help="Extraction option ('single' or 'grid')", prompt="Enter terrain option  ('single' or 'grid')")
+@click.option("--lat1", help="Latitude of first point (latitude for 'single', lower-left corner for 'grid')", default=30.0)
+@click.option("--lon1", help="Longitude of first point (longitude for 'single', lower-left corner for 'grid')", default=-110.0)
+@click.option("--lat2", help="Latitude of second point (not used for 'single', upper-right corner for 'grid')", default=30.0)
+@click.option("--lon2", help="Longitude of second point (not used for 'single', upper-right corner for grids)", default=-114.0)
+@click.option("--sample_skips", help="Frequency of samples in the grid option (defaults to 1 to keep every node)", default=1)
+@click.option("--output-path", help="Output file", prompt="Specify output path: ")
+def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, output_path):
+    '''
+    Construct the numbered specifications and grid files needed to run -rngdep methods.
+    Assumes file format from https://g2s.ncpa.olemiss.edu/ (e.g., g2stxt_2022011506_-3.0000_-54.0000.dat)
+
+    Inclusion of source info (location and time), an estimated celerity, and profiles at multiple reference times enables construction of a temporally varying grid where a node at a distance, r, from the source has an estimated time delay of, dt = r / cel, and uses the appropriate atmospheric information
+
+    \b
+    Examples:
+    \t infraga utils extract-ecmwf --ecmwf-file EN19110100.nc --option single  --lat1 30.0 --lon1 -120.0 --output-path test.met
+    \t infraga utils extract-ecmwf --ecmwf-file EN19110100.nc --option grid  --lat1 30.0 --lon1 -120.0 --lat2 40.0 --lon2 -110.0 --output-path test_grid
+
+    '''
+
+    """
+    
+
+    
+    """
+
     if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
         if option == "single":
-            extract_single(ecmwf_file, lat1, lon1, output_file)
+            extract_single(ecmwf_file, lat1, lon1, output_path)
         else:
-            extract_grid(ecmwf_file, lat1, lon1, lat2, lon2, output_file, sampling)
+            extract_grid(ecmwf_file, lat1, lon1, lat2, lon2, output_path, sample_skips)
     else:
         print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
         download_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
@@ -354,13 +414,15 @@ def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, output_file, sampl
             print("ETOPO file successfully downloaded.  Running extraction...")
 
             if option == "single":
-                extract_single(ecmwf_file, lat1, lon1, output_file)
+                extract_single(ecmwf_file, lat1, lon1, output_path)
             else:
-                extract_grid(ecmwf_file, lat1, lon1, lat2, lon2, output_file, sampling)
+                extract_grid(ecmwf_file, lat1, lon1, lat2, lon2, output_path, sample_skips)
 
         except:
             print("Download failed.")
             print("Try manual download: " + download_url)
+            print("Place file in /path/to/infraGA/infraga/ (here .py files are located)")
+
 
 
 ################################
@@ -550,6 +612,7 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852, show_fig=
     y_vals = np.arange(ll_y, ur_y, resol)
     xy_elev = np.empty((len(x_vals), len(y_vals)))
     
+    print("Writing terrain info into file:", file_out)
     output = open(file_out, 'w')
     # print("# Rng (E/W) [km]" + '\t' + "Rng (N/S) [km]"  + '\t' + "Elev [km]", file=output)
     # note: infraGA methods to ingest topo file can't recognize header notation yet, so no header in these files
@@ -562,7 +625,7 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852, show_fig=
 
     if show_fig:
         XX, YY = np.meshgrid(x_vals, y_vals)
-        plt.pcolormesh(XX, YY, xy_elev.T, cmap=plt.cm.terrain, vmin=0.0)
+        plt.pcolormesh(XX, YY, xy_elev.T, cmap=plt.cm.terrain, vmin=-1.4, vmax=5.0)
         plt.xlabel("Range (E/W) [km]")
         plt.ylabel("Range (N/S) [km]")
         plt.colorbar(label="Elevation [km]")
@@ -607,30 +670,91 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True):
     output = open(file_out, 'w')
     # print("# Latitude [deg]" + '\t' + "Longitude [deg]"  + '\t' + "Elev [km]", file=output)
     # note: infraGA methods to ingest topo file can't recognize header notation yet, so no header in these files
+    print("Writing terrain info into file:", file_out)
     for n in range(len(region_lat)):
         for m in range(len(region_lon)):
             print(region_lat[n], region_lon[m], max(region_elev[n][m], 0.0) / 1.0e3, file=output)
     output.close()
 
     if show_fig:
+        print("Plotting terrain on map.")
+        print('\t' + "Note: elevations below sea level are set to 0.0 in " + file_out + " (ray paths reflect from ocean surface)")
+        map_proj = cartopy.crs.PlateCarree()
         LON, LAT = np.meshgrid(region_lon, region_lat)
-        plt.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, vmin=0.0)
-        plt.xlabel("Longitude [deg]")
-        plt.ylabel("Latitude [deg]")
-        plt.colorbar(label="Elevation [km]")
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1, projection=map_proj)
+
+        ax.set_xlim(ll_corner[1], ur_corner[1])
+        ax.set_ylim(ll_corner[0], ur_corner[0])
+
+        gl = ax.gridlines(crs=map_proj, draw_labels=True, linewidth=0.5, color='gray', alpha=0.5, linestyle='--')
+        gl.top_labels = False
+        gl.right_labels = False
+
+        lat_tick, lon_tick = int((ur_corner[0] - ll_corner[0]) / 5), int((ur_corner[1] - ll_corner[1]) / 5)
+        gl.xlocator = mticker.FixedLocator(np.arange(ll_corner[0] - np.ceil(lon_tick / 2), ur_corner[0] + lon_tick, lon_tick))
+        gl.ylocator = mticker.FixedLocator(np.arange(ll_corner[1] - np.ceil(lat_tick / 2), ur_corner[1] + lat_tick, lat_tick))
+        gl.xformatter = LONGITUDE_FORMATTER
+        gl.yformatter = LATITUDE_FORMATTER
+
+        # Add features (coast lines, borders)
+        ax.add_feature(cartopy.feature.COASTLINE, linewidth=0.5)
+        ax.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
+        if (ur_corner[1] - ll_corner[0]) < 20.0:
+            ax.add_feature(cartopy.feature.STATES, linewidth=0.5)
+
+        cmesh = ax.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, transform=map_proj, vmin=-1.4, vmax=5.0)
+        ax.set_xlabel("Longitude [deg]")
+        ax.set_ylabel("Latitude [deg]")
+
+        divider = make_axes_locatable(ax)
+        ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
+        fig.add_axes(ax_cb)
+        cbar = plt.colorbar(cmesh, cax=ax_cb)
+        cbar.set_label('Elevation [km]')
+
         plt.show()
 
 
-def extract_terrain(option, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file, show_fig):
+@click.command('extract-terrain', short_help="Extract a line or grid of terrain information")
+@click.option("--geom", help="Geometry option ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')", prompt="Enter terrain option  ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")
+@click.option("--lat1", help="Latitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=30.0)
+@click.option("--lon1", help="Longitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=-110.0)
+@click.option("--lat2", help="Latitude of second point (end point for 'pnt2pnt', upper-right corner for grids)", default=30.0)
+@click.option("--lon2", help="Longitude of second point (end point for 'pnt2pnt', upper-right corner for grids)", default=-114.0)
+@click.option("--ref-lat", help="Reference latitude of second point (0.0 for xy-grid option)", default=30.0)
+@click.option("--ref-lon", help="Reference longitude of second point (0.0 for xy-grid option)", default=-110.0)
+@click.option("--azimuth", help="Azimuth of great circle path for line option", default=-90.0)
+@click.option("--range", help="Great circle distance for line option", default=1000.0)
+@click.option("--output-file", help="Output file", prompt="Specify output file: ")
+@click.option("--show-terrain", help="Visualize terrain results", default=True)
+@click.option("--offline-maps-dir", help="Use directory for offline cartopy maps", default=None)
+def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file, show_terrain, offline_maps_dir):
+    '''
+    Extract lines or grids of terrain information from an ETOPO1 file
+
+    \b
+    Examples:
+    \t infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth -90.0 --range 750.0 --output-file line_topo.dat
+    \t infraga utils extract-terrain --geom pnt2pnt --lat1 40.0 --lon1 -102.5 --lat2 40.0 --lon2 -110.0 --output-file line_topo.dat
+    \t infraga utils extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
+    \t infraga utils extract-terrain --geom latlon-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
+
+    '''
+
+    if offline_maps_dir is not None:
+        use_offline_maps(offline_maps_dir)
+
     if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
-        if option == "line":
-            pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_fig)
-        elif option == "pnt2pnt":
-            pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)
-        elif option == "xy-grid":
-            pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)
-        elif option == "latlon-grid":
-            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)
+        if geom == "line":
+            pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_terrain)
+        elif geom == "pnt2pnt":
+            pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
+        elif geom == "xy-grid":
+            pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
+        elif geom == "latlon-grid":
+            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
         else:
             print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")        
     else:
@@ -643,18 +767,19 @@ def extract_terrain(option, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, r
             os.system("gzip -d " + destination)
             print("ETOPO file successfully downloaded.  Running extraction...")
 
-            if option == "line":
-                pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_fig)
-            elif option == "pnt2pnt":
-                pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)
-            elif option == "xy-grid":
-                pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)
-            elif option == "latlon-grid":
-                pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_fig)  
+            if geom == "line":
+                pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_terrain)
+            elif geom == "pnt2pnt":
+                pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
+            elif geom == "xy-grid":
+                pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
+            elif geom == "latlon-grid":
+                pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)  
             else:
                 print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")        
         except:
             print("Download failed.")
             print("Try manual download: " + download_url)
+            print("Place file in /path/to/infraGA/infraga/ (here .py files are located)")
 
 
