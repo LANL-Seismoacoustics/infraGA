@@ -14,13 +14,13 @@ InfraGA/GeoAc can currently be installed on machines running newer versions of L
 FFTW
 -------------------------------------
 
-The weakly non-linear waveform calculations in infraGA/GeoAc leverage Fourier transform methods in the FFTW library.  Installation can be done via `download <http://fftw.org/download.html>`_ or by using an OS package manager (e.g., '*apt-get install -y fftw-dev*' or similar on Linux systems or '*brew install fftw*' on OS X using homebrew).
+The weakly non-linear waveform calculations in infraGA/GeoAc leverage Fourier transform methods in the FFTW library.  Installation can be done via `the FFTW download page <http://fftw.org/download.html>`_ or by using an OS package manager (e.g., '*apt-get install -y fftw-dev*' or similar on Linux systems or '*brew install fftw*' on OS X using homebrew).
 
 -------------------------------------
 OpenMPI
 -------------------------------------
 
-Parallelized calculations of ray paths is enabled in infraGA/GeoAc via a separate OpenMPI implementation.  These methods are optional, but can greatly reduce computation times for larger simulations.  Similar to FFTW above, installation can be completed via `download <http://open-mpi.org/software/ompi/v4.1>`_ or using an OS package manager (e.g., '*apt-get install -y openmpi-bin*' or similar on Linux systems or '*brew install open-mpi*' on OS X).
+Parallelized calculations of ray paths is enabled in infraGA/GeoAc via a separate OpenMPI implementation.  These methods are optional, but can greatly reduce computation times for larger simulations.  Similar to FFTW above, installation can be completed via `the OpenMPI download page <http://open-mpi.org/software/ompi/v4.1>`_ or using an OS package manager (e.g., '*apt-get install -y openmpi-bin*' or similar on Linux systems or '*brew install open-mpi*' on OS X).
 
 -------------------------------------
 Anaconda
@@ -78,7 +78,7 @@ Once the installation is complete, you can test that the InfraGA/GeoAc methods a
 
 .. code-block:: bash
 
-    >> conda activate infraga_env
+    conda activate infraga_env
 
 The infraGA/GeoAc methods have usage summarizes that can be displayed via the :code:`--help` option.  On the command line, run:
 
@@ -88,7 +88,7 @@ The infraGA/GeoAc methods have usage summarizes that can be displayed via the :c
 
 The usage information should be displayed:
 
-.. code-block:: bash
+.. code-block:: none
 
     Usage: infraga [OPTIONS] COMMAND [ARGS]...
 
@@ -106,3 +106,9 @@ The usage information should be displayed:
 
 Each of the individual methods have usage information (e.g., :code:`infraga 3d --help`) that will be discussed in the :ref:`quickstart`
 
+
+-------------------------------------
+Updates
+-------------------------------------
+
+It's highly recommended that users download and keep up with updates of the infraGA/GeoAc methods through the `LANL Seismoacoustics github page <https://github.com/LANL-Seismoacoustics/infraGA>`_.  InfraGA/GeoAc is a research code and bug fixes, new features, and improved utility and plotting methods are frequently pushed to the git repository.  It's possible to download a static copy of the software, but updates can more easily be applied through a git instance where the current version can be readily accessed using a :code:`git pull` command.  The dependency installs above (e.g., FFTW, OpenMPI) don't need to be re-installed and the '-e' option used during the infraga environment build keeps any local updates to the Python methods within the environment; therefore, when updates are applied a simple :code:`make clean`, :code:`make`, :code:`make accel` is all that's needed to update the binaries for infraGA/GeoAc.

@@ -27,6 +27,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -162,7 +163,775 @@
             
   <section id="parameters">
 <span id="id1"></span><h1>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h1>
-<p>Summary of parameters available in the various methods…</p>
+<section id="general-parameters">
+<h2>General Parameters<a class="headerlink" href="#general-parameters" title="Permalink to this heading">¶</a></h2>
+<section id="common-parameters-all-geometries-all-options">
+<h3>Common Parameters (all geometries, all options)<a class="headerlink" href="#common-parameters-all-geometries-all-options" title="Permalink to this heading">¶</a></h3>
+<p>All infraga/GeoAc simulations have a common set of parameters that can be modified as summarized in the below table.  Note that there is a syntax difference when specifying a parameter value in the C/C++ command line interface (e.g., <code class="code docutils literal notranslate"><span class="pre">freq=0.1</span></code>) compared with the Python interface that uses the Click library (eg., <code class="code docutils literal notranslate"><span class="pre">--freq</span> <span class="pre">0.1</span></code>).  Somewhat confusingly, the way in which the Python config file parsing works requires parameters defined in a configuration file to use the C/C++ syntax (underscores replacing hyphens).  Most of these parameters are relatively self explanatory or detailed in the <a class="reference internal" href="quickstart.html#quickstart"><span class="std std-ref">Quickstart</span></a> or <a class="reference internal" href="advanced.html#advanced"><span class="std std-ref">Advanced Usage</span></a> sections.  All parameters in this section are defined in the <code class="code docutils literal notranslate"><span class="pre">[GENERAL]</span></code> section of configuration file.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">freq</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--freq</span></code></p></td>
+<td><p>Hz</p></td>
+<td><p>0.1</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">abs_coeff</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--abs-coeff</span></code></p></td>
+<td><p>Scalar</p></td>
+<td><p>1.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">z_grnd</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--z-grnd</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">write_atmo</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--write-atmo</span></code></p></td>
+<td><p>True/False</p></td>
+<td><p>False</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">prof_format</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--prof-format</span></code></p></td>
+<td><p>string</p></td>
+<td><p>‘zTuvdp’</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">output_id</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--output-id</span></code></p></td>
+<td><p>string</p></td>
+<td><p>From atmosphere file</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">calc_amp</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--calc-amp</span></code></p></td>
+<td><p>True/False</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">max_alt</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--max-alt</span></code></p></td>
+<td><p>km</p></td>
+<td><p>From atmosphere file</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">max_rng</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--max-rng</span></code></p></td>
+<td><p>km</p></td>
+<td><p>1000</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">min_ds</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--min-ds</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.001</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">max_ds</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--max-ds</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.05</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">max_s</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--max-s</span></code></p></td>
+<td><p>km</p></td>
+<td><p>1000</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">topo_file</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--topo-file</span></code></p></td>
+<td><p>string</p></td>
+<td><p>See <a class="reference internal" href="advanced.html#advanced"><span class="std std-ref">Advanced Usage</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>-</strong></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--config-file</span></code></p></td>
+<td><p>string</p></td>
+<td><p>None</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="d-cartesian-region-boundaries">
+<h3>3D Cartesian Region Boundaries<a class="headerlink" href="#d-cartesian-region-boundaries" title="Permalink to this heading">¶</a></h3>
+<p>For all 3D Cartessian anlayses, the <span class="math notranslate nohighlight">\(x\)</span> (east/west) and <span class="math notranslate nohighlight">\(y\)</span> (north/south) edges of the propagation domain can be defined:</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">min_x</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--min-x</span></code></p></td>
+<td><p>km</p></td>
+<td><p>-1000</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">max_x</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--max-x</span></code></p></td>
+<td><p>km</p></td>
+<td><p>1000</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">min_y</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--min-y</span></code></p></td>
+<td><p>km</p></td>
+<td><p>-1000</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">max_y</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--max-y</span></code></p></td>
+<td><p>km</p></td>
+<td><p>1000</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="spherical-geometry-region-boundaries">
+<h3>Spherical Geometry Region Boundaries<a class="headerlink" href="#spherical-geometry-region-boundaries" title="Permalink to this heading">¶</a></h3>
+<p>In the current implementation of the spherical atmospheric layer propagation geometry, wrapping of ray paths across the global poles is not enabled so that ray paths are terminated if they extend beyond latitudes of <span class="math notranslate nohighlight">\(\pm90^\circ\)</span>.  Wrapping of ray paths at the <span class="math notranslate nohighlight">\(\pm180^\circ\)</span> longitude boundary is included in analysis so that keeping the below bounds allows ray paths to wrap through this boundary.  It should be noted that some of the visualization methods included don’t work well for data that crosses this boundary.  For a smaller region of the globe, the latitude and longitude bounds can be defined as below.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">min_lat</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--min-lat</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>-90</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">max_lat</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--max-lat</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>90</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">min_lon</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--min-lon</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>-180</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">max_lon</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--max-lon</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>180</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="weakly-non-linear-waveform-evolution">
+<h2>Weakly Non-Linear Waveform Evolution<a class="headerlink" href="#weakly-non-linear-waveform-evolution" title="Permalink to this heading">¶</a></h2>
+<p>Weakly non-linear waveform methods require a single ray path and initialization of the waveform at some location near the source in order to compute the evolution of the waveform along the ray path.  The initial waveform can be specified from a file or through the built in options (‘impulse’, ‘u-wave’, or ‘n-wave’).  The Python interface includes an implementation of the Kinney &amp; Graham scaling laws that enables use of an explosive yield (kg eq. TNT) to initialize the waveform.  The script checks the source altitude and atmosphere file to define the ambient temperature and pressure information and computes the peak overpressure and positive phase duration for the impulse (blastwave) near the source.  See <a class="reference internal" href="advanced.html#advanced"><span class="std std-ref">Advanced Usage</span></a> for a full discussion of waveform calculation usage.  The parameters below are specified in the <code class="code docutils literal notranslate"><span class="pre">[WAVEFORM]</span></code> section of configuration files.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">inclination</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--inclination</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>15.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">azimuth</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--azimuth</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>-90.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bounces</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bounces</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">write_ray</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--write-ray</span></code></p></td>
+<td><p>True/False</p></td>
+<td><p>False</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">wvfrm_file</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--wvfrm-file</span></code></p></td>
+<td><p>string</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">wvfrm_opt</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--wvfrm-opt</span></code></p></td>
+<td><p>string</p></td>
+<td><p>‘impulse’</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">wvfrm_p0</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--wvfrm-p0</span></code></p></td>
+<td><p>Pa</p></td>
+<td><p>10.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">wvfrm_t0</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--wvfrm-p0</span></code></p></td>
+<td><p>seconds</p></td>
+<td><p>1.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">wvfrm_alpha</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--wvfrm-p0</span></code></p></td>
+<td><p>scalar</p></td>
+<td><p>1.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">wvfrm_ref</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--wvfrm-p0</span></code></p></td>
+<td><p>km</p></td>
+<td><p>1.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">wvfrm_out_step</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--wvfrm-out-step</span></code></p></td>
+<td><p>km</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">wvfrm_ds</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--wvfrm-ds</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">wvfrm_len</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--wvfrm-len</span></code></p></td>
+<td><p>int</p></td>
+<td><p><span class="math notranslate nohighlight">\(2^{13}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>-</strong></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--wvfrm-yield</span></code></p></td>
+<td><p>kg (eq. TNT)</p></td>
+<td><p>None</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="two-dimensional-simulation-parameters">
+<h2>Two-Dimensional Simulation Parameters<a class="headerlink" href="#two-dimensional-simulation-parameters" title="Permalink to this heading">¶</a></h2>
+<p>Simulation of ray paths in an azimuthal plane (range vs. altitude) using the effective sound speed approximation is parameterized by a set of inclination angles, a single azimuth, a maximum number of possible ground bounces (reflections) and the source altitude (relative to sea level).  Waveform analysis in 2D requires only the source altitude in addition to the above common parameters.  In the below tables, the Point Source Propagation parameters are defined in the <code class="code docutils literal notranslate"><span class="pre">[PROP]</span></code> section of configuration files and the waveform parameters are defined using the <code class="code docutils literal notranslate"><span class="pre">[WAVEFORM]</span></code> header.</p>
+<section id="point-source-propagation">
+<h3>Point Source Propagation<a class="headerlink" href="#point-source-propagation" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-min</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-max</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>45.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_step</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-step</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">inclination</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--inclination</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">azimuth</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--azimuth</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>-90.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bounces</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bounces</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_alt</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-alt</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id2">
+<h3>Weakly Non-Linear Waveform Evolution<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_alt</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-alt</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="three-dimensional-simulation-parameters">
+<h2>Three-Dimensional Simulation Parameters<a class="headerlink" href="#three-dimensional-simulation-parameters" title="Permalink to this heading">¶</a></h2>
+<p>Computation of ray paths in 3D (Cartesian) geometry requires both a set of inclination angles as well as azimuth angles.  The ‘azimuth’ and ‘inclination’ parameters define single values of the respective angles for simulations focused on a single azimuthal direction or considering propagation at all compass directions from a single radiating inclination, respectively.  The source location for 3D Cartesian simulations requires an <span class="math notranslate nohighlight">\(x\)</span> (east/west), <span class="math notranslate nohighlight">\(y\)</span> (north/south), and altitude.  Because multi-azimuth simulations produce relatively large volumes of ray path data, an option is included to prevent that information from being written to file and instead only return the arrival information where ray paths intercept the ground surface.  In the case of eigenray analysis, both the source and receiver locations are defined in terms of their <span class="math notranslate nohighlight">\(x\)</span> (east/west), <span class="math notranslate nohighlight">\(y\)</span> (north/south) locations.  The receiver location is assumed to be on the ground surface, but the source location can be on the surface or aloft.  The various other eigenray parmaeters are summarized in <a class="reference internal" href="advanced.html#advanced"><span class="std std-ref">Advanced Usage</span></a>.  In the below tables, the Point Source Propagation parameters are defined in the <code class="code docutils literal notranslate"><span class="pre">[PROP]</span></code> section of configuration files, Eigenray Analysis parameters using the <code class="code docutils literal notranslate"><span class="pre">[EiGENRAY]</span></code> header, and the waveform parameters are defined using the <code class="code docutils literal notranslate"><span class="pre">[WAVEFORM]</span></code> header.</p>
+<section id="id3">
+<h3>Point Source Propagation<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-min</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-max</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>45.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_step</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-step</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">inclination</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--inclination</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">az_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--az-min</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>-90.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">az_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--az-max</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>-90.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">az_step</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--az-step</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>1.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">azimuth</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--azimuth</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>-90.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bounces</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bounces</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_x</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-x</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_y</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-y</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_alt</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-alt</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">turn_ht_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--turn-ht-min</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.2</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">write_rays</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--write-rays</span></code></p></td>
+<td><p>True/False</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">write_topo</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--write-topo</span></code></p></td>
+<td><p>True/False</p></td>
+<td><p>False</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="eigenray-analysis">
+<h3>Eigenray Analysis<a class="headerlink" href="#eigenray-analysis" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-min</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-max</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>45.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bnc_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bnc-min</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bnc_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bnc-max</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bounces</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bounces</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_x</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-x</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_y</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-y</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_alt</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-alt</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">rcvr_x</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--rcvr-x</span></code></p></td>
+<td><p>km</p></td>
+<td><p>250.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">rcvr_y</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--rcvr-y</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">verbose</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--verbose</span></code></p></td>
+<td><p>True/False</p></td>
+<td><p>False</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">iterations</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--iterations</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>25</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">damping</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--damping</span></code></p></td>
+<td><p>scalar</p></td>
+<td><p>1.0e-3</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">tolerance</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--tolerance</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.1</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">az_dev_lim</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--az-dev-lim</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>2.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_step_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-step-min</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>0.001</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_step_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-step-max</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>0.1</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id4">
+<h3>Weakly Non-Linear Waveform Evolution<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_x</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-x</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_y</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-y</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_alt</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-alt</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spherical-atmosphere-layer-simulation-parameters">
+<h2>Spherical Atmosphere Layer Simulation Parameters<a class="headerlink" href="#spherical-atmosphere-layer-simulation-parameters" title="Permalink to this heading">¶</a></h2>
+<p>Ray path calculation in a spherical atmospheric layer geometry again utilizes sets of inclination and azimuthal angles and single values can be specified using ‘inclination’ or ‘azimuth’, respectively.  The location of the source (and receiver for eigenray analysis) is defined by the latitude and longitude on the globe.  In most other respects, the parameter set for the spherical geometry methods is identical to that of the 3D Cartesian.  Similar to the 3D Cartesian configuration file header, the Point Source Propagation parameters are defined in the <code class="code docutils literal notranslate"><span class="pre">[PROP]</span></code> section of configuration files, Eigenray Analysis parameters using the <code class="code docutils literal notranslate"><span class="pre">[EiGENRAY]</span></code> header, and the waveform parameters are defined using the <code class="code docutils literal notranslate"><span class="pre">[WAVEFORM]</span></code> header.</p>
+<section id="id5">
+<h3>Point Source Propagation<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-min</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-max</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>45.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_step</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-step</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">inclination</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--inclination</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">az_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--az-min</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>-90.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">az_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--az-max</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>-90.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">az_step</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--az-step</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>1.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">azimuth</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--azimuth</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>-90.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bounces</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bounces</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_lat</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-lat</span></code></p></td>
+<td><p>km</p></td>
+<td><p>30.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_lon</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-lon</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_alt</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-alt</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">turn_ht_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--turn-ht-min</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.2</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">write_rays</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--write-rays</span></code></p></td>
+<td><p>True/False</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">write_topo</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--write-topo</span></code></p></td>
+<td><p>True/False</p></td>
+<td><p>False</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id6">
+<h3>Eigenray Analysis<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-min</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-max</span></code></p></td>
+<td><p>degress</p></td>
+<td><p>45.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bnc_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bnc-min</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bnc_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bnc-max</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bounces</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bounces</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_lat</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-lat</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>30.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_lon</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-lon</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_alt</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-alt</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">rcvr_lat</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--rcvr-lat</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>30.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">rcvr_lon</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--rcvr-lon</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>2.5</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">verbose</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--verbose</span></code></p></td>
+<td><p>True/False</p></td>
+<td><p>False</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">iterations</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--iterations</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>25</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">damping</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--damping</span></code></p></td>
+<td><p>scalar</p></td>
+<td><p>1.0e-3</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">tolerance</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--tolerance</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.1</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">az_dev_lim</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--az-dev-lim</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>2.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_step_min</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-step-min</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>0.001</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">incl_step_max</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--incl-step-max</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>0.1</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id7">
+<h3>Weakly Non-Linear Waveform Evolution<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
+<td colspan="2"><p><strong>Info</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_lat</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-lat</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>30.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_lon</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-lon</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_alt</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--src-alt</span></code></p></td>
+<td><p>km</p></td>
+<td><p>0.0</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
 </section>
 
 

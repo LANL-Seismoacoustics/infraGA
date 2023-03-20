@@ -30,7 +30,7 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from pyproj import Geod
 
 
-marker_size = 1.0
+marker_size = 3.0
 map_proj = cartopy.crs.PlateCarree()
 resol = '100m'
 
@@ -44,30 +44,30 @@ def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
         cartopy.config['pre_existing_data_dir'] = ""
 
 
-@click.command('atmo', short_help="Visualize information about an atmospheric specification")
-@click.option("--specification", help="Atmospheric specification file")
+@click.command('atmo', short_help="Visualize information about an atmospheric atmo_file")
+@click.option("--atmo-file", help="Atmospheric atmo_file file")
 @click.option("--max-alt", help="Maximum altitude for analysis (default: 120 km)", default=None, type=float)
-@click.option("--format", help="Atmospheric specification format (default: 'zTuvdp')", default='zTuvdp')
-def plot_atmo(specification, max_alt, format):
+@click.option("--format", help="Atmospheric atmo_file format (default: 'zTuvdp')", default='zTuvdp')
+def plot_atmo(atmo_file, max_alt, format):
     '''
-    Visualize the sound speed, wind fields, and effective sound speed ratio ducting information for an atmospheric specification
+    Visualize the sound speed, wind fields, and effective sound speed ratio ducting information for an atmospheric atmo_file
 
 
     \b
     Examples:
-    \t infraga plot atmo --specification examples/ToyAtmo.met
-    \t infraga plot atmo --specification examples/G2S_example.met
+    \t infraga plot atmo --atmo-file examples/ToyAtmo.met
+    \t infraga plot atmo --atmo-file examples/G2S_example.met
 
     '''
 
-    atmo = np.loadtxt(specification)
+    atmo = np.loadtxt(atmo_file)
     z = atmo[:, format.find('z')]
     u = atmo[:, format.find('u')]
     v = atmo[:, format.find('v')]
     c = np.sqrt(0.14 * atmo[:, format.find('p')] / atmo[:, format.find('d')])
 
     grnd_ht = z[0]
-    for line in open(specification, 'r'):
+    for line in open(atmo_file, 'r'):
         if "Ground Height" in line:
             grnd_ht = float(line[18:])
             break
@@ -120,15 +120,16 @@ def plot_atmo(specification, max_alt, format):
 
 
 @click.command('azimuthal', short_help="Visualize results for a single azimuth simulation")
-@click.option("--specification", help="Atmospheric specification file")
+@click.option("--atmo-file", help="Atmospheric atmo_file file")
 @click.option("--arrivals", help="Arrivals file from the simulation (optional)", default=None)
 @click.option("--ray-paths", help="Ray path file from the simulation (optional)", default=None)
-@click.option("--plot-option", help="Plotting option (see usage info below)", default='inclination')
+@click.option("--y-axis-option", help="Lower axis option (see usage info below)", default='inclination')
+@click.option("--cmap-option", help="Low axis cmap option (see usage info below)", default=None)
 @click.option("--reduced-tm-vel", help="Reference velocity for reduced time option", default=300.0)
 @click.option("--tr-vel-ref", help="Reference velocity for trace velocity calculation", default=330.0)
 @click.option("--plot-amplitudes", help="Option to plot amplitude along rays", default=True)
 @click.option("--figure-out", help="Name of output figure", default=None)
-def plot_azimuthal(specification, arrivals, ray_paths, plot_option, reduced_tm_vel, tr_vel_ref, plot_amplitudes, figure_out):
+def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, reduced_tm_vel, tr_vel_ref, plot_amplitudes, figure_out):
     '''
     Visualize propagation results for a single azimuthal angle simulation
 
@@ -144,22 +145,22 @@ def plot_azimuthal(specification, arrivals, ray_paths, plot_option, reduced_tm_v
 
     \b
     Examples:
-    \t infraga plot azimuthal --specification ToyAtmo.met --plot-option celerity
+    \t infraga plot azimuthal --atmo-file ToyAtmo.met --plot-option celerity
 
     '''
-    print("Loading atmospheric data and simulation results for " + specification)
+    print("Loading atmospheric data and simulation results for " + atmo_file)
 
     if arrivals is not None:
         print('\t' + "Loading specified arrivals file: " + arrivals)
         arrivals_file = arrivals
     else:
-        arrivals_file = os.path.splitext(specification)[0] + ".arrivals.dat"
+        arrivals_file = os.path.splitext(atmo_file)[0] + ".arrivals.dat"
     
     if ray_paths is not None:
         print('\t' + "Loading specified ray paths file: " + ray_paths)
         raypaths_file = ray_paths
     else:
-        raypaths_file = os.path.splitext(specification)[0] + ".raypaths.dat"
+        raypaths_file = os.path.splitext(atmo_file)[0] + ".raypaths.dat"
 
     if not os.path.isfile(arrivals_file):
         print('\t' + "Arrivals file (" + arrivals_file + ") not found.")
@@ -199,7 +200,7 @@ def plot_azimuthal(specification, arrivals, ray_paths, plot_option, reduced_tm_v
     if src_loc is not None:
         print('\t' + "Source Location:", src_loc)
 
-    atmo_data = np.loadtxt(specification)
+    atmo_data = np.loadtxt(atmo_file)
     arr_data = np.loadtxt(arrivals_file)
     ray_data = np.loadtxt(raypaths_file)
 
@@ -274,41 +275,77 @@ def plot_azimuthal(specification, arrivals, ray_paths, plot_option, reduced_tm_v
     ax2 = fig.add_subplot(spec[1, 1:], sharex=ax1)
     ax2.set_xlabel("Range [km]")
 
-    if plot_option == 'inclination':
+    if y_axis_option == 'inclination':
         print('\t' + "Launch inclination info...")
         ax2.set_ylabel("Launch Inclination [deg]")
-        ax2.plot(arr_rngs, incl_vals, 'ok', markersize=3.0)
-    elif plot_option == 'celerity':
+        plot_vals = arr_incl_vals
+    elif y_axis_option == 'celerity':
         print('\t' + "Arrival celerity info...")
         ax2.set_ylabel("Celerity [m/s]")
-        ax2.plot(arr_rngs, cel_vals, 'ok', markersize=3.0)
-    elif plot_option == "reduced-time":
+        plot_vals = cel_vals
+    elif y_axis_option == "reduced-time":
         print('\t' + "Arrival reduced time relative to " + str(reduced_tm_vel) + " m/s...")
         ax2.set_ylabel("Reduced Time (rel. " + str(int(reduced_tm_vel)) + " m/s) [s]")
-        ax2.plot(arr_rngs, tm_vals - arr_rngs / (reduced_tm_vel * 1.0e-3), 'ok', markersize=3.0)
-    elif plot_option == "turning-ht":
+        plot_vals = tm_vals - arr_rngs / (reduced_tm_vel * 1.0e-3)
+    elif y_axis_option == "turning-ht":
         print('\t' + "Turning height info...")
         ax2.set_ylabel("Turning Height [km]")
-        ax2.plot(arr_rngs, turn_ht_vls, 'ok', markersize=3.0)
-    elif plot_option == "trace-velocity":
+        plot_vals = turn_ht_vls
+    elif y_axis_option == "trace-velocity":
         print('\t' + "Trace velocity info...")
         ax2.set_ylabel("Trace Velocity [m/s]")
-        ax2.plot(arr_rngs, tr_vel_ref / np.cos(np.radians(arr_incl_vals)), 'ok', markersize=3.0)
-    elif plot_option == "back-azimuth":
+        plot_vals = tr_vel_ref / np.cos(np.radians(arr_incl_vals))
+    elif y_axis_option == "back-azimuth":
         if geom == '2d':
             print('\t' + "Can't plot back azimuth deviation from 2d simulation")
+            return 0
         else:
             print('\t' + "Back azimuth info...")
             ax2.set_ylabel("Back Azimuth [deg]")
-            ax2.plot(arr_rngs, back_az_vals, 'ok', markersize=3.0)
-    elif plot_option == "amplitude":
+            plot_vals = back_az_vals
+    elif y_axis_option == "amplitude":
         print('\t' + "Amplitude info...")
         ax2.set_ylabel("Amplitude (rel. 1 km) [dB]")
-        ax2.plot(arr_rngs, amp_vals, 'ok', markersize=3.0)    
+        plot_vals = amp_vals
     else:
         print('\t' + "WARNING!  Bad plot option provided." + '\n\t' + "Plotting launch angle inclination info...")
-        ax2.set_ylabel("Inclination [deg]")
-        ax2.plot(arr_rngs, incl_vals, 'ok', markersize=3.0)
+        ax2.set_ylabel("Launch Inclination [deg]")
+        plot_vals = incl_vals
+
+    if cmap_option == "inclination":
+        cmap_label = "Launch Inclination [deg]"
+        cmap_vals = incl_vals
+    elif cmap_option == "celerity":
+        cmap_label = "Celerity [m/s]"
+        cmap_vals = cel_vals
+    elif cmap_option == "reduced-time":
+        cmap_label = "Reduced Time (rel. " + str(int(reduced_tm_vel)) + " m/s) [s]"
+        cmap_vals = tm_vals - arr_rngs / (reduced_tm_vel * 1.0e-3)
+    elif cmap_option == "turning-ht":
+        cmap_label = "Turning Height [km]"
+        cmap_vals = turn_ht_vls
+    elif cmap_option == "trace-velocity":
+        cmap_label = "Trace Velocity [m/s]"
+        cmap_vals = tr_vel_ref / np.cos(np.radians(arr_incl_vals))
+    elif cmap_option == "back-azimuth":
+        if geom == '2d':
+            print('\t' + "Can't plot back azimuth info from 2d simulation")
+            cmap_option = None
+        else:
+            cmap_label = "Back Azimuth [deg]"
+            cmap_vals = back_az_vals
+    elif cmap_option == "amplitude":
+        cmap_label = "Amplitude (rel. 1 km) [dB]"
+        cmap_vals = amp_vals
+    else:
+        cmap_vals = None
+
+    if cmap_option is not None:
+        sc = ax2.scatter(arr_rngs, plot_vals, c=cmap_vals, s=7.5, cmap = cm.jet)
+        plt.colorbar(sc, label=cmap_label)
+    else:
+        ax2.plot(arr_rngs, plot_vals, 'ok', markersize=3.0)
+
 
     if figure_out is not None:
         print('\t' + "Saving figure to " + figure_out)
@@ -336,7 +373,7 @@ def plot_eig_wvfrm(eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, fi
 
     \b
     Examples:
-    \t infraga plot azimuthal --specification ToyAtmo.met --plot-option celerity
+    \t infraga plot azimuthal --atmo-file ToyAtmo.met --plot-option celerity
         
 
     '''

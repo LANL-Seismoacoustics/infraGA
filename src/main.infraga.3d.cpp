@@ -71,7 +71,7 @@ void usage(){
     cout << '\t' << '\t' << "az_step"           << '\t' << '\t' << "degrees"    << '\t' << '\t' << "1.0"  << '\n';
     cout << '\t' << '\t' << "azimuth"           << '\t' << '\t' << "see manual" << '\t' << "-90.0" << '\n';
     
-    cout << '\t' << '\t' << "bounces"           << '\t' << '\t' << "integer"    << '\t' << '\t' << "2" << '\n';
+    cout << '\t' << '\t' << "bounces"           << '\t' << '\t' << "integer"    << '\t' << '\t' << "10" << '\n';
     
     cout << '\t' << '\t' << "src_x"             << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
     cout << '\t' << '\t' << "src_y"             << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
@@ -170,14 +170,14 @@ void usage(){
     cout << '\t' << "write_caustics"    << '\t' << '\t' << "true/false"         << '\t' << "false" << '\n';
     cout << '\t' << "calc_amp"          << '\t' << '\t' << "true/false"         << '\t' << "true" << '\n';
     cout << '\t' << "max_alt"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation max" << '\n';
-    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
+    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
     cout << '\t' << "min_x"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "-2000.0" << '\n';
     cout << '\t' << "min_y"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "-2000.0" << '\n';
-    cout << '\t' << "max_x"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2000.0" << '\n';
-    cout << '\t' << "max_y"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2000.0" << '\n';
+    cout << '\t' << "max_x"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
+    cout << '\t' << "max_y"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
     cout << '\t' << "min_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.001" << '\n';
     cout << '\t' << "max_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.05" << '\n';
-    cout << '\t' << "max_s"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
+    cout << '\t' << "max_s"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
     cout << '\t' << "topo_file"         << '\t' << '\t' << "see manual"         << '\t' << "none" << '\n';
     cout << '\t' << "topo_use_BLw"      << '\t' << '\t' << "see manual"         << '\t' << "false" << '\n' << '\n';
 
@@ -188,7 +188,7 @@ void usage(){
     // cout << '\t' << "{...}.projection.dat -> x : y : z : t : X_incl : Y_incl : Z_incl : T_incl : X_az : Y_az : Z_az : T_az" << '\n' << '\n';
 
     cout << "Examples:" << '\n';
-    cout << '\t' << "./bin/infraga-3d -prop examples/ToyAtmo.met incl_step=1.0 bounces=2 azimuth=-75.0 max_rng=500.0" << '\n';
+    cout << '\t' << "./bin/infraga-3d -prop examples/ToyAtmo.met incl_step=1.0 azimuth=-75.0 max_rng=500.0" << '\n';
     cout << '\t' << "./bin/infraga-3d -eig_search examples/ToyAtmo.met rcvr_x=-175.0 rcvr_y=75.0 verbose=true incl_step_max=0.2" << '\n';
     cout << '\t' << "./bin/infraga-3d -eig_direct examples/ToyAtmo.met rcvr_x=-175.0 rcvr_y=75.0 incl_est=8.0" << '\n';
     // cout << '\t' << "./bin/infraga-3d -back_proj examples/ToyAtmo.met rcvr_x=-175.0 rcvr_y=75.0 azimuth=113.87504 inclination=11.164744" << '\n';
@@ -204,7 +204,7 @@ void run_prop(char* inputs[], int count){
     
     double theta_min = 0.5, theta_max=45.0, theta_step=0.5;
     double phi_min=-90.0, phi_max=-90.0, phi_step=1.0;
-    int bounces=2, file_check;
+    int bounces=10, file_check;
     double x_src=0.0, y_src=0.0, z_src=0.0;
     bool  write_atmo=false, write_rays=true, write_caustics=false, write_topo=false, custom_output_id=false, print_resid=false;
     double freq=0.1, turn_ht_min=0.2;

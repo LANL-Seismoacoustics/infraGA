@@ -168,11 +168,11 @@
 </section>
 <section id="fftw">
 <h2>FFTW<a class="headerlink" href="#fftw" title="Permalink to this heading">¶</a></h2>
-<p>The weakly non-linear waveform calculations in infraGA/GeoAc leverage Fourier transform methods in the FFTW library.  Installation can be done via <a class="reference external" href="http://fftw.org/download.html">download</a> or by using an OS package manager (e.g., ‘<em>apt-get install -y fftw-dev</em>’ or similar on Linux systems or ‘<em>brew install fftw</em>’ on OS X using homebrew).</p>
+<p>The weakly non-linear waveform calculations in infraGA/GeoAc leverage Fourier transform methods in the FFTW library.  Installation can be done via <a class="reference external" href="http://fftw.org/download.html">the FFTW download page</a> or by using an OS package manager (e.g., ‘<em>apt-get install -y fftw-dev</em>’ or similar on Linux systems or ‘<em>brew install fftw</em>’ on OS X using homebrew).</p>
 </section>
 <section id="openmpi">
 <h2>OpenMPI<a class="headerlink" href="#openmpi" title="Permalink to this heading">¶</a></h2>
-<p>Parallelized calculations of ray paths is enabled in infraGA/GeoAc via a separate OpenMPI implementation.  These methods are optional, but can greatly reduce computation times for larger simulations.  Similar to FFTW above, installation can be completed via <a class="reference external" href="http://open-mpi.org/software/ompi/v4.1">download</a> or using an OS package manager (e.g., ‘<em>apt-get install -y openmpi-bin</em>’ or similar on Linux systems or ‘<em>brew install open-mpi</em>’ on OS X).</p>
+<p>Parallelized calculations of ray paths is enabled in infraGA/GeoAc via a separate OpenMPI implementation.  These methods are optional, but can greatly reduce computation times for larger simulations.  Similar to FFTW above, installation can be completed via <a class="reference external" href="http://open-mpi.org/software/ompi/v4.1">the OpenMPI download page</a> or using an OS package manager (e.g., ‘<em>apt-get install -y openmpi-bin</em>’ or similar on Linux systems or ‘<em>brew install open-mpi</em>’ on OS X).</p>
 </section>
 <section id="anaconda">
 <h2>Anaconda<a class="headerlink" href="#anaconda" title="Permalink to this heading">¶</a></h2>
@@ -208,7 +208,7 @@
 <section id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h2>
 <p>Once the installation is complete, you can test that the InfraGA/GeoAc methods are set up and accessible by first activating the environment with:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt; conda activate infraga_env
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda activate infraga_env
 </pre></div>
 </div>
 <p>The infraGA/GeoAc methods have usage summarizes that can be displayed via the <code class="code docutils literal notranslate"><span class="pre">--help</span></code> option.  On the command line, run:</p>
@@ -216,22 +216,26 @@
 </pre></div>
 </div>
 <p>The usage information should be displayed:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Usage: infraga <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage: infraga [OPTIONS] COMMAND [ARGS]...
 
-  infraga - Python interface <span class="k">for</span> using the infraGA/GeoAc software tools
+  infraga - Python interface for using the infraGA/GeoAc software tools
 
 Options:
   -h, --help  Show this message and exit.
 
 Commands:
-  2d     Run 2d <span class="o">(</span>effective sound speed<span class="o">)</span> ray tracing
-  3d     Run 3d <span class="o">(</span>moving medium<span class="o">)</span> ray tracing
+  2d     Run 2d (effective sound speed) ray tracing
+  3d     Run 3d (moving medium) ray tracing
   plot   Various visualization functions
-  sph    Run spherical layer <span class="o">(</span>moving medium<span class="o">)</span> ray tracing
+  sph    Run spherical layer (moving medium) ray tracing
   utils  Various utility functions
 </pre></div>
 </div>
 <p>Each of the individual methods have usage information (e.g., <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">3d</span> <span class="pre">--help</span></code>) that will be discussed in the <a class="reference internal" href="quickstart.html#quickstart"><span class="std std-ref">Quickstart</span></a></p>
+</section>
+<section id="updates">
+<h2>Updates<a class="headerlink" href="#updates" title="Permalink to this heading">¶</a></h2>
+<p>It’s highly recommended that users download and keep up with updates of the infraGA/GeoAc methods through the <a class="reference external" href="https://github.com/LANL-Seismoacoustics/infraGA">LANL Seismoacoustics github page</a>.  InfraGA/GeoAc is a research code and bug fixes, new features, and improved utility and plotting methods are frequently pushed to the git repository.  It’s possible to download a static copy of the software, but updates can more easily be applied through a git instance where the current version can be readily accessed using a <code class="code docutils literal notranslate"><span class="pre">git</span> <span class="pre">pull</span></code> command.  The dependency installs above (e.g., FFTW, OpenMPI) don’t need to be re-installed and the ‘-e’ option used during the infraga environment build keeps any local updates to the Python methods within the environment; therefore, when updates are applied a simple <code class="code docutils literal notranslate"><span class="pre">make</span> <span class="pre">clean</span></code>, <code class="code docutils literal notranslate"><span class="pre">make</span></code>, <code class="code docutils literal notranslate"><span class="pre">make</span> <span class="pre">accel</span></code> is all that’s needed to update the binaries for infraGA/GeoAc.</p>
 </section>
 </section>
 

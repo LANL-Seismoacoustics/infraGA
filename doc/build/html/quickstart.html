@@ -27,6 +27,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -162,63 +163,289 @@
             
   <section id="quickstart">
 <span id="id1"></span><h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading">¶</a></h1>
-<section id="command-line-interface-cli">
-<h2>Command Line Interface (CLI)<a class="headerlink" href="#command-line-interface-cli" title="Permalink to this heading">¶</a></h2>
-<p>Most of InfraPy’s analysis methods are accessible through a command line interface (CLI) with parameters specified either via command line flags or a configuration file.  Waveform data can be ingested from local files (eg., SAC or similar format that can be ingested via <code class="code docutils literal notranslate"><span class="pre">obspy.core.read</span></code>) or downloaded from FDSN clients via <code class="code docutils literal notranslate"><span class="pre">obspy.clients.fdsn</span></code>.  Array- and network-level analyses can be performed from the command line enabling a full pipeline of analysis from beamforming/detection to event identification and localization.  Visualization methods are also included to quickly interrogate analysis results.  The Quickstart summarized here steps through these various CLI methods and demonstrates the usage of InfraPy from the command line.</p>
-<section id="array-level-analyses">
-<h3>Array-Level Analyses<a class="headerlink" href="#array-level-analyses" title="Permalink to this heading">¶</a></h3>
+<section id="single-azimuth-simulation">
+<h2>Single Azimuth Simulation<a class="headerlink" href="#single-azimuth-simulation" title="Permalink to this heading">¶</a></h2>
+<p>InfraGA/GeoAc can run propagation simulations using the effective sound speed in a 2D azimuthal plane (range vs. altitude), using a 3D Cartesian framework with moving media (i.e., winds), or using a spherical atmospheric layer geometry that matches the global geometry of propagation through the atmosphere.  While the 2D and 3D methods are slightly faster, the more accurate physics and geometry of the spherical layer methods provides a more accurate framework for analysis and is the recommended method for general use.</p>
+<section id="running-the-simulation">
+<h3>Running the Simulation<a class="headerlink" href="#running-the-simulation" title="Permalink to this heading">¶</a></h3>
 <ul>
-<li><p>The beamforming methods in InfraPy can be run via the <code class="code docutils literal notranslate"><span class="pre">run_fk</span></code> CLI option.  For a local data source such as the included SAC files in the data directory, this is simply,</p>
+<li><p>Propagation of energy from a single point source on using the spherical atmosphere layer geometry can be accessed using the <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">sph</span> <span class="pre">prop</span></code> CLI option.  Running this with the <code class="code docutils literal notranslate"><span class="pre">--help</span></code> option produces a summary of the usage (note: if you get an error about the <code class="code docutils literal notranslate"><span class="pre">infraga</span></code> command not being found, make sure you have the conda environment active via <code class="code docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">infraga_env</span></code>):</p>
 <blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>infrapy run_fk --local-wvfrms <span class="s1">&#39;data/YJ.BRP*.SAC&#39;</span>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>infraga sph prop --help
 </pre></div>
 </div>
-<p>Note that the data path must be in quotes in order to properly parsed and that this Quickstart assumes you are in the infrapy/examples directory (if you are getting an error that the waveform data isn’t found, make sure you’re in the correct directory).  As the methods are run, data and algorithm parameters are summarized and a progress bar shows how much of the data has been analyzed:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>#####################################
-##                                 ##
-##             InfraPy             ##
-##    Beamforming (fk) Analysis    ##
-##                                 ##
-#####################################
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage: infraga sph prop [OPTIONS]
 
-Data parameters:
-  local_wvfrms: data/YJ.BRP*.SAC
-  local_latlon: None
-  local_fk_label: None
+  Run spherical atmosphere geometry ray tracing analysis for a point source
 
-Algorithm parameters:
-  freq_min: 0.5
-  freq_max: 5.0
-  back_az_min: -180.0
-  back_az_max: 180.0
-  back_az_step: 2.0
-  trace_vel_min: 300.0
-  trace_vel_max: 600.0
-  trace_vel_step: 2.5
-  method: bartlett
-  signal_start: None
-  signal_end: None
-  window_len: 10.0
-  sub_window_len: None
-  window_step: 5.0
+  Examples:
+      infraga sph prop --atmo-file ToyAtmo.met
+      infraga sph prop --atmo-file ToyAtmo.met --config-file example.cnfg
 
-Loading local data from data/YJ.BRP*.SAC
-
-Data summary:
-YJ.BRP1..EDF    2012-04-09T18:00:00.008300Z - 2012-04-09T18:19:59.998300Z
-YJ.BRP2..EDF    2012-04-09T18:00:00.008300Z - 2012-04-09T18:19:59.998300Z
-YJ.BRP3..EDF    2012-04-09T18:00:00.008300Z - 2012-04-09T18:19:59.998300Z
-YJ.BRP4..EDF    2012-04-09T18:00:00.008300Z - 2012-04-09T18:19:59.998300Z
-
-Running fk analysis...
-        Progress: [&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;]
-
-Writing results into data/YJ.BRP_2012.04.09_18.00.00-18.19.59.fk_results.dat
+Options:
+  --config-file TEXT      Configuration file for simulation
+  --atmo-file TEXT        Atmosphere file
+  --atmo-prefix TEXT      Atmosphere file prefix (range dependent)
+  --grid-lats TEXT        Atmosphere grid latitudes file
+  --grid-lons TEXT        Atmosphere grid longitudes file
+  --incl-min TEXT         Minimum inclination angle (rel. horizontal)
+  --incl-max TEXT         Maximum inclination angle (rel. horizontal)
+  --incl-step TEXT        Inclination angle step resolution
+  --inclination TEXT      Single inclination angle
+  --az-min TEXT           Minimum azimuth angle (clockwise rel. N)
+  --az-max TEXT           Maximum azimuth angle (clockwise rel. N)
+  --az-step TEXT          Azimuth angle step resolution
+  --azimuth TEXT          Single azimuth angle
+  --bounces TEXT          Number of ground reflections (bounces) to consider
+  --src-lat TEXT          Source latitude
+  --src-lon TEXT          Source longitude
+  --src-alt TEXT          Source altitude
+  --write-rays BOOLEAN    Option to write [...].raypaths.dat output
+  --write-topo BOOLEAN    Option to write terrain info under first ray
+  --freq TEXT             Frequency for Sutherland-Bass losses
+  --abs-coeff TEXT        Scaling coefficient for Sutherland-Bass losses
+  --z-grnd TEXT           Ground elevation (flat ground, km rel. sea level)
+  --write-atmo TEXT       Option to write atmosphere data (for QC)
+  --output-id TEXT        User specified output file path
+  --calc-amp BOOLEAN      Option to turn off transport coefficient calculation
+  --max-alt TEXT          Maximum altitude for ray calculation
+  --max-rng TEXT          Maximum range for ray calculation
+  --min-lat TEXT          Minimum latitude for user defined bounds
+  --max-lat TEXT          Maximum latitude for user defined bounds
+  --min-lon TEXT          Minimum longitude for user defined bounds
+  --max-lon TEXT          Maximum longitude for user defined bounds
+  --min-ds TEXT           Minimum step size (near-ground) in RK4 solver
+  --max-ds TEXT           Maximum step size in RK4 solver
+  --max-s TEXT            Maximum ray length between bounces
+  --topo-file TEXT        Terrain file
+  --topo-BL-wind BOOLEAN  Use terrain corrected boundary layer winds
+  --cpu-cnt INTEGER       Number of CPUs to use in analysis
+  -h, --help              Show this message and exit.
 </pre></div>
 </div>
 </div></blockquote>
 </li>
+<li><p>The long list summarizes all of the control parameters that can be used when running a propagation simulation; though, many of them are not needed for general usage.  Consider first running a simulation with all of the default parameter values.  From the ‘infraga/examples/’ directory (the one containing the ‘ToyAtmo.met’ file), run the spherical atmosphere layer propagation methods using the included climatological file:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met
+</pre></div>
+</div>
+<p>This analysis will run a set of ray path simulations at an azimuth of <span class="math notranslate nohighlight">\(-90^\circ\)</span> (westward) from the default source location (<span class="math notranslate nohighlight">\(30^\circ\)</span> latitude, <span class="math notranslate nohighlight">\(0^\circ\)</span> longitude) and write results into new files ‘ToyAtmo.raypaths.dat’, and ‘ToyAtmo.arrivals.dat’.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  ###########################################
+  ####        Running infraga-sph        ####
+  ####            Propagation            ####
+  ###########################################
+
+Interpolating atmosphere data in &#39;ToyAtmo.met&#39; using format &#39;zTuvdp&#39;...
+  Propagation region limits:
+    latitude = -90, 90
+    longitude = -180, 180
+    altitude = 0, 139.9
+
+Parameter summary:
+  inclination: 0.5, 45, 0.5
+  azimuth: -90, -90, 1
+  bounces: 2
+  source location (lat, lon, alt): 30, 0, 0
+  ground elevation: 0
+  turn_ht_min: 0.2
+  frequency: 0.1
+  S&amp;B atten coeff: 1
+  write_atmo: false
+  write_rays: true
+  write_topo: false
+  write_caustics: false
+  calc_amp: true
+
+Calculating ray path: 0.5 degrees inclination, -90 degrees azimuth.
+Calculating ray path: 1 degrees inclination, -90 degrees azimuth.
+Calculating ray path: 1.5 degrees inclination, -90 degrees azimuth.
+...
+Calculating ray path: 44 degrees inclination, -90 degrees azimuth.
+Calculating ray path: 44.5 degrees inclination, -90 degrees azimuth.
+Calculating ray path: 45 degrees inclination, -90 degrees azimuth.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>As noted in the parameter summary printed during the evaluation, inclination angles are defined by a minimum of <span class="math notranslate nohighlight">\(0.5^\circ\)</span> and a maximum of <span class="math notranslate nohighlight">\(45.0^\circ\)</span> with a resolution of <span class="math notranslate nohighlight">\(0.5^\circ\)</span>.  In most cases a maximum angle on the order of <span class="math notranslate nohighlight">\(40 - 50^\circ\)</span> is sufficient to capture all refracted ray paths; though, higher angles might be necessary in some cases.</p></li>
 </ul>
+</section>
+<section id="visualizing-the-results">
+<h3>Visualizing the Results<a class="headerlink" href="#visualizing-the-results" title="Permalink to this heading">¶</a></h3>
+<p>The Python <em>infraga</em> interface includes a number of plotting functions that are useful for visualizing results.  In this case, the azimuthal ray path and arrival characteristics can be visualized using:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met
+</pre></div>
+</div>
+</div></blockquote>
+<p>This produces a plot containing 3 panels as shown below.  The upper left panel shows the sound speed (dashed line) and effective sound speed in the direction of propagation (solid line).  The upper right panel shows the ray paths including the transport equation amplitude losses (geometric spread + impedance differences with altitude due to the varying sound speed and density) as well as the Sutherland &amp; Bass thermo-viscous losses that are frequency dependent (the frequency used for this calculation can be modified using <code class="code docutils literal notranslate"><span class="pre">--freq</span></code> and has a default value of 0.1 Hz).  The lower right panel in this instance shows the launch inclination of each ray path as a function of arrival range.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/azimuthal1.png"><img alt="_images/azimuthal1.png" class="align-center" src="_images/azimuthal1.png" style="width: 1200px;" /></a>
+</div></blockquote>
+<p>The data visualized in the lower right plot can be modified using the <code class="code docutils literal notranslate"><span class="pre">--y-axis-option</span></code> option and a second arrival characteristic can be included using a colormap option.  An example usage of this is shown below where the vertical axis shows celerity and the colormap shows arrival trace velocity:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met  --y-axis-option celerity --cmap-option trace-velocity
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/azimuthal2.png"><img alt="_images/azimuthal2.png" class="align-center" src="_images/azimuthal2.png" style="width: 1200px;" /></a>
+</div></blockquote>
+<p>The full set of options for the <code class="code docutils literal notranslate"><span class="pre">--y-axis-option</span></code> and <code class="code docutils literal notranslate"><span class="pre">--cmap-option</span></code> can be summarized through the usage info for the azimuthal plotting method (<code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">azimuthal</span> <span class="pre">--help</span></code>):</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage: infraga plot azimuthal [OPTIONS]
+
+  Visualize propagation results for a single azimuthal angle simulation
+
+  Plotting Options:
+      inclination             Launch inclination angle
+      celerity                Arrival celerity (horizontal group velocity)
+      reduced-time            Reduced arrival time (relative to --reduced-tm-vel)
+      turning-ht              Turning height
+      trace-velocity          Trace velocity
+      back-azimuth            Back azimuth (not available for 2d geometry)
+      amplitude               Transport equation + absorption losses
+
+  Examples:
+      infraga plot azimuthal --atmo-file ToyAtmo.met --plot-option celerity
+
+Options:
+  --atmo-file TEXT           Atmospheric atmo_file file
+  --arrivals TEXT            Arrivals file from the simulation (optional)
+  --ray-paths TEXT           Ray path file from the simulation (optional)
+  --y-axis-option TEXT       Lower axis option (see usage info below)
+  --cmap-option TEXT         Low axis cmap option (see usage info below)
+  --reduced-tm-vel FLOAT     Reference velocity for reduced time option
+  --tr-vel-ref FLOAT         Reference velocity for trace velocity calculation
+  --plot-amplitudes BOOLEAN  Option to plot amplitude along rays
+  --figure-out TEXT          Name of output figure
+  -h, --help                 Show this message and exit.
+</pre></div>
+</div>
+</div></blockquote>
+<p>In the case that ray path and arrival files are re-named or the <code class="code docutils literal notranslate"><span class="pre">--output-id</span></code> parameter is used to write them to specific files, they can be specified; otherwise, the atmosphere file info will be used to determine where the method looks for ray path and arrival results.  For the reduced time and trace velocity options, the reference velocities can be set using the <code class="code docutils literal notranslate"><span class="pre">--reduced-tm-vel</span></code> and <code class="code docutils literal notranslate"><span class="pre">--tr-vel-ref</span></code> values (default values are 300 and 330 m/s, respectively).  Lastly, the <code class="code docutils literal notranslate"><span class="pre">--figure-out</span></code> option provides a means to write the figure directly into a .png (or any format file usable by the Python matplotlib methods) instead of only displaying it to screen.  Currently only the ‘jet’ colormap is used, but other options might be added in the future and unique colormaps might be allowed for the ray path amplitude and lower panel plot (please provide feedback if you have any on plotting methods, they are still in development).</p>
+</section>
+<section id="simple-parameter-modifications">
+<h3>Simple Parameter Modifications<a class="headerlink" href="#simple-parameter-modifications" title="Permalink to this heading">¶</a></h3>
+<p>From the overly long list above for running <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">sph</span> <span class="pre">prop</span></code>, several parameters are useful to understand for general usage:</p>
+<blockquote>
+<div><p>&gt; Propagation from sources at unique latitudes for large distances will be distinct due to the geometry of the great circle paths produced by each latitude and propagation azimuth.  The location of the source can be specified using the <code class="code docutils literal notranslate"><span class="pre">--src-lat</span></code> and <code class="code docutils literal notranslate"><span class="pre">--src-lon</span></code> parameters.  For an elevated source, the <code class="code docutils literal notranslate"><span class="pre">--src-alt</span></code> can be used to define the altitude of the source (km, relative to sea level).  As an example, propagation paths for a source at <span class="math notranslate nohighlight">\(40^\circ\)</span>, <span class="math notranslate nohighlight">\(-110^\circ\)</span> can computed using:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --src-lat 40.0 --src-lon -110.0
+</pre></div>
+</div>
+</div></blockquote>
+<p>&gt; The default azimuth direction for propagation paths is <span class="math notranslate nohighlight">\(-90.0^\circ\)</span> (westward).  Other propagation directions can be defined using the <code class="code docutils literal notranslate"><span class="pre">--azimuth</span></code> parameter.  The angular convention here follows that typical for geophysics: north corresponds to <span class="math notranslate nohighlight">\(0^\circ\)</span> and angles increase clockwise.  Therefore, modeling propagation to the southeast can be done as:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --azimuth 135.0
+</pre></div>
+</div>
+</div></blockquote>
+<p>&gt; InfraGA/GeoAc defaults to a maximum propagation range of 1000 km and allows 10 ground reflections (bounces).  Such settings are typically sufficient for regional propagation out to that distance; however, increased numbers of ground reflections are needed when tropospheric waveguides are present due to the relatively short inter-reflection distance for such paths.  Additionally, for propagation to global distances, the maximum range needs to be extended.  An example parameter modification for a global scale simulation is:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --max-rng 5000 --bounces 100
+</pre></div>
+</div>
+</div></blockquote>
+<p>&gt; G2S specifications are defined relative to sea level and extrapolate atmospheric data below the ground surface.  The ground surface elevation can be modified using the <code class="code docutils literal notranslate"><span class="pre">--z-grnd</span></code> parameter that modifies the reflection surface elevation used in ray calculations.  Combining this with the above parameters, modeling propagation of energy from a surface munitions disposal source at the Utah Test and Training Range (UTTR) (<span class="math notranslate nohighlight">\(40.6571^\circ\)</span> N, <span class="math notranslate nohighlight">\(113.4383^\circ\)</span> W, 1.5 elevation) for a maximum distance of 2000 km to the northeast can be specified using:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --src-lat 40.6571 --src-lon -113.4383 --z-grnd 1.5 --azimuth 45.0 --max-rng 2000 --bounces 100
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+<section id="using-a-config-file">
+<h3>Using a Config File<a class="headerlink" href="#using-a-config-file" title="Permalink to this heading">¶</a></h3>
+<p>From the above, it becomes obvious that in some cases specifying the various ray tracing parameters can make for overly long command line calls.  A configuration file option has been included to alleviate this in scenarios where many parameters will be constant between simulations.   In the above example, one can create a file named ‘UTTR_prop.cnfg’ containing the following information:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[GENERAL]
+max_rng = 2000
+z_grnd = 1.5
+
+[PROP]
+src_lat = 40.6571
+src_lon = -113.4383
+azimuth = 45.0
+bounces = 100
+</pre></div>
+</div>
+</div></blockquote>
+<p>Running the above analysis can then be accomplished via:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --config-file UTTR_prop.cnfg
+</pre></div>
+</div>
+</div></blockquote>
+<p>In this situation, the atmospheric file is not included in the configuration file and can be swapped out easily with whichever date and time is of interest.  In other scenarios detailed in the <a class="reference internal" href="advanced.html#advanced"><span class="std std-ref">Advanced Usage</span></a> discussion, one might omit other parameters to vary between analysis runs.</p>
+<p>It should be noted that when a parameter is present in a configuration file and also specified on the command line, the command line entry overwrites the command line.  That is, if the above were run with an additional flag of <code class="code docutils literal notranslate"><span class="pre">--z-grnd</span> <span class="pre">1.0</span></code>, then the analysis would be run with a ground elevation of 1 km instead of the 1.5 km defined in the configuration file.  Which parameters are defined within which header (e.g., <code class="code docutils literal notranslate"><span class="pre">GENERAL</span></code> vs. <code class="code docutils literal notranslate"><span class="pre">PROP</span></code>) is detailed in the discussion of <a class="reference internal" href="parameters.html#parameters"><span class="std std-ref">Parameters</span></a>.</p>
+</section>
+</section>
+<section id="multi-azimuth-simulation">
+<h2>Multi-Azimuth Simulation<a class="headerlink" href="#multi-azimuth-simulation" title="Permalink to this heading">¶</a></h2>
+<p>Running multi-azimuth simulations is more time consuming but provides a more robust understanding of the propagation of infrasonic energy from a source at a given location.  Consider making the below modifications to the configuration file for a source at UTTR.  The maximum range has been reduced to 500 km to make the simulation time a bit more reasonable and the single azimuth has been replaced with a full <span class="math notranslate nohighlight">\(360^\circ\)</span> range with <span class="math notranslate nohighlight">\(3^\circ\)</span> resolution.  Update the <code class="code docutils literal notranslate"><span class="pre">cpu_cnt</span></code> parameter to whatever number of CPUs you have available for use (the OpenMPI methods will error out if you oversubscribe your CPUs).</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[GENERAL]
+max_rng = 500
+z_grnd = 1.5
+cpu_cnt = 4
+
+[PROP]
+src_lat = 40.6571
+src_lon = -113.4383
+az_min = -180.0
+az_max = 179.0
+az_step = 3.0
+bounces = 100
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file G2S_example.met --config-file UTT_prop.cnfg
+</pre></div>
+</div>
+</div></blockquote>
+<p>This produces a longer set of output that includes the various azimuthal angles:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  ###########################################
+  ####     Running infraga-accel-sph     ####
+  ####            Propagation            ####
+  ###########################################
+
+Interpolating atmosphere data in &#39;ToyAtmo.met&#39; using format &#39;zTuvdp&#39;...
+  Propagation region limits:
+    latitude = -90, 90
+    longitude = -180, 180
+    altitude = 0, 139.9
+
+  User selected range maximum = 500
+
+Parameter summary:
+  inclination: 0.5, 45, 0.5
+  azimuth: -180, 179, 3
+  bounces: 100
+  source location (lat, lon, alt): 40.6571, -113.438, 1.5
+  ground elevation: 1.5
+  frequency: 0.1
+  S&amp;B atten coeff: 1
+  write_atmo: false
+  write_rays: false
+  write_topo: false
+  calc_amp: true
+  threads: 7
+
+Calculating ray paths: (0.5, 3.5) degrees inclination range, -180 degrees azimuth.
+Calculating ray paths: (4, 7) degrees inclination range, -180 degrees azimuth.
+Calculating ray paths: (7.5, 10.5) degrees inclination range, -180 degrees azimuth.
+...
+Calculating ray paths: (35.5, 38.5) degrees inclination range, 177 degrees azimuth.
+Calculating ray paths: (39, 42) degrees inclination range, 177 degrees azimuth.
+Calculating ray paths: (42.5, 45) degrees inclination range, 177 degrees azimuth.
+</pre></div>
+</div>
+</div></blockquote>
+<section id="id2">
+<h3>Running the Simulation<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
+<p>Stuff…</p>
+</section>
+<section id="id3">
+<h3>Visualizing the Results<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
+<p>Stuff….</p>
 </section>
 </section>
 </section>

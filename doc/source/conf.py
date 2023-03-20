@@ -50,7 +50,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -78,7 +78,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'InfraPydoc'
+htmlhelp_basename = 'InfraGAdoc'
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -104,8 +104,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'InfraPy.tex', 'InfraPy Documentation',
-     'F.Dannemann Dugick, P.Blom, J.Webster ', 'manual'),
+    (master_doc, 'InfraGA.tex', 'InfraGA/GeoAc Documentation',
+     'P.Blom', 'manual'),
 ]
 
 
@@ -114,7 +114,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'infrapy', 'InfraPy Documentation',
+    (master_doc, 'infraga', 'InfraGA/GeoAc Documentation',
      [author], 1)
 ]
 

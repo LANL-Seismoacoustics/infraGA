@@ -163,6 +163,19 @@
   <section id="advanced-usage">
 <span id="advanced"></span><h1>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Permalink to this heading">¶</a></h1>
 <p>Introduction…</p>
+<section id="range-dependent-analysis">
+<h2>Range Dependent Analysis<a class="headerlink" href="#range-dependent-analysis" title="Permalink to this heading">¶</a></h2>
+<p>Discussion of using a G2S specification grid…</p>
+<blockquote>
+<div><p>For even larger scale analyses (e.g., analysis of propagation paths from the Tonga volcanic eruption that circled the globe multiple times), one can define a maximum propagation range greater than that of the earth (~24,000 km) and use the <code class="code docutils literal notranslate"><span class="pre">--max-tm</span></code> parameter to define a maximum propagation time (defined in hours).</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --max-rng 25000 --max-tm 24.0 --bounces 1000
+</pre></div>
+</div>
+</div></blockquote>
+<p>It should be noted that for such large scales, the spatial variations in the atmosphere become significant and the range dependent methods detailed in the <a class="reference internal" href="#advanced"><span class="std std-ref">Advanced Usage</span></a> discussion are needed.</p>
+</div></blockquote>
+</section>
 <section id="eigenray-analysis">
 <h2>Eigenray Analysis<a class="headerlink" href="#eigenray-analysis" title="Permalink to this heading">¶</a></h2>
 <p>Discussion of eigenray methods…</p>
@@ -174,6 +187,10 @@
 <section id="combined-eigenray-waveform-methods">
 <h2>Combined Eigenray + Waveform Methods<a class="headerlink" href="#combined-eigenray-waveform-methods" title="Permalink to this heading">¶</a></h2>
 <p>Discussion of eig_wvfrm methods…</p>
+</section>
+<section id="including-reaslistic-terrain">
+<h2>Including Reaslistic Terrain<a class="headerlink" href="#including-reaslistic-terrain" title="Permalink to this heading">¶</a></h2>
+<p>Discussion of how to include terrain…</p>
 </section>
 </section>
 

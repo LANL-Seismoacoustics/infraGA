@@ -179,7 +179,7 @@ int set_region(char* atmo_file, char* atmo_format, bool invert_winds, int rank){
             cout << '\t' << "Propagation region limits:" << '\n';
             cout << '\t' << '\t' << "latitude = " << geoac::lat_min * (180.0 / Pi) << ", " << geoac::lat_max * (180.0 / Pi) << '\n';
             cout << '\t' << '\t' << "longitude = " << geoac::lon_min * (180.0 / Pi) << ", " << geoac::lon_max  * (180.0 / Pi) << '\n';
-            cout << '\t' << '\t' << "altitutde = " << topo::z0 << ", " << geoac::alt_max << '\n' << '\n';
+            cout << '\t' << '\t' << "altitude = " << topo::z0 << ", " << geoac::alt_max << '\n' << '\n';
         }
         MPI_Barrier(MPI_COMM_WORLD);
     }
