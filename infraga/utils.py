@@ -633,7 +633,7 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852, show_fig=
         plt.show()
 
 
-def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True):
+def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None, rcvr_file=None):
     """
         Extract topography information across a region defined
             by the lower-left and upper-right corner latitudes
@@ -693,8 +693,13 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True):
         gl.right_labels = False
 
         lat_tick, lon_tick = int((ur_corner[0] - ll_corner[0]) / 5), int((ur_corner[1] - ll_corner[1]) / 5)
-        gl.xlocator = mticker.FixedLocator(np.arange(ll_corner[0] - np.ceil(lon_tick / 2), ur_corner[0] + lon_tick, lon_tick))
-        gl.ylocator = mticker.FixedLocator(np.arange(ll_corner[1] - np.ceil(lat_tick / 2), ur_corner[1] + lat_tick, lat_tick))
+        while len(np.arange(ll_corner[0], ur_corner[0], lat_tick)) < 3:
+            lat_tick = lat_tick / 2.0
+        while len(np.arange(ll_corner[1], ur_corner[1], lon_tick)) < 3:
+            lon_tick = lon_tick / 2.0
+
+        gl.xlocator = mticker.FixedLocator(np.arange(ll_corner[1] - np.ceil(lon_tick / 2), ur_corner[1] + lon_tick, lon_tick))
+        gl.ylocator = mticker.FixedLocator(np.arange(ll_corner[0] - np.ceil(lat_tick / 2), ur_corner[0] + lat_tick, lat_tick))
         gl.xformatter = LONGITUDE_FORMATTER
         gl.yformatter = LATITUDE_FORMATTER
 
@@ -703,10 +708,21 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True):
         ax.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
         if (ur_corner[1] - ll_corner[0]) < 20.0:
             ax.add_feature(cartopy.feature.STATES, linewidth=0.5)
+            ax.add_feature(cartopy.feature.LAKES, linewidth=0.5)
+            ax.add_feature(cartopy.feature.RIVERS, linewidth=0.5)
 
         cmesh = ax.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, transform=map_proj, vmin=-1.4, vmax=5.0)
         ax.set_xlabel("Longitude [deg]")
         ax.set_ylabel("Latitude [deg]")
+
+        if src_loc is not None:
+            print("Plotting reference location as source...")
+            ax.plot([src_loc[1]], [src_loc[0]], '*r', transform=map_proj)
+
+        if rcvr_file is not None:
+            print("Loading receiver information to plot on map...")
+            rcvr_info = np.loadtxt(rcvr_file)
+            ax.plot(rcvr_info[:, 1], rcvr_info[:, 0], '^k', transform=map_proj)
 
         divider = make_axes_locatable(ax)
         ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
@@ -729,8 +745,9 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True):
 @click.option("--range", help="Great circle distance for line option", default=1000.0)
 @click.option("--output-file", help="Output file", prompt="Specify output file: ")
 @click.option("--show-terrain", help="Visualize terrain results", default=True)
+@click.option("--rcvr-file", help="File containing stations to plot on map", default=None)
 @click.option("--offline-maps-dir", help="Use directory for offline cartopy maps", default=None)
-def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file, show_terrain, offline_maps_dir):
+def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file, show_terrain, rcvr_file, offline_maps_dir):
     '''
     Extract lines or grids of terrain information from an ETOPO1 file
 
@@ -754,7 +771,7 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
         elif geom == "xy-grid":
             pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
         elif geom == "latlon-grid":
-            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
+            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain, src_loc=(ref_lat, ref_lon), rcvr_file=rcvr_file)
         else:
             print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")        
     else:
@@ -774,7 +791,7 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
             elif geom == "xy-grid":
                 pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
             elif geom == "latlon-grid":
-                pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)  
+                pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain, src_loc=(ref_lat, ref_lon), rcvr_file=rcvr_file)  
             else:
                 print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")        
         except:

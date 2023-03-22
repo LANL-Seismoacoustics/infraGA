@@ -636,7 +636,7 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
         if end_time is not None:
             time_mask = np.logical_and(time_mask, ray_paths[:, 5] / 3600.0 < end_time)
 
-        sc = ax.scatter(ray_paths[:, 1][time_mask], ray_paths[:, 0][time_mask], c=(ray_paths[:,5][time_mask] / 3600.0), transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=time1, vmax=time2)
+        sc = ax.scatter(ray_paths[:, 1][time_mask], ray_paths[:, 0][time_mask], c=(ray_paths[:,5][time_mask] / 3600.0), transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=start_time, vmax=end_time)
 
         divider = make_axes_locatable(ax)
         ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
