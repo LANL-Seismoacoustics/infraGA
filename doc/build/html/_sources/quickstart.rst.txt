@@ -126,11 +126,11 @@ The Python *infraga* interface includes a number of plotting functions that are 
 
       infraga plot azimuthal --atmo-file ToyAtmo.met
 
-This produces a plot containing 3 panels as shown below.  The upper left panel shows the sound speed (dashed line) and effective sound speed in the direction of propagation (solid line).  The upper right panel shows the ray paths including the transport equation amplitude losses (geometric spread + impedance differences with altitude due to the varying sound speed and density) as well as the Sutherland & Bass thermo-viscous losses that are frequency dependent (the frequency used for this calculation can be modified using :code:`--freq` and has a default value of 0.1 Hz).  The lower right panel in this instance shows the launch inclination of each ray path as a function of arrival range.
-
     .. image:: _static/_images/azimuthal1.png
         :width: 1200px
         :align: center
+        
+This produces a plot containing 3 panels as shown below.  The upper left panel shows the sound speed (dashed line) and effective sound speed in the direction of propagation (solid line).  The upper right panel shows the ray paths including the transport equation amplitude losses (geometric spread + impedance differences with altitude due to the varying sound speed and density) as well as the Sutherland & Bass thermo-viscous losses that are frequency dependent (the frequency used for this calculation can be modified using :code:`--freq` and has a default value of 0.1 Hz).  The lower right panel in this instance shows the launch inclination of each ray path as a function of arrival range.
 
 The data visualized in the lower right plot can be modified using the :code:`--y-axis-option` option and a second arrival characteristic can be included using a colormap option.  An example usage of this is shown below where the vertical axis shows celerity and the colormap shows arrival trace velocity:
 
@@ -239,7 +239,13 @@ It should be noted that when a parameter is present in a configuration file and 
 Multi-Azimuth Simulation
 *************************
 
-Running multi-azimuth simulations is more time consuming but provides a more robust understanding of the propagation of infrasonic energy from a source at a given location.  Consider making the below modifications to the configuration file for a source at UTTR.  The maximum range has been reduced to 500 km to make the simulation time a bit more reasonable and the single azimuth has been replaced with a full :math:`360^\circ` range with :math:`3^\circ` resolution.  Update the :code:`cpu_cnt` parameter to whatever number of CPUs you have available for use (the OpenMPI methods will error out if you oversubscribe your CPUs).
+Running multi-azimuth simulations is more time consuming but provides a more robust understanding of the propagation of infrasonic energy from a source at a given location.  In many scenarios multiple stations are within regional distance of a source and propagation to the entire regional network of stations is useful.  Similarly, in planning a regional deployment of stations to capture signals from a planned event (e.g., a controlled surface explosion) or from a known repeating source (e.g., a mine or volcano) it's useful to understand the full multi-azimuth propagation prediction.
+
+----------------------
+Running the Simulation
+----------------------
+
+Consider making the below modifications to the configuration file for a source at UTTR.  The maximum range has been reduced to 500 km to make the simulation time a bit more reasonable and the single azimuth has been replaced with a full :math:`360^\circ` range with :math:`3^\circ` resolution.  Update the :code:`cpu_cnt` parameter to whatever number of CPUs you have available for use (the OpenMPI methods will error out if you oversubscribe your CPUs).
 
   .. code:: none
 
@@ -260,7 +266,7 @@ Running multi-azimuth simulations is more time consuming but provides a more rob
 
     infraga sph prop --atmo-file G2S_example.met --config-file UTT_prop.cnfg
 
-This produces a longer set of output that includes the various azimuthal angles:
+This produces a longer set of output that cycles through the various azimuthal angles (warning: multi-azimuth simulations can be time consuming, so you might consider increasing the inclination or azimuthal angle steps or limiting the maximum propagation range):
 
   .. code:: none
 
@@ -300,16 +306,76 @@ This produces a longer set of output that includes the various azimuthal angles:
     Calculating ray paths: (39, 42) degrees inclination range, 177 degrees azimuth.
     Calculating ray paths: (42.5, 45) degrees inclination range, 177 degrees azimuth.
 
-
-----------------------
-Running the Simulation
-----------------------
-
-Stuff...
-
+Note that this simulation didn't create a new ToyAtmo.raypaths.dat file because the OpenMPI methods default to not writing ray paths (this is done because it's assumed that the methods are used for large simulation runs).
 
 -----------------------
 Visualizing the Results
 -----------------------
 
-Stuff....
+The *infraga* plotting methods include a function that utilized the CartoPy mapping methods to draw arrival information onto a regional map.  This can be access using,
+
+  .. code:: none
+    
+    infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option amplitude
+
+In this case, the plot option specified 'amplitude' and the arrival amplitude (relative to 1 km from the source) is visualized showing several regions of ensonification.
+
+  .. image:: _static/_images/map-amplitude.png
+      :width: 1200px
+      :align: center
+
+
+In order to identify the likely waveguide for each region of ensonification, it's useful to visualize the celerity of the arrivals using the plot option parameter:
+
+  .. code:: none
+    
+    infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option celerity
+
+
+This produces a map showing the celerity of the arrivals and the tropospheric (red), stratospheric (green/yellow), and thermospheric (blue) arrivals can be easily identified.
+
+  .. image:: _static/_images/map-celerity.png
+      :width: 1200px
+      :align: center
+
+------------------------------
+Simple Parameter Modifications
+------------------------------
+
+In addition to the above additional parameter usage, there are several options that can be useful when considering propagation to multiple azimuths:
+
+  > In the above discussion, the :code:`--azimuth` parameter was used to modify the direction in which to run ray calculations.  For multi-azimuth simulations the :code:`--az-min` and :code:`--az-max` parameters are useful for limiting the range of azimuths considered in a simulation.  For example, if all stations are east of a source, it might be appropriate to run a simulation using :code:`--az-min 30 --az-max 150` to limit propagation in the direction of the stations.  Such a limitation can be also be applied by limiting the latitude and longitude bounds of the domain as mentioned above, but that will still compute ray paths out the short distance to the west that defines the edge of the domain.
+
+  > In some scenarios only the ray paths geometry (e.g., back azimuth deviation) and travel time information is needed for analysis.  In such a case, the auxiliary parameter computations needed to solve the Transport equation can be disabled using the :code:`--calc-amp False` option to turn off computation of the geometry spreading factor.  It should be noted that for such a simulation, the thermo-viscous losses computed using Sutherland-Bass is still evaluated so that the column of values in the results file will have 0's for the transport equation losses and the computed values for the thermo-viscous losses.
+
+  > In the above simulation, it's likely that both the :code:`[...].arrivals.dat` and :code:`[...].raypaths.dat` file were computed.  The default behavior of the infraGA/GeoAc methods is to compute the ray path information when using single-CPU methods and disable it when using the OpenMPI methods (if you defined a :code:`cpu_cnt` value in the config file or used :code:`--cpu-cnt` in the command line call).  If this behavior is not what's intended, then the :code:`--write-rays` flag can be used to turn the output of the :code:`[...].raypaths.dat` file on or off as needed.  In general, when considering multi-azimuth simulations it's highly recommended to disable the ray path output because the resulting file can be excessively large and it's difficult to interrogate the data in a straightforward way.
+
+
+-------------------------------------
+Visualization of Predicted Waveguides
+-------------------------------------
+
+As noted above, multi-azimuth simulations can be time consuming so that it's often useful to consider the structure of the atmospheric specification and identify likely waveguide directions prior to running a full multi-azimuth simulation.  This can be done using the :code:`plot atmo` function with the atmospheric file,
+
+  .. code:: none
+
+    infraga plot atmo --atmo-file ToyAtmo.met 
+
+  .. image:: _static/_images/atmo_plot.png
+      :width: 1500px
+      :align: center
+
+
+The resulting figure shows the computed sound speed profile, the zonal and meridional wind fields, as well as a waveguide prediction that uses the effective sound speed ducting condition that for a ray path launch at inclination angle :math:`\theta` in direction :math:`\phi`, the condition for refraction back towards the ground surface is :math:`c_\text{eff} \left( z, \phi \right) \geq \frac{ c_\text{eff} \left( z_\text{grnd}, \phi \right) }{\cos \theta}`.  The right panel of the figure shows the lowest altitude for which this condition is satisfied and ray paths are likely to be refracted towards the ground surface.  In this case the ToyAtmo.met file has a stratospheric waveguide (turning heights in the middle atmosphere) to the west and a tropospheric waveguide (low altitude refraction) to the east.  Thermospheric ducting is predicted in all directions once the other two waveguides are escaped at higher inclination angles.
+
+Comparison of this atmospheric specification plot with the map plot using turning height shows how the two are related,
+
+  .. code:: none
+    
+    infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option turning-height
+
+  .. image:: _static/_images/map-turning-ht.png
+      :width: 1200px
+      :align: center
+
+This produces a map showing the celerity of the arrivals and the tropospheric (red), stratospheric (green/yellow), and thermospheric (blue) arrivals can be easily identified.  The atmospheric plot doesn't indicate how far downrange ray paths will return to the ground or predict celerity, amplitude, back azimuth deviation, or similar ray results, but it does provide some inclination of whether waveguides are present and in which directions.  Such information can be useful as a first look to determine where to focus simulations.

@@ -278,11 +278,9 @@ Calculating ray path: 45 degrees inclination, -90 degrees azimuth.
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met
 </pre></div>
 </div>
+<a class="reference internal image-reference" href="_images/azimuthal1.png"><img alt="_images/azimuthal1.png" class="align-center" src="_images/azimuthal1.png" style="width: 1200px;" /></a>
 </div></blockquote>
 <p>This produces a plot containing 3 panels as shown below.  The upper left panel shows the sound speed (dashed line) and effective sound speed in the direction of propagation (solid line).  The upper right panel shows the ray paths including the transport equation amplitude losses (geometric spread + impedance differences with altitude due to the varying sound speed and density) as well as the Sutherland &amp; Bass thermo-viscous losses that are frequency dependent (the frequency used for this calculation can be modified using <code class="code docutils literal notranslate"><span class="pre">--freq</span></code> and has a default value of 0.1 Hz).  The lower right panel in this instance shows the launch inclination of each ray path as a function of arrival range.</p>
-<blockquote>
-<div><a class="reference internal image-reference" href="_images/azimuthal1.png"><img alt="_images/azimuthal1.png" class="align-center" src="_images/azimuthal1.png" style="width: 1200px;" /></a>
-</div></blockquote>
 <p>The data visualized in the lower right plot can be modified using the <code class="code docutils literal notranslate"><span class="pre">--y-axis-option</span></code> option and a second arrival characteristic can be included using a colormap option.  An example usage of this is shown below where the vertical axis shows celerity and the colormap shows arrival trace velocity:</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met  --y-axis-option celerity --cmap-option trace-velocity
@@ -380,7 +378,10 @@ bounces = 100
 </section>
 <section id="multi-azimuth-simulation">
 <h2>Multi-Azimuth Simulation<a class="headerlink" href="#multi-azimuth-simulation" title="Permalink to this heading">¶</a></h2>
-<p>Running multi-azimuth simulations is more time consuming but provides a more robust understanding of the propagation of infrasonic energy from a source at a given location.  Consider making the below modifications to the configuration file for a source at UTTR.  The maximum range has been reduced to 500 km to make the simulation time a bit more reasonable and the single azimuth has been replaced with a full <span class="math notranslate nohighlight">\(360^\circ\)</span> range with <span class="math notranslate nohighlight">\(3^\circ\)</span> resolution.  Update the <code class="code docutils literal notranslate"><span class="pre">cpu_cnt</span></code> parameter to whatever number of CPUs you have available for use (the OpenMPI methods will error out if you oversubscribe your CPUs).</p>
+<p>Running multi-azimuth simulations is more time consuming but provides a more robust understanding of the propagation of infrasonic energy from a source at a given location.  In many scenarios multiple stations are within regional distance of a source and propagation to the entire regional network of stations is useful.  Similarly, in planning a regional deployment of stations to capture signals from a planned event (e.g., a controlled surface explosion) or from a known repeating source (e.g., a mine or volcano) it’s useful to understand the full multi-azimuth propagation prediction.</p>
+<section id="id2">
+<h3>Running the Simulation<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
+<p>Consider making the below modifications to the configuration file for a source at UTTR.  The maximum range has been reduced to 500 km to make the simulation time a bit more reasonable and the single azimuth has been replaced with a full <span class="math notranslate nohighlight">\(360^\circ\)</span> range with <span class="math notranslate nohighlight">\(3^\circ\)</span> resolution.  Update the <code class="code docutils literal notranslate"><span class="pre">cpu_cnt</span></code> parameter to whatever number of CPUs you have available for use (the OpenMPI methods will error out if you oversubscribe your CPUs).</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[GENERAL]
 max_rng = 500
@@ -400,7 +401,7 @@ bounces = 100
 </pre></div>
 </div>
 </div></blockquote>
-<p>This produces a longer set of output that includes the various azimuthal angles:</p>
+<p>This produces a longer set of output that cycles through the various azimuthal angles (warning: multi-azimuth simulations can be time consuming, so you might consider increasing the inclination or azimuthal angle steps or limiting the maximum propagation range):</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  ###########################################
   ####     Running infraga-accel-sph     ####
@@ -439,13 +440,58 @@ Calculating ray paths: (42.5, 45) degrees inclination range, 177 degrees azimuth
 </pre></div>
 </div>
 </div></blockquote>
-<section id="id2">
-<h3>Running the Simulation<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
-<p>Stuff…</p>
+<p>Note that this simulation didn’t create a new ToyAtmo.raypaths.dat file because the OpenMPI methods default to not writing ray paths (this is done because it’s assumed that the methods are used for large simulation runs).</p>
 </section>
 <section id="id3">
 <h3>Visualizing the Results<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
-<p>Stuff….</p>
+<p>The <em>infraga</em> plotting methods include a function that utilized the CartoPy mapping methods to draw arrival information onto a regional map.  This can be access using,</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option amplitude
+</pre></div>
+</div>
+</div></blockquote>
+<p>In this case, the plot option specified ‘amplitude’ and the arrival amplitude (relative to 1 km from the source) is visualized showing several regions of ensonification.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/map-amplitude.png"><img alt="_images/map-amplitude.png" class="align-center" src="_images/map-amplitude.png" style="width: 1200px;" /></a>
+</div></blockquote>
+<p>In order to identify the likely waveguide for each region of ensonification, it’s useful to visualize the celerity of the arrivals using the plot option parameter:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option celerity
+</pre></div>
+</div>
+</div></blockquote>
+<p>This produces a map showing the celerity of the arrivals and the tropospheric (red), stratospheric (green/yellow), and thermospheric (blue) arrivals can be easily identified.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/map-celerity.png"><img alt="_images/map-celerity.png" class="align-center" src="_images/map-celerity.png" style="width: 1200px;" /></a>
+</div></blockquote>
+</section>
+<section id="id4">
+<h3>Simple Parameter Modifications<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
+<p>In addition to the above additional parameter usage, there are several options that can be useful when considering propagation to multiple azimuths:</p>
+<blockquote>
+<div><p>&gt; In the above discussion, the <code class="code docutils literal notranslate"><span class="pre">--azimuth</span></code> parameter was used to modify the direction in which to run ray calculations.  For multi-azimuth simulations the <code class="code docutils literal notranslate"><span class="pre">--az-min</span></code> and <code class="code docutils literal notranslate"><span class="pre">--az-max</span></code> parameters are useful for limiting the range of azimuths considered in a simulation.  For example, if all stations are east of a source, it might be appropriate to run a simulation using <code class="code docutils literal notranslate"><span class="pre">--az-min</span> <span class="pre">30</span> <span class="pre">--az-max</span> <span class="pre">150</span></code> to limit propagation in the direction of the stations.  Such a limitation can be also be applied by limiting the latitude and longitude bounds of the domain as mentioned above, but that will still compute ray paths out the short distance to the west that defines the edge of the domain.</p>
+<p>&gt; In some scenarios only the ray paths geometry (e.g., back azimuth deviation) and travel time information is needed for analysis.  In such a case, the auxiliary parameter computations needed to solve the Transport equation can be disabled using the <code class="code docutils literal notranslate"><span class="pre">--calc-amp</span> <span class="pre">False</span></code> option to turn off computation of the geometry spreading factor.  It should be noted that for such a simulation, the thermo-viscous losses computed using Sutherland-Bass is still evaluated so that the column of values in the results file will have 0’s for the transport equation losses and the computed values for the thermo-viscous losses.</p>
+<p>&gt; In the above simulation, it’s likely that both the <code class="code docutils literal notranslate"><span class="pre">[...].arrivals.dat</span></code> and <code class="code docutils literal notranslate"><span class="pre">[...].raypaths.dat</span></code> file were computed.  The default behavior of the infraGA/GeoAc methods is to compute the ray path information when using single-CPU methods and disable it when using the OpenMPI methods (if you defined a <code class="code docutils literal notranslate"><span class="pre">cpu_cnt</span></code> value in the config file or used <code class="code docutils literal notranslate"><span class="pre">--cpu-cnt</span></code> in the command line call).  If this behavior is not what’s intended, then the <code class="code docutils literal notranslate"><span class="pre">--write-rays</span></code> flag can be used to turn the output of the <code class="code docutils literal notranslate"><span class="pre">[...].raypaths.dat</span></code> file on or off as needed.  In general, when considering multi-azimuth simulations it’s highly recommended to disable the ray path output because the resulting file can be excessively large and it’s difficult to interrogate the data in a straightforward way.</p>
+</div></blockquote>
+</section>
+<section id="visualization-of-predicted-waveguides">
+<h3>Visualization of Predicted Waveguides<a class="headerlink" href="#visualization-of-predicted-waveguides" title="Permalink to this heading">¶</a></h3>
+<p>As noted above, multi-azimuth simulations can be time consuming so that it’s often useful to consider the structure of the atmospheric specification and identify likely waveguide directions prior to running a full multi-azimuth simulation.  This can be done using the <code class="code docutils literal notranslate"><span class="pre">plot</span> <span class="pre">atmo</span></code> function with the atmospheric file,</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot atmo --atmo-file ToyAtmo.met
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/atmo_plot.png"><img alt="_images/atmo_plot.png" class="align-center" src="_images/atmo_plot.png" style="width: 1500px;" /></a>
+</div></blockquote>
+<p>The resulting figure shows the computed sound speed profile, the zonal and meridional wind fields, as well as a waveguide prediction that uses the effective sound speed ducting condition that for a ray path launch at inclination angle <span class="math notranslate nohighlight">\(\theta\)</span> in direction <span class="math notranslate nohighlight">\(\phi\)</span>, the condition for refraction back towards the ground surface is <span class="math notranslate nohighlight">\(c_\text{eff} \left( z, \phi \right) \geq \frac{ c_\text{eff} \left( z_\text{grnd}, \phi \right) }{\cos \theta}\)</span>.  The right panel of the figure shows the lowest altitude for which this condition is satisfied and ray paths are likely to be refracted towards the ground surface.  In this case the ToyAtmo.met file has a stratospheric waveguide (turning heights in the middle atmosphere) to the west and a tropospheric waveguide (low altitude refraction) to the east.  Thermospheric ducting is predicted in all directions once the other two waveguides are escaped at higher inclination angles.</p>
+<p>Comparison of this atmospheric specification plot with the map plot using turning height shows how the two are related,</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option turning-height
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/map-turning-ht.png"><img alt="_images/map-turning-ht.png" class="align-center" src="_images/map-turning-ht.png" style="width: 1200px;" /></a>
+</div></blockquote>
+<p>This produces a map showing the celerity of the arrivals and the tropospheric (red), stratospheric (green/yellow), and thermospheric (blue) arrivals can be easily identified.  The atmospheric plot doesn’t indicate how far downrange ray paths will return to the ground or predict celerity, amplitude, back azimuth deviation, or similar ray results, but it does provide some inclination of whether waveguides are present and in which directions.  Such information can be useful as a first look to determine where to focus simulations.</p>
 </section>
 </section>
 </section>

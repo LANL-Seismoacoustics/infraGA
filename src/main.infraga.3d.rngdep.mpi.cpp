@@ -141,8 +141,8 @@ void usage(){
     cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : x : y : time : cel : z_max : arrival incl : back az : trans. coeff. : absorption" << '\n' << '\n';
 
     cout << "Examples:" << '\n';
-    cout << '\t' << "mpirun -np 4 ./bin/infraga-accel-3d-rngdep -prop examples/profs/example examples/profs/example_x.loc examples/profs/example_y.loc src_x=0.0 src_y=0.0 incl_step=2.0 azimuth=-90.0" << '\n';
-    cout << '\t' << "mpirun -np 4 ./bin/infraga-accel-3d-rngdep -eig_search examples/profs/example examples/profs/example_x.loc examples/profs/example_y.loc src_x=0.0 src_y=0.0 rcvr_x=-500.0 rcvr_y=-100.0 bnc_max=1 incl_min=10.0 incl_max=20.0  verbose=true" << '\n';
+    cout << '\t' << "mpirun -np 4 ./bin/infraga-accel-3d-rngdep -prop examples/profs/example examples/profs/example_x.dat examples/profs/example_y.dat src_x=0.0 src_y=0.0 incl_step=2.0 azimuth=-90.0" << '\n';
+    cout << '\t' << "mpirun -np 4 ./bin/infraga-accel-3d-rngdep -eig_search examples/profs/example examples/profs/example_x.dat examples/profs/example_y.dat src_x=0.0 src_y=0.0 rcvr_x=-500.0 rcvr_y=-100.0 bnc_max=1 incl_min=10.0 incl_max=20.0  verbose=true" << '\n';
 }
 
 void run_prop(char* inputs[], int count){

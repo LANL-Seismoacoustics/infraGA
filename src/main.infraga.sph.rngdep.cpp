@@ -52,10 +52,10 @@ void usage(){
     cout << '\t' << "#####################################################" << '\n' << '\n';
     
     cout << '\n';
-    cout << "Usage: infraga-sph-rngdep [option] profile_id nodes-lat.loc nodes-lon.loc [parameters]" << '\n';
+    cout << "Usage: infraga-sph-rngdep [option] profile_id nodes-lat.dat nodes-lon.dat [parameters]" << '\n';
     cout << '\t' << '\t' << "Enter only 1 option." << '\n';
     cout << '\t' << '\t' << "Each profile_id##.met is expected to contain columns describing {z[km]  T[K]  u (zonal wind) [m/s]  v (meridional wind) [m/s]  density[g/cm^3]  p[mbar]} " << '\n';
-    cout << '\t' << '\t' << "The files nodes-lat.loc and nodes-lon.loc are expected to contain columns describing the latitude and longitude locations of the .met files." << '\n';
+    cout << '\t' << '\t' << "The files nodes-lat.dat and nodes-lon.dat are expected to contain columns describing the latitude and longitude locations of the .met files." << '\n';
     cout << '\t' << '\t' << '\t' << "These can be generated using the included Python script for a single .bin file." << '\n';
     cout << '\t' << '\t' << '\t' << "Profiles are ordered such that profile_id[N].met describes the atmosphere at lat = lat_i, lon = lon_j, N = i + n_lat * j" << '\n';
     cout << '\t' << '\t' << '\t' << "Profile format can be modified, see manual document for details." << '\n';
@@ -194,11 +194,11 @@ void usage(){
     // cout << '\t' << "{...}.projection.dat -> lat : lon : z : t : LAT_incl : LON_incl : Z_incl : T_incl : LAT_az : LON_az : Z_az : T_az" << '\n' << '\n';
 
     cout << "Examples:" << '\n';
-    cout << '\t' << "./bin/infraga-sph-rngdep -prop examples/profs/example examples/profs/example_lat.loc examples/profs/example_lon.loc src_lat=40.0 src_lon=-102.5 incl_step=2.0 azimuth=-75.0" << '\n';
-    cout << '\t' << "./bin/infraga-sph-rngdep -eig_search examples/profs/example examples/profs/example_lat.loc examples/profs/example_lon.loc src_lat=40.0 src_lon=-102.5 rcvr_lat=41.05 rcvr_lon=-108.25 bnc_max=1 verbose=true" << '\n';
-    cout << '\t' << "./bin/infraga-sph-rngdep -eig_direct examples/profs/example examples/profs/example_lat.loc examples/profs/example_lon.loc src_lat=40.0 src_lon=-102.5 rcvr_lat=41.05 rcvr_lon=-108.25 incl_est=15.0 bounces=1 verbose=true" << '\n';
-    // cout << '\t' << "./bin/infraga-sph-rngdep -back_proj examples/profs/example examples/profs/example_lat.loc examples/profs/example_lon.loc rcvr_lat=41.05 rcvr_lon=-108.25 azimuth=102.00554 inclination=15.766425" << '\n';
-    cout << '\t' << "./bin/infraga-sph-rngdep -wnl_wvfrm examples/profs/example examples/profs/example_lat.loc examples/profs/example_lon.loc src_lat=40.0 src_lon=-102.5 inclination=15.883872 azimuth=-74.868174 bounces=1 wvfrm_opt=impulse wvfrm_p0=500.0" << '\n' << '\n';
+    cout << '\t' << "./bin/infraga-sph-rngdep -prop examples/profs/example examples/profs/example_lat.dat examples/profs/example_lon.dat src_lat=40.0 src_lon=-102.5 incl_step=2.0 azimuth=-75.0" << '\n';
+    cout << '\t' << "./bin/infraga-sph-rngdep -eig_search examples/profs/example examples/profs/example_lat.dat examples/profs/example_lon.dat src_lat=40.0 src_lon=-102.5 rcvr_lat=41.05 rcvr_lon=-108.25 bnc_max=1 verbose=true" << '\n';
+    cout << '\t' << "./bin/infraga-sph-rngdep -eig_direct examples/profs/example examples/profs/example_lat.dat examples/profs/example_lon.dat src_lat=40.0 src_lon=-102.5 rcvr_lat=41.05 rcvr_lon=-108.25 incl_est=15.0 bounces=1 verbose=true" << '\n';
+    // cout << '\t' << "./bin/infraga-sph-rngdep -back_proj examples/profs/example examples/profs/example_lat.dat examples/profs/example_lon.dat rcvr_lat=41.05 rcvr_lon=-108.25 azimuth=102.00554 inclination=15.766425" << '\n';
+    cout << '\t' << "./bin/infraga-sph-rngdep -wnl_wvfrm examples/profs/example examples/profs/example_lat.dat examples/profs/example_lon.dat src_lat=40.0 src_lon=-102.5 inclination=15.883872 azimuth=-74.868174 bounces=1 wvfrm_opt=impulse wvfrm_p0=500.0" << '\n' << '\n';
 }
 
 void run_prop(char* inputs[], int count){

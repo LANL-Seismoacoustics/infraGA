@@ -192,11 +192,11 @@ void usage(){
     // cout << '\t' << "{...}.projection.dat -> x : y : z : t : X_incl : Y_incl : Z_incl : T_incl : X_az : Y_az : Z_az : T_az" << '\n' << '\n';
 
     cout << "Examples:" << '\n';
-    cout << '\t' << "./bin/infraga-3d-rngdep -prop examples/profs/example examples/profs/example_x.loc examples/profs/example_y.loc src_x=0.0 src_y=0.0 incl_step=2.0 azimuth=-90.0" << '\n';
-    cout << '\t' << "./bin/infraga-3d-rngdep -eig_search examples/profs/example examples/profs/example_x.loc examples/profs/example_y.loc src_x=0.0 src_y=0.0 rcvr_x=-500.0 rcvr_y=-100.0 bnc_max=1 incl_min=10.0 incl_max=20.0  verbose=true" << '\n';
-    cout << '\t' << "./bin/infraga-3d-rngdep -eig_direct examples/profs/example examples/profs/example_x.loc examples/profs/example_y.loc src_x=0.0 src_y=0.0 rcvr_x=-500.0 rcvr_y=100.0 incl_est=12.0 bounces=1 verbose=true" << '\n';
-    // cout << '\t' << "./bin/infraga-3d-rngdep -back_proj examples/profs/example examples/profs/example_x.loc examples/profs/example_y.loc rcvr_x=-500.0 rcvr_y=100.0 azimuth=77.062105 inclination=14.520905 bounces=1" << '\n';
-    cout << '\t' << "./bin/infraga-3d-rngdep -wnl_wvfrm examples/profs/example examples/profs/example_x.loc examples/profs/example_y.loc src_x=0.0 src_y=0.0 azimuth=-102.72964 inclination=11.098361 bounces=1 wvfrm_opt=impulse wvfrm_p0=500.0" << '\n' << '\n';
+    cout << '\t' << "./bin/infraga-3d-rngdep -prop examples/profs/example examples/profs/example_x.dat examples/profs/example_y.dat src_x=0.0 src_y=0.0 incl_step=2.0 azimuth=-90.0" << '\n';
+    cout << '\t' << "./bin/infraga-3d-rngdep -eig_search examples/profs/example examples/profs/example_x.dat examples/profs/example_y.dat src_x=0.0 src_y=0.0 rcvr_x=-500.0 rcvr_y=-100.0 bnc_max=1 incl_min=10.0 incl_max=20.0  verbose=true" << '\n';
+    cout << '\t' << "./bin/infraga-3d-rngdep -eig_direct examples/profs/example examples/profs/example_x.dat examples/profs/example_y.dat src_x=0.0 src_y=0.0 rcvr_x=-500.0 rcvr_y=100.0 incl_est=12.0 bounces=1 verbose=true" << '\n';
+    // cout << '\t' << "./bin/infraga-3d-rngdep -back_proj examples/profs/example examples/profs/example_x.dat examples/profs/example_y.dat rcvr_x=-500.0 rcvr_y=100.0 azimuth=77.062105 inclination=14.520905 bounces=1" << '\n';
+    cout << '\t' << "./bin/infraga-3d-rngdep -wnl_wvfrm examples/profs/example examples/profs/example_x.dat examples/profs/example_y.dat src_x=0.0 src_y=0.0 azimuth=-102.72964 inclination=11.098361 bounces=1 wvfrm_opt=impulse wvfrm_p0=500.0" << '\n' << '\n';
 
 }
 

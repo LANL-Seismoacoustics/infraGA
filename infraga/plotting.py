@@ -595,13 +595,13 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
             else:
                 tloss = arrivals[:, 10]
 
-            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
+            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 12.0, arrivals[:, 7] < 80.0))
-            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
+            ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 1.8, arrivals[:, 7] < 12.0))
-            sc = ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-120.0, vmax=-20.0)
+            sc = ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
 
             divider = make_axes_locatable(ax)
             ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
@@ -652,6 +652,7 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
             print('\t\t' + "Invalid receivers file.  Omitting from plot.")
 
     print('\t' + "Saving map to " + figure_out)
+    plt.tight_layout()
     plt.savefig(figure_out, dpi=250)
     plt.show()
 
