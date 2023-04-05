@@ -89,6 +89,7 @@ run_sph.add_command(run_infraga.run_sph_eig_wvfrm)
 
 plot.add_command(plotting.plot_atmo)
 plot.add_command(plotting.plot_azimuthal)
+plot.add_command(plotting.plot_eigenrays)
 plot.add_command(plotting.plot_eig_wvfrm)
 plot.add_command(plotting.plot_map)
     

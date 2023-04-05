@@ -16,6 +16,8 @@ Author: pblom@lanl.gov
 import os 
 import click
 import sys
+import fnmatch
+
 import numpy as np
 
 import matplotlib.pyplot as plt 
@@ -145,7 +147,8 @@ def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, r
 
     \b
     Examples:
-    \t infraga plot azimuthal --atmo-file ToyAtmo.met --plot-option celerity
+    \t infraga plot azimuthal --atmo-file ToyAtmo.met --y-axis-option celerity
+    \t infraga plot azimuthal --atmo-file ToyAtmo.met --y-axis-option reduced-time --cmap-option trace-velocity
 
     '''
     print("Loading atmospheric data and simulation results for " + atmo_file)
@@ -354,8 +357,124 @@ def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, r
     print('')
     plt.show()
 
+
+@click.command("eigenrays", short_help="Visualize eigenray results and predicted arrival information")
+@click.option("--atmo-file", help="Atmospheric specification file")
+@click.option("--arrivals", help="Arrivals file from an 'eigenray' simulation (optional)", default=None)
+@click.option("--eigenrays", help="Eigenrays file from an 'eigenray' simulation (optional)", default=None)
+def plot_eigenrays(atmo_file, arrivals, eigenrays):
+    '''
+    Visualize results for eigenray analysis
+
+    \b
+    Plotting Options:
+    \t trace-velocity \t Trace velocity
+    \t back-azimuth \t\t Back azimuth
+    \t amplitude \t\t Transport equation + absorption losses
+
+    \b
+    Examples:
+    \t infraga plot eigenrays --atmo-file ToyAtmo.met --y-axis-option celerity
+    \t infraga plot eigenrays --atmo-file ToyAtmo.met --y-axis-option trace-velocity --cmap-option amplitude
+
+    
+    
+    '''
+
+    # Load data for plotting
+    print("Loading data...")
+    atmo_data = np.loadtxt(atmo_file)
+
+    if arrivals is not None:
+        print('\t' + "Loading specified arrivals file: " + arrivals)
+        arrivals_file = arrivals
+    else:
+        print('\t' + "Loading arrivals file using atmo file name: " + os.path.splitext(atmo_file)[0] + ".arrivals.dat")
+        arrivals_file = os.path.splitext(atmo_file)[0] + ".arrivals.dat"
+
+    if not os.path.isfile(arrivals_file):
+        print('\t' + "Arrivals file (" + arrivals_file + ") not found.")
+        return 0
+
+    for line in open(arrivals_file):
+        if "infraga-" in line:
+            if "sph" in line:
+                geom = "sph"
+            else:
+                geom = "3d"
+        elif "source" in line:
+            src_loc = np.array([float(val) for val in line.split(":")[-1].split(",")[:2]])
+
+    arr_data = np.loadtxt(arrivals_file)
+    if len(arr_data) < 1:
+        print('\t' + "Arrivals file (" + arrivals_file + ") empty.")
+        return 0
+    prop_az = np.average(arr_data[:, 1])
+
+
+    if eigenrays is not None:
+        print('\t' + "Loading specified eigenray file(s): " + eigenrays)
+        if "*" in eigenrays:
+            eigenray_id = eigenrays
+        else:
+            eigenray_id = eigenrays + "*.dat"
+    else:
+        print('\t' + "Loading eigenray file(s) using atmo file name: " + os.path.splitext(atmo_file)[0] + ".eigenray-*.dat")
+        eigenray_id = os.path.splitext(atmo_file)[0] + ".eigenray-*.dat"
+
+    eigenray_data = []
+    if len(os.path.dirname(eigenray_id)) > 0:
+        eigenray_path = os.path.dirname(eigenray_id) + "/"
+    else:
+        eigenray_path = ""
+
+    if "/" in eigenray_id:
+        for file in os.listdir(os.path.dirname(eigenray_path)):
+            if fnmatch.fnmatch(file, os.path.basename(eigenray_id)):
+                eigenray_data = eigenray_data + [np.loadtxt(file)]
+    else:        
+        for file in os.listdir("."):
+            if fnmatch.fnmatch(file, os.path.basename(eigenray_id)):
+                eigenray_data = eigenray_data + [np.loadtxt(file)]
+
+    if len(eigenray_data) < 1:
+        print('\t' + "Eigenray file(s) (" + eigenray_id + ") not found.")
+        return 0
+
+    # Plot data
+    print('\n' + "Plotting...")
+    fig = plt.figure(figsize=(11, 5), layout='constrained')
+    spec = fig.add_gridspec(2, 7)
+
+
+    ax0 = fig.add_subplot(spec[0, 0])
+    ax0.set_ylabel("Altitude [km]")
+    ax0.set_xlabel("Sound Speed [m/s]")
+    ax0.xaxis.set_label_position('top')
+    ax0.xaxis.set_ticks_position('top')
+
+    print('\t' + "Atmospheric data...")
+    ax0.plot(np.sqrt(0.14 * atmo_data[:, 5] / atmo_data[:, 4]), atmo_data[:, 0], '--k', linewidth=1.5)
+    ax0.plot(np.sqrt(0.14 * atmo_data[:, 5] / atmo_data[:, 4]) + atmo_data[:, 2] * np.sin(np.radians(prop_az)) + atmo_data[:, 3] * np.cos(np.radians(prop_az)), atmo_data[:, 0], '-k', linewidth=3.0)
+
+    ax1 = fig.add_subplot(spec[0, 1:], sharey=ax0)
+    ax1.set_xlabel("Range [km]")
+    ax1.xaxis.set_label_position('top')
+    ax1.xaxis.set_ticks_position('top')
+
+    print('\t' + "Eigenray path(s)...")
+    for path in eigenray_data:
+        if geom == '3d':
+            ray_rngs = np.sqrt(path[:, 0]**2 + path[:, 1]**2)
+        else:
+            ray_rngs = sph_proj.inv([src_loc[1]] * len(path), [src_loc[0]] * len(path), path[:, 1], path[:, 0])[2] * 1.0e-3
+        ax1.plot(ray_rngs, path[:, 2], '-k', linewidth=1.5)  
+
+    plt.show()
+
+
 @click.command("eig_wvfrms", short_help="Visualize eigenrays and predicted waveform")
-@click.option("--eigenrays", help="Eigenrays file from an eig_wvfrm simulation", default=None)
+@click.option("--eigenrays", help="Eigenrays file from an 'eig_wvfrm' simulation", default=None)
 @click.option("--wvfrms", help="Waveforms file from an eig_wvfrm simulation", default=None)
 @click.option("--tr-vel-ref", help="Reference velocity for trace velocity calculation", default=330.0)
 @click.option("--y-axis-option", help="Arrival parameter to plot on y-axis", default="back-azimuth")
@@ -373,7 +492,8 @@ def plot_eig_wvfrm(eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, fi
 
     \b
     Examples:
-    \t infraga plot azimuthal --atmo-file ToyAtmo.met --plot-option celerity
+    \t infraga plot azimuthal --atmo-file ToyAtmo.met --y-axis-option celerity
+    \t infraga plot azimuthal --atmo-file ToyAtmo.met --y-axis-option trace-velocity --cmap-option amplitude
         
 
     '''
@@ -481,7 +601,6 @@ def plot_eig_wvfrm(eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, fi
         plt.savefig(figure_out, dpi=250)
     
     plt.show()
-
 
 
 @click.command('map', short_help="Visualize results on a cartopy map")

@@ -1992,7 +1992,8 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
 
     \b
     Examples:
-    \t infraga sph wnl-wvfrm --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --inclination 4.1314876 --azimuth -84.969455 --bounces 1 --wvfrm-p0 500.0
+    \t infraga sph wnl-wvfrm --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --inclination 4.1314876 --azimuth -84.969455 --bounces 1 --wvfrm-yield 10e3
+    \t infraga sph wnl-wvfrm --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --inclination 31.703267 --azimuth -84.583914 --bounces 1 --wvfrm-yield 10e3
     \t infraga sph wnl-wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
     '''
 
