@@ -86,16 +86,13 @@ For global scale analyses (e.g., analysis of propagation paths from large bolide
 Eigenray Analysis 
 ****************************
 
-Discussion of eigenray methods...
-
-
+In some scenarios, those specific propagation paths connecting known source and receiver locations are of interest.  Such propagation paths are termed 'eigenrays' and can be difficult to compute when considering propagation paths in 3 dimensions including cross winds.  The auxiliary parameters that are utilized by infraGA/GeoAc for computation of the geometric spreading losses can also be leveraged for computation of launch angle changes that shift an arrival closer to a desired location.  A Levenberg-Marquardt (LM) algorithm has been implemented that uses the auxiliary paramaters for such a search.  The eigenray methods in infraGA/GeoAc are accessed using the :code:`eigenray` flag instead of :code:`prop` and have a number of common parameters.  In addition to specifying a source location, the receiver location is also needed.  The following command runs an eigenray search for a source at (30, -100) to a receiver to the west-south-west at (30.25, -104.25).  
 
   .. code::  none
 
     infraga sph eigenray --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --rcvr-lat 30.25 --rcvr-lon -104.25 --bnc-max 1 --verbose True
 
-
-Discussion of the screen output and files written...
+Output printed to screen for this simulation is summarized below.  As with the :code:`prop` simulations, atmospheric data is ingested and interpolated to define the propagation medium and the parameter summary provides an overview of the run settings.  Several notable new parameters are included.  The :code:`--bnc-max` parameter specified above allows for 0 to that number of ground reflections.  In contrast to the :code:`prop` usage, the :code:`--bounces` option for the eigenray algorithm limits the analysis to that *specific* number of ground reflections (e.g., running analysis with :code:`--bounces 2` will run an eigenray search for only those paths with 2 ground reflections).  Though not adjusted above, the :code:`--damping` parameter listed below controls how rapidly the LM algorithm steps towards the solution and can be increased for stability of the search if necessary.  *add tolerance parameter as well...*
 
   .. code:: none
 
@@ -148,10 +145,21 @@ Discussion of the screen output and files written...
           attenuation (geometric) [dB] = -54.837386
           absorption [dB] = -23.705732
 
-      ...
+    	Estimating eigenray angles for source-receiver at great circle distance 409.60414 km and azimuth -85.044241 degrees from N.  Inclination limits: [35.9, 45].
+        Ray launched with inclination 35.9, azimuth -85.0442 arrives at range 408.259 km after 0 bounce(s).	Exact arrival at 30.239 degrees N latitude, -104.237 degrees E longitude
+        ...
+        Ray launched with inclination 44.9, azimuth -85.044241 arrives at range 314.57557 km after 0 bounce(s).	Exact arrival at 30.169893 degrees N latitude, -103.26423 degrees E longitude
+        Reached maximum inclination angle or iteration limit.
+
+    Searching for 1 bounce eigenrays.
+      Estimating eigenray angles for source-receiver at great circle distance 409.60414 km and azimuth -85.044241 degrees from N.  Inclination limits: [0.5, 45].
+        Ray launched with inclination 0.5, azimuth -85.044241 arrives at range 433.04978 km after 1 bounce(s).	Exact arrival at 30.255722 degrees N latitude, -104.49409 degrees E longitude
+        Ray launched with inclination 0.6, azimuth -85.044241 arrives at range 432.46918 km after 1 bounce(s).	Exact arrival at 30.255473 degrees N latitude, -104.48806 degrees E longitude
+        ...
+
     Identified 3 eigenray(s).
 
-Discussion of the method...
+The methodology of infraGA/GeoAc's eigenray search is separated into two stages.  In the initial stage, rays are launched in the direction from the source to the receiver at increasing inclination angles.  Once a pair of rays are identified which pass over the receiver range, the LM algorithm is used to search for the exact eigenray.  The search is the resumed from the launch angle that triggered the LM search and these steps are repeated until the maximum inclination angle is reached.  The search then begins with an increased number of ground reflections and continues until the maximum number of such reflections is reached.
 
 Discuss turning the :code:`--verbose` option off...
 
@@ -167,6 +175,9 @@ Discuss turning the :code:`--verbose` option off...
 
 Visualization methods (need to write them up first)...
 
+  .. image:: _static/_images/eigenray1.png
+      :width: 1200px
+      :align: center
 
 
 ****************************
@@ -239,6 +250,33 @@ Combined Eigenray + Waveform Methods
 ************************************
 
 Discussion of eig_wvfrm methods...
+
+
+
+Visualization...
+
+  .. image:: _static/_images/eig_wvfrm1.png
+      :width: 500px
+      :align: center
+
+Zooming in...
+
+  .. image:: _static/_images/eig_wvfrm2.png
+      :width: 500px
+      :align: center
+
+Zooming in...
+
+  .. image:: _static/_images/eig_wvfrm3.png
+      :width: 500px
+      :align: center
+
+Zooming in...
+
+  .. image:: _static/_images/eig_wvfrm4.png
+      :width: 500px
+      :align: center
+
 
 
 

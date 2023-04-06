@@ -2204,18 +2204,18 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 @click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
 
-@click.option("--keep-eig-arrivals", help="Keep eigenray arrivals", default=False)
+@click.option("--keep-eig-results", help="Keep eigenray arrivals", default=False)
 def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_lat, src_lon, src_alt, rcvr_lat, rcvr_lon, verbose, iterations, damping, tolerance, az_dev_lim, 
                 incl_step_min, incl_step_max, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step,
                 wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, output_id, max_alt, max_rng, min_lat, 
-                max_lat, min_lon, max_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt, keep_eig_arrivals):
+                max_lat, min_lon, max_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt, keep_eig_results):
     '''
     Run spherical atmospheric layer eigenray analysis to identify propagation paths connecting a specific source-receiver geometr yand then compute weakly-nonlinear waveform predictions for each eigenray
 
     \b
     Examples:
-    \t infraga sph eig_wvfrm --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --rcvr-lat 30.25 --rcvr-lon -104.25 --bnc-max 1 --verbose True --keep-eig-arrivals True --wvfrm-yield 10e3
+    \t infraga sph eig_wvfrm --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --rcvr-lat 30.25 --rcvr-lon -104.25 --bnc-max 1 --keep-eig-results True --wvfrm-yield 10e3
     \t infraga sph eig_wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
 
     '''
@@ -2422,7 +2422,7 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
     eig_results = np.loadtxt(eig_arrivals_file)
     if len(eig_results) > 0:
         eig_results = np.atleast_2d(eig_results)
-        os.system("rm " + results_id + ".eigenray*")
+        # os.system("rm " + results_id + ".eigenray*")
 
         mask = np.ones(len(eig_results), dtype=bool)
         for n, line in enumerate(eig_results):
@@ -2616,5 +2616,6 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
     else:
         print('\n' + "No waveforms to compute.")
     
-    if not keep_eig_arrivals:
+    if not keep_eig_results:
+        os.system("rm " + profile_id + ".eigenray-*.dat")
         os.system("rm " + profile_id + ".arrivals.dat")

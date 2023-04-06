@@ -362,22 +362,26 @@ def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, r
 @click.option("--atmo-file", help="Atmospheric specification file")
 @click.option("--arrivals", help="Arrivals file from an 'eigenray' simulation (optional)", default=None)
 @click.option("--eigenrays", help="Eigenrays file from an 'eigenray' simulation (optional)", default=None)
-def plot_eigenrays(atmo_file, arrivals, eigenrays):
+@click.option("--y-axis-option", help="Lower axis option (see usage info below)", default='inclination')
+@click.option("--tr-vel-ref", help="Reference velocity for trace velocity calculation", default=330.0)
+@click.option("--figure-out", help="Name of output figure", default=None)
+def plot_eigenrays(atmo_file, arrivals, eigenrays, y_axis_option, tr_vel_ref, figure_out):
     '''
     Visualize results for eigenray analysis
 
     \b
     Plotting Options:
+    \t inclination \t\t Launch inclination angle
+    \t celerity  \t\t Arrival celerity (horizontal group velocity)
+    \t turning-ht \t\t Turning height
     \t trace-velocity \t Trace velocity
-    \t back-azimuth \t\t Back azimuth
+    \t back-azimuth \t\t Back azimuth (not available for 2d geometry)
     \t amplitude \t\t Transport equation + absorption losses
 
     \b
     Examples:
-    \t infraga plot eigenrays --atmo-file ToyAtmo.met --y-axis-option celerity
-    \t infraga plot eigenrays --atmo-file ToyAtmo.met --y-axis-option trace-velocity --cmap-option amplitude
-
-    
+    \t infraga plot eigenrays --atmo-file ToyAtmo.met
+    \t infraga plot eigenrays --atmo-file ToyAtmo.met --y-axis-option trace-velocity  
     
     '''
 
@@ -429,11 +433,11 @@ def plot_eigenrays(atmo_file, arrivals, eigenrays):
         eigenray_path = ""
 
     if "/" in eigenray_id:
-        for file in os.listdir(os.path.dirname(eigenray_path)):
+        for file in np.sort(os.listdir(os.path.dirname(eigenray_path))):
             if fnmatch.fnmatch(file, os.path.basename(eigenray_id)):
                 eigenray_data = eigenray_data + [np.loadtxt(file)]
     else:        
-        for file in os.listdir("."):
+        for file in np.sort(os.listdir(".")):
             if fnmatch.fnmatch(file, os.path.basename(eigenray_id)):
                 eigenray_data = eigenray_data + [np.loadtxt(file)]
 
@@ -443,9 +447,8 @@ def plot_eigenrays(atmo_file, arrivals, eigenrays):
 
     # Plot data
     print('\n' + "Plotting...")
-    fig = plt.figure(figsize=(11, 5), layout='constrained')
+    fig = plt.figure(figsize=(9, 5), layout='constrained')
     spec = fig.add_gridspec(2, 7)
-
 
     ax0 = fig.add_subplot(spec[0, 0])
     ax0.set_ylabel("Altitude [km]")
@@ -460,15 +463,70 @@ def plot_eigenrays(atmo_file, arrivals, eigenrays):
     ax1 = fig.add_subplot(spec[0, 1:], sharey=ax0)
     ax1.set_xlabel("Range [km]")
     ax1.xaxis.set_label_position('top')
-    ax1.xaxis.set_ticks_position('top')
+    ax1.xaxis.set_ticks_position('top')  
 
     print('\t' + "Eigenray path(s)...")
-    for path in eigenray_data:
+    color_seq = ['blue', 'orange', 'green', 'red', 'cyan', 'magenta', 'black']
+    for n, path in enumerate(eigenray_data):
         if geom == '3d':
             ray_rngs = np.sqrt(path[:, 0]**2 + path[:, 1]**2)
         else:
             ray_rngs = sph_proj.inv([src_loc[1]] * len(path), [src_loc[0]] * len(path), path[:, 1], path[:, 0])[2] * 1.0e-3
-        ax1.plot(ray_rngs, path[:, 2], '-k', linewidth=1.5)  
+        ax1.plot(ray_rngs, path[:, 2], color=color_seq[n], linewidth=2.5)  
+
+    ax1.set_xlim(left=0.0)    
+    ax1.set_ylim(bottom=0.0) 
+
+    incl_vals = arr_data[:, 0]
+    tm_vals = arr_data[:, 5]
+    cel_vals = arr_data[:, 6] * 1.0e3
+    turn_ht_vls = arr_data[:, 7]
+    arr_incl_vals = arr_data[:, 8]
+    back_az_vals = arr_data[:, 9]
+    amp_vals = arr_data[:, 10] + arr_data[:, 11]
+
+    ax2 = fig.add_subplot(spec[1, 1:])
+    ax2.set_xlabel("Time (rel. origin) [s]")
+
+    if y_axis_option == 'inclination':
+        print('\t' + "Launch inclination info...")
+        ax2.set_ylabel("Launch Inclination [deg]")
+        plot_vals = arr_incl_vals
+    elif y_axis_option == 'celerity':
+        print('\t' + "Arrival celerity info...")
+        ax2.set_ylabel("Celerity [m/s]")
+        plot_vals = cel_vals
+    elif y_axis_option == "turning-ht" or y_axis_option == "turning-height":
+        print('\t' + "Turning height info...")
+        ax2.set_ylabel("Turning Height [km]")
+        plot_vals = turn_ht_vls
+    elif y_axis_option == "trace-velocity":
+        print('\t' + "Trace velocity info...")
+        ax2.set_ylabel("Trace Velocity [m/s]")
+        plot_vals = tr_vel_ref / np.cos(np.radians(arr_incl_vals))
+    elif y_axis_option == "back-azimuth":
+        if geom == '2d':
+            print('\t' + "Can't plot back azimuth deviation from 2d simulation")
+            return 0
+        else:
+            print('\t' + "Back azimuth info...")
+            ax2.set_ylabel("Back Azimuth [deg]")
+            plot_vals = back_az_vals
+    elif y_axis_option == "amplitude":
+        print('\t' + "Amplitude info...")
+        ax2.set_ylabel("Amplitude (rel. 1 km) [dB]")
+        plot_vals = amp_vals
+    else:
+        print('\t' + "WARNING!  Bad plot option provided." + '\n\t' + "Plotting launch angle inclination info...")
+        ax2.set_ylabel("Launch Inclination [deg]")
+        plot_vals = incl_vals
+
+    for n, val in enumerate(plot_vals):
+        ax2.plot([tm_vals[n]], [val], color=color_seq[n], markersize=7.5, marker='o')  
+
+    if figure_out is not None:
+        print('\t' + "Saving figure to " + figure_out)
+        plt.savefig(figure_out, dpi=250)
 
     plt.show()
 
@@ -538,7 +596,7 @@ def plot_eig_wvfrm(eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, fi
         ray_rngs = sph_proj.inv([src_loc[1]] * len(eigenray_data), [src_loc[0]] * len(eigenray_data), eigenray_data[:, 1], eigenray_data[:, 0])[2] * 1.0e-3
 
     print("Plotting...")
-    fig = plt.figure(figsize=(5, 5), layout='constrained')
+    fig = plt.figure(figsize=(7, 7), layout='constrained')
     spec = fig.add_gridspec(7)
 
     print('\t' + "Eigenrays...")
@@ -546,13 +604,15 @@ def plot_eig_wvfrm(eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, fi
     ax0.set_ylabel("Altitude [km]")
     ax0.set_xlabel("Range [km]")
 
-    ax0.set_xlim(0.0, np.ceil(max(ray_rngs)))
-
     indices = np.flatnonzero(np.gradient(eigenray_data[:, 5]) < 0.0)
-    ax0.plot(ray_rngs[:indices[0]], eigenray_data[:, 2][:indices[0]], '-k', linewidth=1.5)
+    ax0.plot(ray_rngs[:indices[0]], eigenray_data[:, 2][:indices[0]], '-k', linewidth=2.5)
     for n, j in enumerate(indices):
-        ax0.plot(ray_rngs[indices[n - 1]:j], eigenray_data[:, 2][indices[n - 1]:j], '-k', linewidth=1.5)
-    ax0.plot(ray_rngs[indices[-1]:], eigenray_data[:, 2][indices[-1]:], '-k', linewidth=1.5)
+        ax0.plot(ray_rngs[indices[n - 1]:j], eigenray_data[:, 2][indices[n - 1]:j], '-k', linewidth=2.5)
+    ax0.plot(ray_rngs[indices[-1]:], eigenray_data[:, 2][indices[-1]:], '-k', linewidth=2.5)
+
+    ax0.set_xlim(left=0.0)    
+    ax0.set_ylim(bottom=0.0) 
+
 
     print('\t' + "Arrival info...")
     ax2 = fig.add_subplot(spec[5:])
@@ -582,10 +642,10 @@ def plot_eig_wvfrm(eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, fi
         cmap_vals = None
 
     if cmap_vals is not None: 
-        sc = ax2.scatter(arr_tms, y_axis_vals, c=cmap_vals, cmap=cm.jet, s=25.0)
+        sc = ax2.scatter(arr_tms, y_axis_vals, c=cmap_vals, cmap=cm.jet, s=40.0)
         plt.colorbar(sc, label=cmap_label)
     else:
-        ax2.plot(arr_tms, y_axis_vals, 'ok', markersize=5.0)
+        ax2.plot(arr_tms, y_axis_vals, 'ok', markersize=7.5)
 
     print('\t' + "Waveform predictions...")
     ax1 = fig.add_subplot(spec[3:5], sharex=ax2)
