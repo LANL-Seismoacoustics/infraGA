@@ -704,12 +704,12 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
         gl.yformatter = LATITUDE_FORMATTER
 
         # Add features (coast lines, borders)
-        ax.add_feature(cartopy.feature.COASTLINE, linewidth=0.5)
-        ax.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
         if (ur_corner[1] - ll_corner[0]) < 20.0:
             ax.add_feature(cartopy.feature.STATES, linewidth=0.5)
             ax.add_feature(cartopy.feature.LAKES, linewidth=0.5)
             ax.add_feature(cartopy.feature.RIVERS, linewidth=0.5)
+        ax.add_feature(cartopy.feature.COASTLINE, linewidth=0.5)
+        ax.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
 
         cmesh = ax.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, transform=map_proj, vmin=-1.4, vmax=5.0)
         ax.set_xlabel("Longitude [deg]")

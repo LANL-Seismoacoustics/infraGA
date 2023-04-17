@@ -92,7 +92,6 @@ In some scenarios, those specific propagation paths connecting known source and 
 
     infraga sph eigenray --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --rcvr-lat 30.25 --rcvr-lon -104.25 --bnc-max 1 --verbose True
 
-Output printed to screen for this simulation is summarized below.  As with the :code:`prop` simulations, atmospheric data is ingested and interpolated to define the propagation medium and the parameter summary provides an overview of the run settings.  Several notable new parameters are included.  The :code:`--bnc-max` parameter specified above allows for 0 to that number of ground reflections.  In contrast to the :code:`prop` usage, the :code:`--bounces` option for the eigenray algorithm limits the analysis to that *specific* number of ground reflections (e.g., running analysis with :code:`--bounces 2` will run an eigenray search for only those paths with 2 ground reflections).  Though not adjusted above, the :code:`--damping` parameter listed below controls how rapidly the LM algorithm steps towards the solution and can be increased for stability of the search if necessary.  *add tolerance parameter as well...*
 
   .. code:: none
 
@@ -159,7 +158,7 @@ Output printed to screen for this simulation is summarized below.  As with the :
 
     Identified 3 eigenray(s).
 
-The methodology of infraGA/GeoAc's eigenray search is separated into two stages.  In the initial stage, rays are launched in the direction from the source to the receiver at increasing inclination angles.  Once a pair of rays are identified which pass over the receiver range, the LM algorithm is used to search for the exact eigenray.  The search is the resumed from the launch angle that triggered the LM search and these steps are repeated until the maximum inclination angle is reached.  The search then begins with an increased number of ground reflections and continues until the maximum number of such reflections is reached.
+As with the :code:`prop` simulations, atmospheric data is ingested and interpolated to define the propagation medium and the parameter summary provides an overview of the run settings.  The methodology of infraGA/GeoAc's eigenray search is separated into two stages.  In the initial stage, rays are launched in the direction from the source to the receiver at increasing inclination angles.  Once a pair of rays are identified which pass over the receiver range, the LM algorithm is used to search for the exact eigenray.  The search is the resumed from the launch angle that triggered the LM search and these steps are repeated until the maximum inclination angle is reached.  The search then begins with an increased number of ground reflections and continues until the maximum number of such reflections is reached.
 
 Discuss turning the :code:`--verbose` option off...
 
@@ -178,6 +177,10 @@ Visualization methods (need to write them up first)...
   .. image:: _static/_images/eigenray1.png
       :width: 1200px
       :align: center
+
+
+ Several notable new parameters are included.  The :code:`--bnc-max` parameter specified above allows for 0 to that number of ground reflections.  In contrast to the :code:`prop` usage, the :code:`--bounces` option for the eigenray algorithm limits the analysis to that *specific* number of ground reflections (e.g., running analysis with :code:`--bounces 2` will run an eigenray search for only those paths with 2 ground reflections).  Though not adjusted above, the :code:`--damping` parameter listed below controls how rapidly the LM algorithm steps towards the solution and can be increased for stability of the search if necessary.  *add tolerance parameter as well...*
+
 
 
 ****************************
