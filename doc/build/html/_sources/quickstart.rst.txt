@@ -10,9 +10,8 @@ Single Azimuth Simulation
 
 InfraGA/GeoAc can run propagation simulations using the effective sound speed in a 2D azimuthal plane (range vs. altitude), using a 3D Cartesian framework with moving media (i.e., winds), or using a spherical atmospheric layer geometry that matches the global geometry of propagation through the atmosphere.  While the 2D and 3D methods are slightly faster, the more accurate physics and geometry of the spherical layer methods provides a more accurate framework for analysis and is the recommended method for general use. 
 
-----------------------
-Running the Simulation
-----------------------
+
+**Running the Simulation**
 
 - Propagation of energy from a single point source on using the spherical atmosphere layer geometry can be accessed using the :code:`infraga sph prop` CLI option.  Running this with the :code:`--help` option produces a summary of the usage (note: if you get an error about the :code:`infraga` command not being found, make sure you have the conda environment active via :code:`conda activate infraga_env`):
 
@@ -116,9 +115,7 @@ Running the Simulation
 
 - As noted in the parameter summary printed during the evaluation, inclination angles are defined by a minimum of :math:`0.5^\circ` and a maximum of :math:`45.0^\circ` with a resolution of :math:`0.5^\circ`.  In most cases a maximum angle on the order of :math:`40 - 50^\circ` is sufficient to capture all refracted ray paths; though, higher angles might be necessary in some cases. 
 
------------------------
-Visualizing the Results
------------------------
+**Visualizing the Results**
 
 The Python *infraga* interface includes a number of plotting functions that are useful for visualizing results.  In this case, the azimuthal ray path and arrival characteristics can be visualized using:
 
@@ -176,9 +173,7 @@ The full set of options for the :code:`--y-axis-option` and :code:`--cmap-option
 
 In the case that ray path and arrival files are re-named or the :code:`--output-id` parameter is used to write them to specific files, they can be specified; otherwise, the atmosphere file info will be used to determine where the method looks for ray path and arrival results.  For the reduced time and trace velocity options, the reference velocities can be set using the :code:`--reduced-tm-vel` and :code:`--tr-vel-ref` values (default values are 300 and 330 m/s, respectively).  Lastly, the :code:`--figure-out` option provides a means to write the figure directly into a .png (or any format file usable by the Python matplotlib methods) instead of only displaying it to screen.  Currently only the 'jet' colormap is used, but other options might be added in the future and unique colormaps might be allowed for the ray path amplitude and lower panel plot (please provide feedback if you have any on plotting methods, they are still in development).
 
-------------------------------
-Simple Parameter Modifications
-------------------------------
+**Simple Parameter Modifications**
 
 From the overly long list above for running :code:`infraga sph prop`, several parameters are useful to understand for general usage:
 
@@ -206,9 +201,7 @@ From the overly long list above for running :code:`infraga sph prop`, several pa
     
     infraga sph prop --atmo-file ToyAtmo.met --src-lat 40.6571 --src-lon -113.4383 --z-grnd 1.5 --azimuth 45.0 --max-rng 2000 --bounces 100
 
--------------------
-Using a Config File
--------------------
+**Using a Config File**
 
 From the above, it becomes obvious that in some cases specifying the various ray tracing parameters can make for overly long command line calls.  A configuration file option has been included to alleviate this in scenarios where many parameters will be constant between simulations.   In the above example, one can create a file named 'UTTR_prop.cnfg' containing the following information:
 
@@ -241,9 +234,7 @@ Multi-Azimuth Simulation
 
 Running multi-azimuth simulations is more time consuming but provides a more robust understanding of the propagation of infrasonic energy from a source at a given location.  In many scenarios multiple stations are within regional distance of a source and propagation to the entire regional network of stations is useful.  Similarly, in planning a regional deployment of stations to capture signals from a planned event (e.g., a controlled surface explosion) or from a known repeating source (e.g., a mine or volcano) it's useful to understand the full multi-azimuth propagation prediction.
 
-----------------------
-Running the Simulation
-----------------------
+**Running the Simulation**
 
 Consider making the below modifications to the configuration file for a source at UTTR.  The maximum range has been reduced to 500 km to make the simulation time a bit more reasonable and the single azimuth has been replaced with a full :math:`360^\circ` range with :math:`3^\circ` resolution.  Update the :code:`cpu_cnt` parameter to whatever number of CPUs you have available for use (the OpenMPI methods will error out if you oversubscribe your CPUs).
 
@@ -308,11 +299,9 @@ This produces a longer set of output that cycles through the various azimuthal a
 
 Note that this simulation didn't create a new ToyAtmo.raypaths.dat file because the OpenMPI methods default to not writing ray paths (this is done because it's assumed that the methods are used for large simulation runs).
 
------------------------
-Visualizing the Results
------------------------
+**Visualizing the Results**
 
-The *infraga* plotting methods include a function that utilized the CartoPy mapping methods to draw arrival information onto a regional map.  This can be access using,
+The *infraga* plotting methods include a function that utilized the `Cartopy <https://scitools.org.uk/cartopy/docs/latest/>`_.` mapping methods to draw arrival information onto a regional map.  This can be access using,
 
   .. code:: none
     
@@ -338,9 +327,8 @@ This produces a map showing the celerity of the arrivals and the tropospheric (r
       :width: 1200px
       :align: center
 
-------------------------------
-Simple Parameter Modifications
-------------------------------
+
+**Simple Parameter Modifications**
 
 In addition to the above additional parameter usage, there are several options that can be useful when considering propagation to multiple azimuths:
 
@@ -351,9 +339,7 @@ In addition to the above additional parameter usage, there are several options t
   > In the above simulation, it's likely that both the :code:`[...].arrivals.dat` and :code:`[...].raypaths.dat` file were computed.  The default behavior of the infraGA/GeoAc methods is to compute the ray path information when using single-CPU methods and disable it when using the OpenMPI methods (if you defined a :code:`cpu_cnt` value in the config file or used :code:`--cpu-cnt` in the command line call).  If this behavior is not what's intended, then the :code:`--write-rays` flag can be used to turn the output of the :code:`[...].raypaths.dat` file on or off as needed.  In general, when considering multi-azimuth simulations it's highly recommended to disable the ray path output because the resulting file can be excessively large and it's difficult to interrogate the data in a straightforward way.
 
 
--------------------------------------
-Visualization of Predicted Waveguides
--------------------------------------
+**Visualization of Predicted Waveguides**
 
 As noted above, multi-azimuth simulations can be time consuming so that it's often useful to consider the structure of the atmospheric specification and identify likely waveguide directions prior to running a full multi-azimuth simulation.  This can be done using the :code:`plot atmo` function with the atmospheric file,
 
@@ -366,7 +352,7 @@ As noted above, multi-azimuth simulations can be time consuming so that it's oft
       :align: center
 
 
-The resulting figure shows the computed sound speed profile, the zonal and meridional wind fields, as well as a waveguide prediction that uses the effective sound speed ducting condition that for a ray path launch at inclination angle :math:`\theta` in direction :math:`\phi`, the condition for refraction back towards the ground surface is :math:`c_\text{eff} \left( z, \phi \right) \geq \frac{ c_\text{eff} \left( z_\text{grnd}, \phi \right) }{\cos \theta}`.  The right panel of the figure shows the lowest altitude for which this condition is satisfied and ray paths are likely to be refracted towards the ground surface.  In this case the ToyAtmo.met file has a stratospheric waveguide (turning heights in the middle atmosphere) to the west and a tropospheric waveguide (low altitude refraction) to the east.  Thermospheric ducting is predicted in all directions once the other two waveguides are escaped at higher inclination angles.
+The resulting figure shows the computed sound speed profile, the zonal and meridional wind fields, as well as a waveguide prediction that uses the effective sound speed ducting condition that for a ray path launch at inclination angle :math:`\vartheta` in direction :math:`\varphi`, the condition for refraction back towards the ground surface is :math:`c_\text{eff} \left( z, \varphi \right) \geq \frac{ c_\text{eff} \left( z_\text{grnd}, \varphi \right) }{\cos \vartheta}`.  The right panel of the figure shows the lowest altitude for which this condition is satisfied and ray paths are likely to be refracted towards the ground surface.  In this case the ToyAtmo.met file has a stratospheric waveguide (turning heights in the middle atmosphere) to the west and a tropospheric waveguide (low altitude refraction) to the east.  Thermospheric ducting is predicted in all directions once the other two waveguides are escaped at higher inclination angles.
 
 Comparison of this atmospheric specification plot with the map plot using turning height shows how the two are related,
 

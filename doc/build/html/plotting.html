@@ -1,0 +1,405 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Visualization &mdash; infraGA/GeoAc  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Utility Functions" href="utilities.html" />
+    <link rel="prev" title="Advanced Usage" href="advanced.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> infraGA/GeoAc
+          
+
+          
+            
+            <img src="_static/LANL Logo White.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="userguide.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authorship.html">Authorship</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="atmospheres.html">Atmospheric Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utility Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="physics.html">Propagation Physics</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">infraGA/GeoAc</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Visualization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/plotting.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="visualization">
+<span id="plotting"></span><h1>Visualization<a class="headerlink" href="#visualization" title="Permalink to this heading">¶</a></h1>
+<p>Several visualization methods from <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span></code> were included in the <a class="reference internal" href="quickstart.html#quickstart"><span class="std std-ref">Quickstart</span></a> and additional detail of these methods is summarized below.  The list of available visualizations can be printed to screen using <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">--help</span></code>,</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage: infraga plot [OPTIONS] COMMAND [ARGS]...
+
+  infraga plot - visualization functions for atmospheric data and infraga
+  results
+
+Options:
+  -h, --help  Show this message and exit.
+
+Commands:
+  atmo        Visualize information about an atmospheric atmo_file
+  azimuthal   Visualize results for a single azimuth simulation
+  eig_wvfrms  Visualize eigenrays and predicted waveform
+  eigenrays   Visualize eigenray results and predicted arrival information
+  map         Visualize results on a cartopy map
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>Atmosphere and Waveguides</strong></p>
+<p>The adiabatic sound speed and ambient winds for a given atmospheric specification can be visualized using, <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">atmo</span> <span class="pre">--atmo-file</span> <span class="pre">ToyAtmo.met</span></code> as noted in the <a class="reference internal" href="quickstart.html#quickstart"><span class="std std-ref">Quickstart</span></a>.  This analysis is useful prior to running full ray tracing simulations to identify what waveguides are present in the atmospheric structure.  In the limit of the effective sound speed, a ray path launched at inclination angle <span class="math notranslate nohighlight">\(\vartheta\)</span> in direction <span class="math notranslate nohighlight">\(\varphi\)</span> will be refreacted back towards the ground at an altitude for which  <span class="math notranslate nohighlight">\(c_\text{eff} \left( z, \varphi \right) \geq \frac{ c_\text{eff} \left( z_\text{grnd}, \varphi \right) }{\cos \vartheta}\)</span>.  The right panel of the figure identifies likely waveguide structure by showing the lowest altitude for which this condition is satisfied.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/atmo_plot.png"><img alt="_images/atmo_plot.png" class="align-center" src="_images/atmo_plot.png" style="width: 1500px;" /></a>
+</div></blockquote>
+<p>The other options in this visualization method allow one to cut the maximum altitude of the atmosphere data and to specify the file format as discussed in <a class="reference internal" href="atmospheres.html#atmospheres"><span class="std std-ref">Atmospheric Data</span></a>.</p>
+<p><strong>Azimuthal Propagation</strong></p>
+<p>For propagation paths confined to a single launch azimuth, the visualization of propagation results can be done using the <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">azimuthal</span></code> methods.  The full usage and plotting option info for this function can be displayed using the <code class="code docutils literal notranslate"><span class="pre">--help</span></code> parameter flag.</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage: infraga plot azimuthal [OPTIONS]
+
+Visualize propagation results for a single azimuthal angle simulation
+
+Plotting Options:
+    inclination             Launch inclination angle
+    celerity                Arrival celerity (horizontal group velocity)
+    reduced-time            Reduced arrival time (relative to --reduced-tm-vel)
+    turning-ht              Turning height
+    trace-velocity          Trace velocity
+    back-azimuth            Back azimuth (not available for 2d geometry)
+    amplitude               Transport equation + absorption losses
+
+Examples:
+    infraga plot azimuthal --atmo-file ToyAtmo.met --y-axis-option celerity
+    infraga plot azimuthal --atmo-file ToyAtmo.met --y-axis-option reduced-time --cmap-option trace-velocity
+
+Options:
+  --atmo-file TEXT           Atmospheric atmo_file file
+  --arrivals TEXT            Arrivals file from the simulation (optional)
+  --ray-paths TEXT           Ray path file from the simulation (optional)
+  --y-axis-option TEXT       Lower axis option (see usage info below)
+  --cmap-option TEXT         Low axis cmap option (see usage info below)
+  --reduced-tm-vel FLOAT     Reference velocity for reduced time option
+  --tr-vel-ref FLOAT         Reference velocity for trace velocity calculation
+  --plot-amplitudes BOOLEAN  Option to plot amplitude along rays
+  --figure-out TEXT          Name of output figure
+  -h, --help                 Show this message and exit.
+</pre></div>
+</div>
+</div></blockquote>
+<p>The y-axis and colormap variables for the lower panel can be specified from the above list of options and an example below shows the celerity and trace velocity characteristics of the arrivals.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/azimuthal2.png"><img alt="_images/azimuthal2.png" class="align-center" src="_images/azimuthal2.png" style="width: 1200px;" /></a>
+</div></blockquote>
+<p>The trace velocity is computed using <span class="math notranslate nohighlight">\(c_\text{tr} = \frac{c_0}{\cos \vartheta_\text{in}}\)</span> where <span class="math notranslate nohighlight">\(c_0\)</span> is the sound speed at the ground surface (defaults to 330 m/s but can be specified through <code class="code docutils literal notranslate"><span class="pre">--tr-vel-ref</span></code>) and <span class="math notranslate nohighlight">\(\vartheta_\text{in}\)</span> is the inclination angle of the incident arrival (spherical geometry and terrain interactions can lead to scenarios where the launch inclination and arrival inclination differ).  The reduced time visualization computes the arrival time relative to that associated with some reference velocity, <span class="math notranslate nohighlight">\(\tau_\text{rdcd} = t - \frac{r}{c_\text{ref}}\)</span> where <span class="math notranslate nohighlight">\(c_\text{ref}\)</span> defaults to 300 m/s but can be specified using <code class="code docutils literal notranslate"><span class="pre">--reduced-tm-vel</span></code> and <span class="math notranslate nohighlight">\(r\)</span> is the range of the arrival.</p>
+<p><strong>Multi-Azimuth Data on a Map</strong></p>
+<p>For multi-azimuth simulations, the predicted intercepts of ray paths with the ground surface can be visualized to show where ground-based observations are likely to detect signals.  For spherical geometry simulations such predictions can be combined with <a class="reference external" href="https://scitools.org.uk/cartopy/docs/latest/">Cartopy</a> to visualize simulation results including country borders, coastlines, etc. using <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">map</span></code>.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage: infraga plot map [OPTIONS]
+
+  Visualize arrivals or ray paths computed using infraga spherical methods on
+  a Cartopy map
+
+  Examples:
+      infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option amplitude --title &#39;Toy Atmo arrival amplitudes&#39; --figure-name ToyAtmo.arrivals.png
+      infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option celerity --title &#39;Toy Atmo arrival celerity&#39; --figure-name ToyAtmo.celerities.png
+      infraga plot map --ray-paths ToyAtmo.raypaths.dat --title &#39;Toy Atmo ray paths&#39; --figure-name ToyAtmo.raypaths.png
+
+Options:
+  --arrivals TEXT               Arrivals file from an infraga-sph simulation
+  --ray-paths TEXT              Ray path file from an infraga-sph simulation
+  --plot-option TEXT            Parameter to visualize for arrivals
+                                (&#39;amplitude&#39;, &#39;turning-height&#39;, &#39;celerity&#39;, or
+                                &#39;none&#39;)
+  --figure-out TEXT             Name of output figure
+  --rcvrs-file TEXT             File containing receiver locations (optional)
+  --title TEXT                  Title for the figure
+  --start-time FLOAT            Propagation time [hours] for plotting sub-set
+                                of data
+  --end-time FLOAT              Propagation time [hours] for plotting sub-set
+                                of data
+  --include-absorption BOOLEAN  Include Sutherland &amp; Bass losses
+  --offline-maps-dir TEXT       Use directory for offline cartopy maps
+  -h, --help                    Show this message and exit.
+</pre></div>
+</div>
+<p>Currently the plotting options include amplitude, turning height, and celerity (also a ‘none’ option that doesn’t include a colormap at all).  A receivers file can be included that includes latitude and longitude information of nearby receivers that will be visualized on the map as well.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/map-amplitude.png"><img alt="_images/map-amplitude.png" class="align-center" src="_images/map-amplitude.png" style="width: 1200px;" /></a>
+</div></blockquote>
+<p>In addition to simulating the visualization of ray path intercepts at the ground surface, visualization of full ray paths can be completed using this mapping function.  Consider running a simulation of propagation at multiple azimuths using a single inclination angle,</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --inclination 10.0 --az-min -180 --az-max 179.0 --az-step 2 --max-rng 500.0
+</pre></div>
+</div>
+</div></blockquote>
+<p>The visualization of these ray paths can be used to visualize the angular extend of the waveguides at this inclination,</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot map --ray-paths ToyAtmo.raypaths.dat
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/map_rays.png"><img alt="_images/map_rays.png" class="align-center" src="_images/map_rays.png" style="width: 1200px;" /></a>
+</div></blockquote>
+<p>Lastly, start and end times of ray paths and arrivals to include in a visualization can be specified.  In the above result, propagation is shown from 0 to a bit more than 0.5 hours after the event.  If only some portion of these times are of interest, one can limit the times in the visualization as,</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot map --ray-paths ToyAtmo.raypaths.dat --start-time 0.3 --end-time 0.5
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/map_rays-w-times.png"><img alt="_images/map_rays-w-times.png" class="align-center" src="_images/map_rays-w-times.png" style="width: 1200px;" /></a>
+</div></blockquote>
+<p>Similar proapgation time limits can be used in visualization of the arrival data.  Such a method was applied to analysis of the <a class="reference external" href="https://www.science.org/doi/10.1126/science.abo7063">Hunga Tonga eruption infrasound propagation</a>.  The below animation frame shows arrival predictions using <code class="code docutils literal notranslate"><span class="pre">--plot-option</span> <span class="pre">None</span></code> to only show arrival locations on the globe some time after the eruption.  The faster stratospheric waves can be seen separating from the slower thermospheric energy for propagation to the west.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/tonga_all-0100.png"><img alt="_images/tonga_all-0100.png" class="align-center" src="_images/tonga_all-0100.png" style="width: 1200px;" /></a>
+</div></blockquote>
+<p><strong>Eigenrays</strong></p>
+<p>Eigenrays are those propagation paths connecting specific source-receiver geometries and provide predictions of when energy will arrive at the receiver and what its characteristics will be.  Results of <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">sph</span> <span class="pre">eigenray</span></code> simulations can be visualized using <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">eigenray</span></code>.  Running this method’s usage info:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage: infraga plot eigenray [OPTIONS]
+
+  Visualize results for eigenray analysis
+
+  Plotting Options:
+      inclination             Launch inclination angle
+      celerity                Arrival celerity (horizontal group velocity)
+      turning-ht              Turning height
+      trace-velocity          Trace velocity
+      back-azimuth            Back azimuth (not available for 2d geometry)
+      amplitude               Transport equation + absorption losses
+
+  Examples:
+      infraga plot eigenray --atmo-file ToyAtmo.met
+      infraga plot eigenray --atmo-file ToyAtmo.met --y-axis-option trace-velocity
+
+Options:
+  --atmo-file TEXT      Atmospheric specification file
+  --arrivals TEXT       Arrivals file from an &#39;eigenray&#39; simulation (optional)
+  --eigenrays TEXT      Eigenrays file from an &#39;eigenray&#39; simulation
+                        (optional)
+  --y-axis-option TEXT  Lower axis option (see usage info below)
+  --tr-vel-ref FLOAT    Reference velocity for trace velocity calculation
+  --figure-out TEXT     Name of output figure
+  -h, --help            Show this message and exit.
+</pre></div>
+</div>
+<p>The resulting visualization shows the ray path geometry as well as the arrival time for each eigenray contribution as well as some characteristic of the arrival.  The default plotting option is the launch inclination, but others can be used as summarized in the usage.  The trace velocity reference can be modified using <code class="code docutils literal notranslate"><span class="pre">--tr-vel-ref</span></code> similar to the azimuthal visualization method above.  There is not colormap option for eigenray visualization because the color of the points indicates which propagation path geometry they correspond to.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/eigenray1.png"><img alt="_images/eigenray1.png" class="align-center" src="_images/eigenray1.png" style="width: 1200px;" /></a>
+</div></blockquote>
+<p><strong>Eigenrays with Waveforms</strong></p>
+<p>The Python wrapper that combines eigenray and weakly non-linear waveform computation produces a set of eigenrays and a waveform predictions for each that can be combined to estimate the arrival signal at the receiver.  Visualization of these results can be done with <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">eig_wvfrm</span></code> and has some features of both the azimuthal and eigenray methods.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage: infraga plot eig_wvfrms [OPTIONS]
+
+  Visualize results for combined eigenray/waveform analysis
+
+  Plotting Options:
+      trace-velocity          Trace velocity
+      back-azimuth            Back azimuth
+      amplitude               Transport equation + absorption losses
+
+  Examples:
+      infraga plot eig_wvfrms --atmo-file ToyAtmo.met
+      infraga plot eig_wvfrms --atmo-file ToyAtmo.met --y-axis-option trace-velocity --cmap-option amplitude
+
+
+Options:
+  --atmo-file TEXT      Atmospheric specification file
+  --eigenrays TEXT      Eigenrays file from an &#39;eig_wvfrm&#39; simulation
+  --wvfrms TEXT         Waveforms file from an eig_wvfrm simulation
+  --tr-vel-ref FLOAT    Reference velocity for trace velocity calculation
+  --y-axis-option TEXT  Arrival parameter to plot on y-axis
+  --cmap-option TEXT    Arrival parameter to plot on colormap
+  --figure-out TEXT     Name of output figure
+  -h, --help            Show this message and exit.
+</pre></div>
+</div>
+<p>The visualization includes three panels: the ray path geometry, the waveform prediction, and the eigenray characteristics.  Unlike the eigenray-only visualization, a colormap is enabled to show multiple characteristics of the arrivals.  The visualization can be run using the generating atmospheric file or directly specifying the eigenray and waveform output files (useful if a custom <code class="code docutils literal notranslate"><span class="pre">--output-id</span></code> is used in analysis).</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/eig_wvfrm1.png"><img alt="_images/eig_wvfrm1.png" class="align-center" src="_images/eig_wvfrm1.png" style="width: 1200px;" /></a>
+</div></blockquote>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="utilities.html" class="btn btn-neutral float-right" title="Utility Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="advanced.html" class="btn btn-neutral float-left" title="Advanced Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, P.Blom
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

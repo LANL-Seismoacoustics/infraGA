@@ -167,6 +167,7 @@ def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
 @click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
 @click.option("--z-grnd", help="Ground elevation (flat ground, km rel. sea level)", default=None)
 @click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
 @click.option("--output-id", help="User specified output file path", default=None)
 @click.option("--calc-amp", help="Option to turn off transport coefficient calculation", default=None, type=bool)
 @click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
@@ -179,7 +180,7 @@ def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclination, azimuth, bounces, src_alt,
-                freq, abs_coeff, z_grnd, write_atmo, output_id, calc_amp, max_alt, max_rng, min_ds, max_ds, max_s,
+                freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, calc_amp, max_alt, max_rng, min_ds, max_ds, max_s,
                 topo_file, topo_bl_wind):
     '''
     Run 2D geometry ray tracing analysis for a point source using the effective sound speed approximation
@@ -221,6 +222,7 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
     write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
     calc_amp = define_param(user_config, 'GENERAL', 'calc_amp', calc_amp)
 
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
     output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
 
     max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
@@ -263,6 +265,7 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
     if calc_amp is not None:
         command = set_param(command, str(calc_amp), "calc_amp")
 
+    command = set_param(command, prof_format, "prof_format")
     command = set_param(command, output_id, "output_id")
 
     command = set_param(command, max_alt, "max_alt")
@@ -312,6 +315,7 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
 @click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
 @click.option("--z-grnd", help="Ground elevation (flat ground, km rel. sea level)", default=None)
 @click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
 @click.option("--output-id", help="User specified output file path", default=None)
 @click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
 @click.option("--max-rng", help="Maximum range for ray calculation", default=None)
@@ -324,7 +328,7 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt, write_ray, wvfrm_file, wvfrm_opt,
                 wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step, wvfrm_yield, wvfrm_ds, wvfrm_len, 
-                freq, abs_coeff, z_grnd, write_atmo, output_id, max_alt, max_rng, min_ds, max_ds, max_s, topo_file, 
+                freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, min_ds, max_ds, max_s, topo_file, 
                 topo_bl_wind):
     '''
     Run weakly non-linear waveform analysis along a 2D ray path using the effective sound speed approximation.
@@ -372,6 +376,7 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
     abs_coeff = define_param(user_config, 'GENERAL', 'abs_coeff', abs_coeff)
 
     write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
     output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
 
     max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
@@ -439,6 +444,7 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
     if write_atmo is not None:
         command = set_param(command, str(write_atmo), "write_atmo")
 
+    command = set_param(command, prof_format, "prof_format")
     command = set_param(command, output_id, "output_id")
 
     command = set_param(command, max_alt, "max_alt")
@@ -489,6 +495,7 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
 @click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
 @click.option("--z-grnd", help="Ground elevation (flat ground, km rel. sea level)", default=None)
 @click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
 @click.option("--output-id", help="User specified output file path", default=None)
 @click.option("--calc-amp", help="Option to turn off transport coefficient calculation", default=None, type=bool)
 @click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
@@ -508,7 +515,7 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
 @click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
 def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, incl_step, inclination, 
                 az_min, az_max, az_step, azimuth, bounces, src_x, src_y, src_alt, write_rays, write_topo, freq, 
-                abs_coeff, z_grnd, write_atmo, output_id, calc_amp, max_alt, max_rng, min_x, max_x, min_y, max_y, 
+                abs_coeff, z_grnd, write_atmo, prof_format, output_id, calc_amp, max_alt, max_rng, min_x, max_x, min_y, max_y, 
                 min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt):
     '''
     Run 3D geometry ray tracing analysis for a point source
@@ -559,6 +566,7 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
     write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
     calc_amp = define_param(user_config, 'GENERAL', 'calc_amp', calc_amp)
 
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
     output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
 
     max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
@@ -629,6 +637,8 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
     if calc_amp is not None:
         command = set_param(command, str(calc_amp), "calc_amp")
 
+    command = set_param(command, prof_format, "prof_format")
+    command = set_param(command, prof_format, "prof_format")
     command = set_param(command, output_id, "output_id")
 
     command = set_param(command, max_alt, "max_alt")
@@ -687,6 +697,7 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
 @click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
 @click.option("--z-grnd", help="Ground elevation (flat ground, km rel. sea level)", default=None)
 @click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
 @click.option("--output-id", help="User specified output file path", default=None)
 @click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
 @click.option("--max-rng", help="Maximum range for ray calculation", default=None)
@@ -705,7 +716,7 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
 @click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
 def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_x, src_y, src_alt, rcvr_x, rcvr_y, verbose, iterations, damping, tolerance, az_dev_lim, 
-                incl_step_min, incl_step_max, freq, abs_coeff, z_grnd, write_atmo, output_id, max_alt, max_rng, 
+                incl_step_min, incl_step_max, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, 
                 min_x, max_x, min_y, max_y, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt):
     '''
     Run 3D Cartesian eigenray analysis to identify propagation paths connecting a specific source-receiver geometry
@@ -756,6 +767,7 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_m
     abs_coeff = define_param(user_config, 'GENERAL', 'abs_coeff', abs_coeff)
 
     write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
     output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
 
     max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
@@ -825,6 +837,7 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_m
     if write_atmo is not None:
         command = set_param(command, str(write_atmo), "write_atmo")
 
+    command = set_param(command, prof_format, "prof_format")
     command = set_param(command, output_id, "output_id")
 
     command = set_param(command, max_alt, "max_alt")
@@ -883,6 +896,7 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_m
 @click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
 @click.option("--z-grnd", help="Ground elevation (flat ground, km rel. sea level)", default=None)
 @click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
 @click.option("--output-id", help="User specified output file path", default=None)
 @click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
 @click.option("--max-rng", help="Maximum range for ray calculation", default=None)
@@ -900,7 +914,7 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_m
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inclination, azimuth, bounces, src_x, src_y, 
                 src_alt, write_ray, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step,
-                wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, output_id, max_alt, max_rng, min_x, max_x, min_y, max_y, 
+                wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, min_x, max_x, min_y, max_y, 
                 min_ds, max_ds, max_s, topo_file, topo_bl_wind):
     '''
     Run weakly non-linear waveform analysis along a 3D Cartesian ray path.
@@ -950,6 +964,7 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
     abs_coeff = define_param(user_config, 'GENERAL', 'abs_coeff', abs_coeff)
 
     write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
     output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
 
     max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
@@ -1031,6 +1046,7 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
     if write_atmo is not None:
         command = set_param(command, str(write_atmo), "write_atmo")
 
+    command = set_param(command, prof_format, "prof_format")
     command = set_param(command, output_id, "output_id")
 
     command = set_param(command, max_alt, "max_alt")
@@ -1100,6 +1116,7 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
 @click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
 @click.option("--z-grnd", help="Ground elevation (km rel. sea level)", default=None)
 @click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
 @click.option("--output-id", help="User specified output file path", default=None)
 @click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
 @click.option("--max-rng", help="Maximum range for ray calculation", default=None)
@@ -1121,7 +1138,7 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
 def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_x, src_y, src_alt, rcvr_x, rcvr_y, verbose, iterations, damping, tolerance, az_dev_lim, incl_step_min, 
                 incl_step_max, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step, wvfrm_yield, 
-                wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, output_id, max_alt, max_rng, min_x, max_x, min_y, 
+                wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, min_x, max_x, min_y, 
                 max_y, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt, keep_eig_arrivals):
     '''
     Run 3d geometry eigenray analysis to identify propagation paths connecting a specific source-receiver geometry and then compute weakly-nonlinear waveform predictions for each eigenray
@@ -1185,6 +1202,7 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, 
     abs_coeff = define_param(user_config, 'GENERAL', 'abs_coeff', abs_coeff)
 
     write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
     output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
 
     max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
@@ -1252,7 +1270,16 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, 
             eig_arrivals_file = os.path.splitext(atmo_file)[0] + ".arrivals.dat"
             profile_id = os.path.splitext(atmo_file)[0]
     
+    eig_results_check = False
     if os.path.isfile(eig_arrivals_file):
+        arrivals_file = open(eig_arrivals_file, 'r')
+        for line in arrivals_file:
+            if "-eig_search" in line:
+                eig_results_check = True
+        if not eig_results_check:
+            print("Arrivals file detected, but not from eigenray analysis.")
+
+    if eig_results_check:
         print("Eigenray results found.  Skipping to waveform calculation...")
     else:
         print("Running eigenray analysis...")
@@ -1569,7 +1596,9 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, 
 @click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
 @click.option("--z-grnd", help="Ground elevation (flat ground, km rel. sea level)", default=None)
 @click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
 @click.option("--output-id", help="User specified output file path", default=None)
+
 @click.option("--calc-amp", help="Option to turn off transport coefficient calculation", default=None, type=bool)
 @click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
 @click.option("--max-rng", help="Maximum range for ray calculation", default=None)
@@ -1588,7 +1617,7 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, 
 @click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
 def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, incl_step, inclination, 
                 az_min, az_max, az_step, azimuth, bounces, src_lat, src_lon, src_alt, write_rays, write_topo, freq, 
-                abs_coeff, z_grnd, write_atmo, output_id, calc_amp, max_alt, max_rng, max_lat, min_lat, max_lon, min_lon,
+                abs_coeff, z_grnd, write_atmo, prof_format, output_id, calc_amp, max_alt, max_rng, max_lat, min_lat, max_lon, min_lon,
                 min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt):
     '''
     Run spherical atmosphere geometry ray tracing analysis for a point source
@@ -1639,6 +1668,7 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
     write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
     calc_amp = define_param(user_config, 'GENERAL', 'calc_amp', calc_amp)
 
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
     output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
 
     max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
@@ -1709,6 +1739,7 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
     if calc_amp is not None:
         command = set_param(command, str(calc_amp), "calc_amp")
 
+    command = set_param(command, prof_format, "prof_format")
     command = set_param(command, output_id, "output_id")
 
     command = set_param(command, max_alt, "max_alt")
@@ -1769,7 +1800,9 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
 @click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
 @click.option("--z-grnd", help="Ground elevation (flat ground, km rel. sea level)", default=None)
 @click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
 @click.option("--output-id", help="User specified output file path", default=None)
+
 @click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
 @click.option("--max-rng", help="Maximum range for ray calculation", default=None)
 
@@ -1787,7 +1820,7 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
 @click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
 def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_lat, src_lon, src_alt, rcvr_lat, rcvr_lon, verbose, iterations, damping, tolerance, az_dev_lim, 
-                incl_step_min, incl_step_max, freq, abs_coeff, z_grnd, write_atmo, output_id, max_alt, max_rng, 
+                incl_step_min, incl_step_max, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, 
                 min_lat, max_lat, min_lon, max_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt):
     '''
     Run spherical atmospheric layer eigenray analysis to identify propagation paths connecting a specific source-receiver geometry
@@ -1839,6 +1872,7 @@ def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
     abs_coeff = define_param(user_config, 'GENERAL', 'abs_coeff', abs_coeff)
 
     write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
     output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
 
     max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
@@ -1908,6 +1942,7 @@ def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
     if write_atmo is not None:
         command = set_param(command, str(write_atmo), "write_atmo")
 
+    command = set_param(command, prof_format, "prof_format")
     command = set_param(command, output_id, "output_id")
 
     command = set_param(command, max_alt, "max_alt")
@@ -1968,7 +2003,9 @@ def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
 @click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
 @click.option("--z-grnd", help="Ground elevation (flat ground, km rel. sea level)", default=None)
 @click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
 @click.option("--output-id", help="User specified output file path", default=None)
+
 @click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
 @click.option("--max-rng", help="Maximum range for ray calculation", default=None)
 
@@ -1985,7 +2022,7 @@ def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inclination, azimuth, bounces, src_lat, src_lon, 
                 src_alt, write_ray, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step,
-                wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, output_id, max_alt, max_rng, max_lat, min_lat, max_lon, 
+                wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, max_lat, min_lat, max_lon, 
                 min_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind):
     '''
         Run weakly non-linear waveform analysis along a spherical atmospheric layer ray path.
@@ -2036,6 +2073,7 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
     abs_coeff = define_param(user_config, 'GENERAL', 'abs_coeff', abs_coeff)
 
     write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
     output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
 
     max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
@@ -2117,6 +2155,7 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
     if write_atmo is not None:
         command = set_param(command, str(write_atmo), "write_atmo")
 
+    command = set_param(command, prof_format, "prof_format")
     command = set_param(command, output_id, "output_id")
 
     command = set_param(command, max_alt, "max_alt")
@@ -2187,7 +2226,9 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
 @click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
 @click.option("--z-grnd", help="Ground elevation (km rel. sea level)", default=None)
 @click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
 @click.option("--output-id", help="User specified output file path", default=None)
+
 @click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
 @click.option("--max-rng", help="Maximum range for ray calculation", default=None)
 
@@ -2208,7 +2249,7 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
 def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_lat, src_lon, src_alt, rcvr_lat, rcvr_lon, verbose, iterations, damping, tolerance, az_dev_lim, 
                 incl_step_min, incl_step_max, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step,
-                wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, output_id, max_alt, max_rng, min_lat, 
+                wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, min_lat, 
                 max_lat, min_lon, max_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt, keep_eig_results):
     '''
     Run spherical atmospheric layer eigenray analysis to identify propagation paths connecting a specific source-receiver geometr yand then compute weakly-nonlinear waveform predictions for each eigenray
@@ -2272,6 +2313,7 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
     abs_coeff = define_param(user_config, 'GENERAL', 'abs_coeff', abs_coeff)
 
     write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
     output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
 
     max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
@@ -2339,7 +2381,16 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
             eig_arrivals_file = os.path.splitext(atmo_file)[0] + ".arrivals.dat"
             profile_id = os.path.splitext(atmo_file)[0]
     
+    eig_results_check = False
     if os.path.isfile(eig_arrivals_file):
+        arrivals_file = open(eig_arrivals_file, 'r')
+        for line in arrivals_file:
+            if "-eig_search" in line:
+                eig_results_check = True
+        if not eig_results_check:
+            print("Arrivals file detected, but not from eigenray analysis.")
+
+    if eig_results_check:
         print("Eigenray results found.  Skipping to waveform calculation...")
     else:
         print("Running eigenray analysis...")

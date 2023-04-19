@@ -4,27 +4,25 @@
 Installation
 =====================================
 
--------------------------------------
+-----------------
 Operating Systems
--------------------------------------
+-----------------
 
 InfraGA/GeoAc can currently be installed on machines running newer versions of Linux or Apple OSX.  Installation on Windows system requires C/C++ compilation as well as an Anaconda Python installation.  
 
--------------------------------------
-FFTW
--------------------------------------
+------------
+Dependencies
+------------
+
+**FFTW**
 
 The weakly non-linear waveform calculations in infraGA/GeoAc leverage Fourier transform methods in the FFTW library.  Installation can be done via `the FFTW download page <http://fftw.org/download.html>`_ or by using an OS package manager (e.g., '*apt-get install -y fftw-dev*' or similar on Linux systems or '*brew install fftw*' on OS X using homebrew).
 
--------------------------------------
-OpenMPI
--------------------------------------
+**OpenMPI**
 
 Parallelized calculations of ray paths is enabled in infraGA/GeoAc via a separate OpenMPI implementation.  These methods are optional, but can greatly reduce computation times for larger simulations.  Similar to FFTW above, installation can be completed via `the OpenMPI download page <http://open-mpi.org/software/ompi/v4.1>`_ or using an OS package manager (e.g., '*apt-get install -y openmpi-bin*' or similar on Linux systems or '*brew install open-mpi*' on OS X).
 
--------------------------------------
-Anaconda
--------------------------------------
+**Anaconda**
 
 infraGA/GeoAc methods can be called directly from the command line without the Python wrappers; though, most users will find the wrappers, utilities, and visualization tools in the *infraga* Python interface to be easier to use.  Installation of these Python tools currently depends on Anaconda to resolve and download the correct python libraries.  Anaconda cannot currently be installed via package managers and must be `downloaded and installed <https://www.anaconda.com/distribution/>`_ manually.
 
@@ -70,9 +68,7 @@ To deactivate an active environment, use
 
 Note: in some cases Linux systems require activation via :code:`source activate infraga_env`, so if you're getting an Anaconda error about activating the environment try this alternate method.
 
--------------------------------------
-Testing
--------------------------------------
+**Testing**
 
 Once the installation is complete, you can test that the InfraGA/GeoAc methods are set up and accessible by first activating the environment with:
 
@@ -104,11 +100,8 @@ The usage information should be displayed:
       sph    Run spherical layer (moving medium) ray tracing
       utils  Various utility functions
 
-Each of the individual methods have usage information (e.g., :code:`infraga 3d --help`) that will be discussed in the :ref:`quickstart`
+Each of the individual methods have usage information (e.g., :code:`infraga 3d --help`) that will be discussed in the :ref:`quickstart`.
 
-
--------------------------------------
-Updates
--------------------------------------
+**Updates**
 
 It's highly recommended that users download and keep up with updates of the infraGA/GeoAc methods through the `LANL Seismoacoustics github page <https://github.com/LANL-Seismoacoustics/infraGA>`_.  InfraGA/GeoAc is a research code and bug fixes, new features, and improved utility and plotting methods are frequently pushed to the git repository.  It's possible to download a static copy of the software, but updates can more easily be applied through a git instance where the current version can be readily accessed using a :code:`git pull` command.  The dependency installs above (e.g., FFTW, OpenMPI) don't need to be re-installed and the '-e' option used during the infraga environment build keeps any local updates to the Python methods within the environment; therefore, when updates are applied a simple :code:`make clean`, :code:`make`, :code:`make accel` is all that's needed to update the binaries for infraGA/GeoAc.

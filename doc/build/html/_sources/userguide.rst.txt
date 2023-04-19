@@ -8,9 +8,8 @@ infraGA/GeoAc is a set of tools for modeling the propagation of **infra**\ sound
 
 InfraGA/GeoAc utilizes a set of auxiliary parameters to solve the Transport equation as discussed in Blom & Waxler (2012) that enables calculation of geometric spreading losses and leading order amplitude estimation.  These auxiliary parameters are further leveraged in the eigenray analysis as they provide an efficient means of computing the Jacobian for the ray path arrival location (see Blom & Waxler, 2017).  Weakly non-linear waveform evolution is computed using a Burgers' equation method as detailed in Lonzaga et al. (2015) and Blom & Waxler (2021).  Recent R&D includes the use of non-flat ground in modeling propagation (see Blom 2020) and modeling signals produced by the Mach cone of supersonic sources (in development).
 
-****************************
-License 
-****************************
+
+**License**
 
 Copyright (c) 2014, Triad National Security, LLC
 

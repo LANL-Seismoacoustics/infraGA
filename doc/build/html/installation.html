@@ -39,7 +39,7 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Quickstart" href="quickstart.html" />
+    <link rel="next" title="Atmospheric Data" href="atmospheres.html" />
     <link rel="prev" title="Authorship" href="authorship.html" /> 
 </head>
 
@@ -90,9 +90,16 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="userguide.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authorship.html">Authorship</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#operating-systems">Operating Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#infraga-geoac-installation">infraGA/GeoAc Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="atmospheres.html">Atmospheric Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 <li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">Utility Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="physics.html">Propagation Physics</a></li>
@@ -166,16 +173,13 @@
 <h2>Operating Systems<a class="headerlink" href="#operating-systems" title="Permalink to this heading">¶</a></h2>
 <p>InfraGA/GeoAc can currently be installed on machines running newer versions of Linux or Apple OSX.  Installation on Windows system requires C/C++ compilation as well as an Anaconda Python installation.</p>
 </section>
-<section id="fftw">
-<h2>FFTW<a class="headerlink" href="#fftw" title="Permalink to this heading">¶</a></h2>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h2>
+<p><strong>FFTW</strong></p>
 <p>The weakly non-linear waveform calculations in infraGA/GeoAc leverage Fourier transform methods in the FFTW library.  Installation can be done via <a class="reference external" href="http://fftw.org/download.html">the FFTW download page</a> or by using an OS package manager (e.g., ‘<em>apt-get install -y fftw-dev</em>’ or similar on Linux systems or ‘<em>brew install fftw</em>’ on OS X using homebrew).</p>
-</section>
-<section id="openmpi">
-<h2>OpenMPI<a class="headerlink" href="#openmpi" title="Permalink to this heading">¶</a></h2>
+<p><strong>OpenMPI</strong></p>
 <p>Parallelized calculations of ray paths is enabled in infraGA/GeoAc via a separate OpenMPI implementation.  These methods are optional, but can greatly reduce computation times for larger simulations.  Similar to FFTW above, installation can be completed via <a class="reference external" href="http://open-mpi.org/software/ompi/v4.1">the OpenMPI download page</a> or using an OS package manager (e.g., ‘<em>apt-get install -y openmpi-bin</em>’ or similar on Linux systems or ‘<em>brew install open-mpi</em>’ on OS X).</p>
-</section>
-<section id="anaconda">
-<h2>Anaconda<a class="headerlink" href="#anaconda" title="Permalink to this heading">¶</a></h2>
+<p><strong>Anaconda</strong></p>
 <p>infraGA/GeoAc methods can be called directly from the command line without the Python wrappers; though, most users will find the wrappers, utilities, and visualization tools in the <em>infraga</em> Python interface to be easier to use.  Installation of these Python tools currently depends on Anaconda to resolve and download the correct python libraries.  Anaconda cannot currently be installed via package managers and must be <a class="reference external" href="https://www.anaconda.com/distribution/">downloaded and installed</a> manually.</p>
 </section>
 <section id="infraga-geoac-installation">
@@ -204,9 +208,7 @@
 </pre></div>
 </div>
 <p>Note: in some cases Linux systems require activation via <code class="code docutils literal notranslate"><span class="pre">source</span> <span class="pre">activate</span> <span class="pre">infraga_env</span></code>, so if you’re getting an Anaconda error about activating the environment try this alternate method.</p>
-</section>
-<section id="testing">
-<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h2>
+<p><strong>Testing</strong></p>
 <p>Once the installation is complete, you can test that the InfraGA/GeoAc methods are set up and accessible by first activating the environment with:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda activate infraga_env
 </pre></div>
@@ -231,10 +233,8 @@ Commands:
   utils  Various utility functions
 </pre></div>
 </div>
-<p>Each of the individual methods have usage information (e.g., <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">3d</span> <span class="pre">--help</span></code>) that will be discussed in the <a class="reference internal" href="quickstart.html#quickstart"><span class="std std-ref">Quickstart</span></a></p>
-</section>
-<section id="updates">
-<h2>Updates<a class="headerlink" href="#updates" title="Permalink to this heading">¶</a></h2>
+<p>Each of the individual methods have usage information (e.g., <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">3d</span> <span class="pre">--help</span></code>) that will be discussed in the <a class="reference internal" href="quickstart.html#quickstart"><span class="std std-ref">Quickstart</span></a>.</p>
+<p><strong>Updates</strong></p>
 <p>It’s highly recommended that users download and keep up with updates of the infraGA/GeoAc methods through the <a class="reference external" href="https://github.com/LANL-Seismoacoustics/infraGA">LANL Seismoacoustics github page</a>.  InfraGA/GeoAc is a research code and bug fixes, new features, and improved utility and plotting methods are frequently pushed to the git repository.  It’s possible to download a static copy of the software, but updates can more easily be applied through a git instance where the current version can be readily accessed using a <code class="code docutils literal notranslate"><span class="pre">git</span> <span class="pre">pull</span></code> command.  The dependency installs above (e.g., FFTW, OpenMPI) don’t need to be re-installed and the ‘-e’ option used during the infraga environment build keeps any local updates to the Python methods within the environment; therefore, when updates are applied a simple <code class="code docutils literal notranslate"><span class="pre">make</span> <span class="pre">clean</span></code>, <code class="code docutils literal notranslate"><span class="pre">make</span></code>, <code class="code docutils literal notranslate"><span class="pre">make</span> <span class="pre">accel</span></code> is all that’s needed to update the binaries for infraGA/GeoAc.</p>
 </section>
 </section>
@@ -247,7 +247,7 @@ Commands:
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="quickstart.html" class="btn btn-neutral float-right" title="Quickstart" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="atmospheres.html" class="btn btn-neutral float-right" title="Atmospheric Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="authorship.html" class="btn btn-neutral float-left" title="Authorship" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

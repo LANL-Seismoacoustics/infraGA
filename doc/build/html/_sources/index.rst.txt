@@ -16,14 +16,15 @@ _____________________________________
     :members:
 
 .. toctree::
-    :maxdepth: 5
-    :titlesonly:
+    :maxdepth: 2
 
     userguide
     authorship
     installation
+    atmospheres
     quickstart
     advanced
+    plotting
     utilities
     parameters
     physics

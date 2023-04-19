@@ -130,8 +130,9 @@ def plot_atmo(atmo_file, max_alt, format):
 @click.option("--reduced-tm-vel", help="Reference velocity for reduced time option", default=300.0)
 @click.option("--tr-vel-ref", help="Reference velocity for trace velocity calculation", default=330.0)
 @click.option("--plot-amplitudes", help="Option to plot amplitude along rays", default=True)
+@click.option("--terrain-profile", help="Terrain file output from simulation", default=None)
 @click.option("--figure-out", help="Name of output figure", default=None)
-def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, reduced_tm_vel, tr_vel_ref, plot_amplitudes, figure_out):
+def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, reduced_tm_vel, tr_vel_ref, plot_amplitudes, terrain_profile, figure_out):
     '''
     Visualize propagation results for a single azimuthal angle simulation
 
@@ -206,6 +207,8 @@ def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, r
     atmo_data = np.loadtxt(atmo_file)
     arr_data = np.loadtxt(arrivals_file)
     ray_data = np.loadtxt(raypaths_file)
+    if terrain_profile is not None:
+        terrain_data = np.loadtxt(terrain_profile)
 
     if geom == '2d':
         ray_rngs = ray_data[:, 0]
@@ -224,11 +227,15 @@ def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, r
 
     elif geom == '3d' or geom == 'sph':
         if geom == '3d':
-            ray_rngs = np.sqrt(ray_data[:, 0]**2 + ray_data[:, 1]**2)
-            arr_rngs = np.sqrt(arr_data[:, 3]**2 + arr_data[:, 4]**2)
+            ray_rngs = np.sqrt((src_loc[0] - ray_data[:, 0])**2 + (src_loc[1] - ray_data[:, 1])**2)
+            arr_rngs = np.sqrt((src_loc[0] - arr_data[:, 3])**2 + (src_loc[1] - arr_data[:, 4])**2)
+            if terrain_profile is not None:
+                topo_rngs = np.sqrt((src_loc[0] - terrain_data[:, 0])**2 + (src_loc[1] - terrain_data[:, 1])**2)
         else:
             ray_rngs = sph_proj.inv([src_loc[1]] * len(ray_data), [src_loc[0]] * len(ray_data), ray_data[:, 1], ray_data[:, 0])[2] * 1.0e-3
             arr_rngs = sph_proj.inv([src_loc[1]] * len(arr_data), [src_loc[0]] * len(arr_data), arr_data[:, 4], arr_data[:, 3])[2] * 1.0e-3
+            if terrain_profile is not None:
+                topo_rngs = sph_proj.inv([src_loc[1]] * len(terrain_data), [src_loc[0]] * len(terrain_data), terrain_data[:, 1], terrain_data[:, 0])[2] * 1.0e-3
 
         ray_alts = ray_data[:, 2]
         ray_amps = ray_data[:, 3] + ray_data[:, 4]
@@ -274,6 +281,9 @@ def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, r
         ax1.plot(ray_rngs[:indices[0]], ray_alts[:indices[0]], '-k', linewidth=0.75)
         for n, j in enumerate(indices):
             ax1.plot(ray_rngs[indices[n - 1]:j], ray_alts[indices[n - 1]:j], '-k', linewidth=0.75)
+
+    if terrain_profile is not None:
+        ax1.fill_between(topo_rngs, terrain_data[:, 2], 0.0, color='k', alpha=1.0)
 
     ax2 = fig.add_subplot(spec[1, 1:], sharex=ax1)
     ax2.set_xlabel("Range [km]")
@@ -358,7 +368,7 @@ def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, r
     plt.show()
 
 
-@click.command("eigenrays", short_help="Visualize eigenray results and predicted arrival information")
+@click.command("eigenray", short_help="Visualize eigenray results and predicted arrival information")
 @click.option("--atmo-file", help="Atmospheric specification file")
 @click.option("--arrivals", help="Arrivals file from an 'eigenray' simulation (optional)", default=None)
 @click.option("--eigenrays", help="Eigenrays file from an 'eigenray' simulation (optional)", default=None)
@@ -380,8 +390,8 @@ def plot_eigenrays(atmo_file, arrivals, eigenrays, y_axis_option, tr_vel_ref, fi
 
     \b
     Examples:
-    \t infraga plot eigenrays --atmo-file ToyAtmo.met
-    \t infraga plot eigenrays --atmo-file ToyAtmo.met --y-axis-option trace-velocity  
+    \t infraga plot eigenray --atmo-file ToyAtmo.met
+    \t infraga plot eigenray --atmo-file ToyAtmo.met --y-axis-option trace-velocity  
     
     '''
 
@@ -532,13 +542,14 @@ def plot_eigenrays(atmo_file, arrivals, eigenrays, y_axis_option, tr_vel_ref, fi
 
 
 @click.command("eig_wvfrms", short_help="Visualize eigenrays and predicted waveform")
+@click.option("--atmo-file", help="Atmospheric specification file", default=None)
 @click.option("--eigenrays", help="Eigenrays file from an 'eig_wvfrm' simulation", default=None)
 @click.option("--wvfrms", help="Waveforms file from an eig_wvfrm simulation", default=None)
 @click.option("--tr-vel-ref", help="Reference velocity for trace velocity calculation", default=330.0)
 @click.option("--y-axis-option", help="Arrival parameter to plot on y-axis", default="back-azimuth")
 @click.option("--cmap-option", help="Arrival parameter to plot on colormap", default="trace-velocity")
 @click.option("--figure-out", help="Name of output figure", default=None)
-def plot_eig_wvfrm(eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, figure_out):
+def plot_eig_wvfrm(atmo_file, eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, figure_out):
     '''
     Visualize results for combined eigenray/waveform analysis
 
@@ -550,11 +561,26 @@ def plot_eig_wvfrm(eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, fi
 
     \b
     Examples:
-    \t infraga plot azimuthal --atmo-file ToyAtmo.met --y-axis-option celerity
-    \t infraga plot azimuthal --atmo-file ToyAtmo.met --y-axis-option trace-velocity --cmap-option amplitude
+    \t infraga plot eig_wvfrms --eigenrays ToyAtmo.eigenrays.dat --wvfrms ToyAtmo.wvfrms.dat
         
 
     '''
+    # Check that needed files are defined
+    if atmo_file is not None:
+        eigenrays = os.path.splitext(atmo_file)[0] + ".eigenrays.dat"
+        wvfrms = os.path.splitext(atmo_file)[0] + ".wvfrms.dat"
+    elif eigenrays is None or wvfrms is None:
+        print('\t' + "Visualization requires either atmspheric specification file or eigenray and waveform output")
+        return 0
+    
+    if not os.path.isfile(eigenrays):
+        print('\t' + "Eigenray results file (" + eigenrays + ") not found.")
+        return 0
+    
+    if not os.path.isfile(wvfrms):
+        print('\t' + "Waveform results file (" + wvfrms + ") not found.")
+        return 0
+
     # Extract eigenray arrival info:
     print("Extracting eigenray information from results...")
     file_in = open(wvfrms, 'r')
@@ -749,10 +775,10 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
             time_mask = np.logical_and(time_mask, start_time < arrivals[:, 5] / 3600.0)
         if end_time is not None:
             time_mask = np.logical_and(time_mask, arrivals[:, 5] / 3600.0 < end_time)
+        combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
 
         if plot_option == "turning-height":
             print('\t' + "Generating map with turning height info....")
-            combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
             ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:,7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 12.0, arrivals[:, 7] < 80.0))
@@ -768,7 +794,6 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
             cbar.set_label('Turning Height [km]')
         elif plot_option == "amplitude":
             print('\t' + "Generating map with amplitude info....")
-            combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
             if include_absorption:
                 tloss = arrivals[:, 10] + arrivals[:, 11]
             else:
@@ -789,7 +814,6 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
             cbar.set_label('Amplitude (power rel. 1 km) [dB]')
         elif plot_option == "celerity":
             print('\t' + "Generating map with celerity info....")
-            combo_mask = np.logical_and(time_mask, arrivals[:, 7] > 80.0)
             ax.scatter(arrivals[:,4][combo_mask], arrivals[:,3][combo_mask], c=arrivals[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals[:,7] > 12.0, arrivals[:, 7] < 80.0))
@@ -809,7 +833,7 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
 
         ax.plot([src_loc[1]], [src_loc[0]], 'r*', markersize=5.0, transform=map_proj)
     else:
-        time_mask = np.ones_like(ray_paths[:, 0])
+        time_mask = np.ones_like(ray_paths[:, 0], dtype=bool)
         if start_time is not None:
             time_mask = np.logical_and(time_mask, start_time < ray_paths[:, 5] / 3600.0)
         if end_time is not None:

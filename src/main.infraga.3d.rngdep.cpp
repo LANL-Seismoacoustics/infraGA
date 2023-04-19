@@ -422,7 +422,8 @@ void run_prop(char* inputs[], int count){
             z_max = 0.0;
             
             if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo){
-                topo_out.open("topography.dat");
+                sprintf(output_buffer, "%s.terrain.dat", output_id);
+                topo_out.open(output_buffer);
             }
 
             for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){

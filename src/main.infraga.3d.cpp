@@ -423,7 +423,8 @@ void run_prop(char* inputs[], int count){
             z_max = topo::z0;
 
             if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo){
-                topo_out.open("topography.dat");
+                sprintf(output_buffer, "%s.terrain.dat", output_id);
+                topo_out.open(output_buffer);
             }
 
     		cout << "Calculating ray path: " << theta << " degrees inclination, " << phi << " degrees azimuth." << '\n';

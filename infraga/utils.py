@@ -380,10 +380,9 @@ def extract_grid(ecmwf_file, lat_llc, lon_llc, lat_urc, lon_urc, output_id, grid
 @click.option("--output-path", help="Output file", prompt="Specify output path: ")
 def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, output_path):
     '''
-    Construct the numbered specifications and grid files needed to run -rngdep methods.
-    Assumes file format from https://g2s.ncpa.olemiss.edu/ (e.g., g2stxt_2022011506_-3.0000_-54.0000.dat)
+    Extract G2S-format atmospheric file(s) from an ECMWF netCDF format file.
 
-    Inclusion of source info (location and time), an estimated celerity, and profiles at multiple reference times enables construction of a temporally varying grid where a node at a distance, r, from the source has an estimated time delay of, dt = r / cel, and uses the appropriate atmospheric information
+    Note: method needs evaluation with current ECMWF ERA5 sample files (might be out of date)
 
     \b
     Examples:
@@ -392,11 +391,6 @@ def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, outp
 
     '''
 
-    """
-    
-
-    
-    """
 
     if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
         if option == "single":
@@ -739,8 +733,8 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
 @click.option("--lon1", help="Longitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=-110.0)
 @click.option("--lat2", help="Latitude of second point (end point for 'pnt2pnt', upper-right corner for grids)", default=30.0)
 @click.option("--lon2", help="Longitude of second point (end point for 'pnt2pnt', upper-right corner for grids)", default=-114.0)
-@click.option("--ref-lat", help="Reference latitude of second point (0.0 for xy-grid option)", default=30.0)
-@click.option("--ref-lon", help="Reference longitude of second point (0.0 for xy-grid option)", default=-110.0)
+@click.option("--ref-lat", help="Reference latitude of second point (0.0 for xy-grid option)", default=None)
+@click.option("--ref-lon", help="Reference longitude of second point (0.0 for xy-grid option)", default=None)
 @click.option("--azimuth", help="Azimuth of great circle path for line option", default=-90.0)
 @click.option("--range", help="Great circle distance for line option", default=1000.0)
 @click.option("--output-file", help="Output file", prompt="Specify output file: ")
@@ -762,6 +756,12 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
 
     if offline_maps_dir is not None:
         use_offline_maps(offline_maps_dir)
+
+    if ref_lat is None:
+        ref_lat = lat1
+
+    if ref_lon is None:
+        ref_lon = lon1
 
     if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
         if geom == "line":
