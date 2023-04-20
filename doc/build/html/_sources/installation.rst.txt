@@ -44,7 +44,7 @@ and the C/C++ single-CPU version of the software will compile.  Similarly, the a
 
     make accel
 
-At this point if you look in the :code:`infraga/bin/` directory there should a number of binary files (e.g., :code:`infraga-2d`, :code:`infraga-3d`, :code:`infraga-accel-3d`,...)  These are the C/C++ and OpenMPI binaries to run the various simulations and can be called directly if you're familiar with the pre-Anaconda usage of infraGA/GeoAc.
+At this point if you look in the 'infraga/bin/' directory there should a number of binary files (e.g., :code:`infraga-2d`, :code:`infraga-3d`, :code:`infraga-accel-3d`,...)  These are the C/C++ and OpenMPI binaries to run the various simulations and can be called directly if you're familiar with the pre-Anaconda usage of infraGA/GeoAc.
 
 Once the binaries have been compiled, the *infraga* Anaconda environment can be built by running:
 
@@ -70,7 +70,7 @@ Note: in some cases Linux systems require activation via :code:`source activate 
 
 **Testing**
 
-Once the installation is complete, you can test that the InfraGA/GeoAc methods are set up and accessible by first activating the environment with:
+Once the installation is complete, you can test that the InfraGA/GeoAc methods are set up and accessible by first activating the *infraga* environment with:
 
 .. code-block:: bash
 

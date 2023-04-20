@@ -98,7 +98,7 @@ In this function call a latitude/longitude grid is defined with a lower-left cor
       :align: center
 
 
-The file created by the utility function contains 3 columns describing latitude, longitude, and ground surface elevation.  The ordering of grid points is such that longitude values are cycled through at each latitude point:
+The file created by the utility function contains 3 columns describing latitude, longitude, and ground surface elevation.  The ordering of grid points is such that longitude values are cycled through at each latitude point (note that this is the same convention used in specifying files for the range-dependent grid above).
 
   .. code-block:: none
 
@@ -155,7 +155,9 @@ The terrain file can used in a simulation by specifying it as the topography fil
     Calculating ray path: 1.5441 degrees inclination, -90 degrees azimuth.
     ...
 
-The output is similar to the flat ground simulation; though, the terrain file ingestion is noted and the maximum terrain height and an approximated boundary layer height (2 km above the peak of terrain) is printed to screen for reference.  The ground intercept condition is more numerically intensive when considering terrain because instead of comparing the ray altitude to a constant value the interpolated ground surface must be evaluated at the latitude and longitude of the ray path.  The reason that a 2 km layer is chosen is that the envelope which smoothly forces the wind fields to zero at the ground surface extends some distance above the ground and that envelope also requires evaluation of the terrain interpolation.  This results in longer computation times for tropospheric propagation paths for which the ray path is in this near ground region for a large portion of the simulation, but accelerates middle- and upper atmospheric portions of the path when terrain isn't directly impacting the propagation path.
+The output is similar to the flat ground simulation; though, the terrain file ingestion is noted and the maximum terrain height and an approximated boundary layer height (2 km above the peak of terrain) is printed to screen for reference.  
+
+The ground intercept condition is more numerically intensive when considering terrain because instead of comparing the ray altitude to a constant value the interpolated ground surface must be evaluated at the latitude and longitude of the ray path.  The reason that a 2 km layer is chosen is that the envelope which smoothly forces the wind fields to zero at the ground surface extends some distance above the ground and that envelope also requires evaluation of the terrain interpolation.  This results in longer computation times for tropospheric propagation paths for which the ray path is in this near ground region for a large portion of the simulation, but avoid increasing the computation time for middle- and upper atmospheric portions of the path when terrain isn't directly impacting the propagation path.
 
 Visualization of the propagation results can be done using the same azimuthal function from the :ref:`quickstart`, :code:`infraga plot azimuthal --atmo-file ToyAtmo.met`, and the interaction of terrain is evident in the scatter of reflected arrivals near 350 km downrange that becomes even more severe beyond 500 km.
 
@@ -185,7 +187,9 @@ This simulation produces the familiar raypaths and arrivals files as well as a f
       :width: 1200px
       :align: center
 
-This visualization is notably more clear in showing what the terrain profile looks like along the path.  It should be noted that in some cases cross winds and terrain interactions can lead to ray paths that deviate significantly from the initial azimuthal plane.  In such a case, the terrain profile projected below the first ray path may differ significantly from that below other ray paths and ray paths may appear to reflect from regions above or below the projected terrain profile.  In such a case, a secondary simulation using a higher inclination initial ray path might be useful to investigate the terrain profile below others in the simulation (be sure to save the arrivals and ray path output before doing this as they will be overwritten in the repeated simulations).
+This visualization is notably more clear in showing what the terrain profile looks like along the path.  
+
+It should be noted that in some cases cross winds and terrain interactions can lead to ray paths that deviate significantly from the initial azimuthal plane.  In such a case, the terrain profile projected below the first ray path may differ significantly from that below other ray paths and those ray paths may appear to reflect from regions above or below the projected terrain profile.  In such a case, a secondary simulation using a higher inclination initial ray path might be useful to investigate the terrain profile below others in the simulation (be sure to save the arrivals and ray path output before doing this as they will be overwritten in the repeated simulations).
 
 *********************
 Advanced Option Usage
@@ -193,7 +197,7 @@ Advanced Option Usage
 
 **Eigenray Analysis**
 
-In some scenarios, those specific propagation paths connecting known source and receiver locations are of interest.  Such propagation paths are termed 'eigenrays' and can be difficult to compute when considering propagation paths in 3 dimensions including cross winds.  The auxiliary parameters that are utilized by infraGA/GeoAc for computation of the geometric spreading losses can also be leveraged for computation of launch angle changes that shift an arrival closer to a desired location.  A Levenberg-Marquardt (LM) algorithm has been implemented that uses the auxiliary parameters for such a search (more detail in the :ref:`physics` discussion).  The eigenray methods in infraGA/GeoAc are accessed using the :code:`eigenray` flag instead of :code:`prop` and have a number of common parameters.  In addition to specifying a source location, the receiver location is also needed.  The following command runs an eigenray search for a source at (30, -100) to a receiver to the west-south-west at (30.25, -104.25).  
+In some scenarios, those specific propagation paths connecting known source and receiver locations are of interest.  Such propagation paths are termed 'eigenrays' and can be difficult to compute when considering propagation paths in 3 dimensions including cross winds.  The auxiliary parameters that are utilized by infraGA/GeoAc for computation of the geometric spreading losses can also be leveraged for computation of launch angle changes that shift an arrival closer to a desired location.  A Levenberg-Marquardt (LM) algorithm has been implemented that uses the auxiliary parameters for such a search (more detail in the :ref:`physics` discussion and in Blom & Waxler (2017)).  The eigenray methods in infraGA/GeoAc are accessed using the :code:`eigenray` flag instead of :code:`prop` and have a number of common parameters.  In addition to specifying a source location, the receiver location is also needed.  The following command runs an eigenray search for a source at (30, -100) to a receiver to the west-south-west at (30.25, -104.25).  
 
   .. code::  none
 
@@ -265,9 +269,11 @@ In some scenarios, those specific propagation paths connecting known source and 
 
     Identified 3 eigenray(s).
 
-As with the :code:`prop` simulations, atmospheric data is ingested and interpolated to define the propagation medium and the parameter summary provides an overview of the run settings.  The methodology of infraGA/GeoAc's eigenray search is separated into two stages: In the initial stage, rays are launched in the direction from the source to the receiver at increasing inclination angles.  Once a pair of rays are identified which pass over the receiver range, the LM algorithm is used to search for the exact eigenray.  The search is the resumed from the launch angle that triggered the LM search and these steps are repeated until the maximum inclination angle is reached.  The search then begins with an increased number of ground reflections and continues until the maximum number of such reflections is reached.  Upon completion, the various eigenray paths are written into unique files (e.g., 'ToyAtmo.eigenray-0.dat') and all eigenray arrivals are written into an arrivals file.
+As with the :code:`prop` simulations, atmospheric data is ingested and interpolated to define the propagation medium and the parameter summary provides an overview of the run settings.  
 
-In the above simulation, the :code:`--verbose` parameter is set to True and additional information is printed to screen as the eigenray search stages are completed.  If this parameter is set to :code:`false`, then a much less information is provided as the simulation is run:
+The methodology of infraGA/GeoAc's eigenray search is separated into two stages: In the initial stage, rays are launched in the direction from the source to the receiver at increasing inclination angles.  Once a pair of rays are identified which pass over the receiver range, the LM algorithm is used to search for the exact eigenray.  The search is the resumed from the launch angle that triggered the LM search and these steps are repeated until the maximum inclination angle is reached.  The search then begins with an increased number of ground reflections and continues until the maximum number of such reflections is reached.  Upon completion, the various eigenray paths are written into unique files (e.g., 'ToyAtmo.eigenray-0.dat') and all eigenray arrivals are written into an arrivals file.
+
+In the above simulation, the :code:`--verbose` parameter is set to True and additional information is printed to screen as the eigenray search stages are completed.  If this parameter is set to :code:`false`, then less information is printed to screen as the simulation is run:
 
   .. code:: none
 
@@ -303,20 +309,20 @@ In the above simulation, the :code:`--verbose` parameter is set to True and addi
 
 The verbose option is fairly useful when the user is unsure of what eigenrays are expected or the method is not identify an expected eigenray.  Several other parameters have unique functionality in eigenray searches:
 
-  Reflection count: the parameters :code:`--bnc-min` :code:`--bnc-max`, and :code:`--bounces` allow the user to define the range possible ground reflections to consider or a single number of reflections.  For tropospheric paths at notable distance, it might be useful to start the eigenray search at a larger number of reflections and separate search runs are useful for identifying middle- and upper atmospheric returns that might have just a few reflections and tropospheric paths that might require more (e.g., stratospheric returns with 1 or 2 reflections and tropospheric paths with 10 - 15 reflections).
+  *Reflection count*: the parameters :code:`--bnc-min` :code:`--bnc-max`, and :code:`--bounces` allow the user to define the range possible ground reflections to consider or a single number of reflections.  For tropospheric paths at notable distance, it might be useful to start the eigenray search at a larger number of reflections and separate search runs are useful for identifying middle- and upper atmospheric returns that might have just a few reflections and tropospheric paths that might require more (e.g., stratospheric returns with 1 or 2 reflections and tropospheric paths with 10 - 15 reflections).
 
-  Search parameters: the initial search for eigenrays uses an adustable inclination step that can be controlled using :code:`--incl-step-min` and :code:`--incl-step-max` (defaults 0.001 and 0.1 degrees).  Once an estimated eigenray is identified, the azimuth deviation due to cross winds is checked against the :code:`--az-dev-lim` value to ensure the LM search will be well posed and stable  (defaults to 2 degrees).
+  *Search parameters*: the initial search for eigenrays uses an adustable inclination step that can be controlled using :code:`--incl-step-min` and :code:`--incl-step-max` (defaults 0.001 and 0.1 degrees).  Once an estimated eigenray is identified, the azimuth deviation due to cross winds is checked against the :code:`--az-dev-lim` value to ensure the LM search will be well posed and stable  (defaults to 2 degrees).
 
-  LM parameters: the Levenberg-Marquardt algorithm uses a damping coefficient to stabilize the search which can be modified using :code:`--damping`.  A tolerance for accepting an eigenray can be accessed through :code:`--tolerance`, which has a default value of 0.1 km (smaller than the typical infrasonic array aperture).
+  *LM parameters*: the Levenberg-Marquardt algorithm uses a damping coefficient to stabilize the search which can be modified using :code:`--damping` (:math:`\lambda` in the discussion of :ref:`physics`).  A tolerance for accepting an eigenray can be accessed through :code:`--tolerance`, which has a default value of 0.1 km (smaller than the typical infrasonic array aperture).
 
-Eigenray results can be visualized using :code:`infraga plot eigenray --atmo-file ToyAtmo.met` and show the along-azimuth effective sound speed profile for reference, all identified eigenray paths, and some Characteristic (default is launch inclination vs. travel time).  As seen below, the color of the ray path corresponds to the arrival Characteristics so the individual paths can be compared.  In this case, a direct thermospheric path (blue) is identified with later arrival time than the pair of single-reflection stratospheric arrivals.
+Eigenray results can be visualized using :code:`infraga plot eigenray --atmo-file ToyAtmo.met` and show the along-azimuth effective sound speed profile for reference, all identified eigenray paths, and some characteristic (default is launch inclination vs. travel time).  As seen below, the color of the ray path corresponds to the arrival characteristics so the individual paths can be compared.  In this case, a direct thermospheric path (blue) is identified with later arrival time than the pair of single-reflection stratospheric arrivals (orange, green).
 
   .. image:: _static/_images/eigenray1.png
       :width: 1200px
       :align: center
 
 
-The :code:`--y-axis-option` parameter included in the azimuthal visualizations is available in this method as well.  Running the above visualization and adding :code:`--y-axis-option amplitude` produces the below result so one can see how the largest amplitude amplitude is the shallower angle stratospheric arrival (often termed the 'slow stratospheric phase').  The earlier, steeper inclination angle stratospheric phase (often termed the 'fast stratospheric phase') is markedly lower amplitude, and the thermospheric phase arriving later is even more attenuated due to combination of geometric and thermo-viscous losses.
+The :code:`--y-axis-option` parameter included in the azimuthal visualizations is available in this method as well.  Running the above visualization and adding :code:`--y-axis-option amplitude` produces the below result so one can see how the largest amplitude amplitude is the shallower angle stratospheric arrival (often termed the 'slow stratospheric phase' per Waxler et al. (2015)).  The earlier, steeper inclination angle stratospheric phase (often termed the 'fast stratospheric phase') is markedly lower amplitude, and the thermospheric phase arriving later is even more attenuated due to combination of geometric and thermo-viscous losses.
 
   .. image:: _static/_images/eigenray2.png
       :width: 1200px
@@ -324,9 +330,9 @@ The :code:`--y-axis-option` parameter included in the azimuthal visualizations i
 
 **Waveform Calculations**
 
-Waveform evolution along individual ray paths can be computed in the weakly non-linear (also termed the weak shock limit) using a Burgers equation method (summarized in the discussion of :ref:`physics`) through the :code:`wnl-wvfrm` option.  Such analysis requires a known waveform at some location, :math:`s_1`, along the ray path and computes the evolved waveform at some later location, :math:`s_2` further along the path.  Because such analysis focuses on the waveform evolution along a single ray path, a single inclination and azimuth angle combination are needed to identify the ray path of interest.
+Waveform evolution along individual ray paths can be computed in the weakly non-linear (also termed the weak shock limit) using a Burgers equation method (summarized in the discussion of :ref:`physics` and in Lonzaga et al. (2015) and Blom & Waxler (2021)) through the :code:`wnl-wvfrm` option.  Such analysis requires a known waveform at some location, :math:`s_1`, along the ray path and computes the evolved waveform at some later location, :math:`s_2` further along the path.  Because such analysis focuses on the waveform evolution along a single ray path, a single inclination and azimuth angle combination are needed to identify the ray path of interest.
 
-Several waveform options are included in infraGA/GeoAc including a blastwave/impulse (originally from Freidlander and generalized by Waxler et al., see :ref:`physics` discussion for details) and an "N-wave" typical of sonic booms.  Alternatively, one can specify a file containing an overpressure time series recorded at some location and use that to initialize the waveform evolution methods.  Lastly, though not included in the C/C++ interface, the Python CLI includes an option to specify an explosive yield in equivalent kg of TNT for which the Kinney & Graham scaling laws are used to initialize a blastwave.  
+Several waveform options are included in infraGA/GeoAc including a blastwave/impulse (originally from Freidlander (1946) and generalized by Waxler et al. (2018), see :ref:`physics` discussion for details) and an "N-wave" typical of sonic booms.  Alternatively, one can specify a file containing an overpressure time series recorded at some location and use that to initialize the waveform evolution methods.  Lastly, though not included in the C/C++ interface, the Python CLI includes an option to specify an explosive yield in equivalent kg of TNT for which the Kinney & Graham (1985) scaling laws are used to initialize a blastwave.  
 
 Using the slow stratospheric phase in the above eigenray examples (theta, phi = 4.1392114, -84.970504 degrees; 1 ground reflection) and considering a 10 ton (10e3 kg) eq. TNT source,
 
@@ -385,7 +391,7 @@ Using the slow stratospheric phase in the above eigenray examples (theta, phi = 
         absorption [dB] = -0.14986747
 
 
-The peak overpressure and positive phase duration are defined from Kinney & Graham scaling laws computed internally at a reference distance defined by 35 :math:`\frac{\text{m}}{\text{kg}^3}` (this is the distance at which the shock velocity slows to within 1% of the sound speed).  Also, the ambient pressure and temperature are estimated from the sound speed and density so that explosive sources aloft can be specified.  The waveform evolution is computed along the ray path and any caustic encounters are noted and the expected phase shift applied.  The analysis returns an initial waveform file ('ToyAtmo.wvfrm_init.dat') that includes the near-source blastwave and the arrival waveform file ('ToyAtmo.wvfrm_out.dat').  
+The peak overpressure and positive phase duration are defined from Kinney & Graham (1985) scaling laws computed internally at a reference distance defined by 35 :math:`\frac{\text{m}}{\text{kg}^3}` (this is the distance at which the shock velocity slows to within 1% of the sound speed and propagation becomes essentially linear/elastic).  Also, the ambient pressure and temperature are estimated from the sound speed and density so that explosive sources aloft can be specified.  The waveform evolution is computed along the ray path and any caustic encounters are noted and the expected phase shift applied.  The analysis returns an initial waveform file ('ToyAtmo.wvfrm_init.dat') that includes the near-source blastwave and the arrival waveform file ('ToyAtmo.wvfrm_out.dat').  
 
 Currently there are no built-in visualization methods for individual waveform predictions.
 
@@ -429,7 +435,7 @@ The :code:`eig_wvfrm` methods run the eigenray and weakly non-linear methods and
     1334.9532000000002	0.0	0.0	6.223907061041175e-12
     ...
 
-The :code:`--keep-eig-results` option preserves the individual eigenray path files from the eigenray stage (useful if you want to run the eigenray visualization to see each arrival's Characteristics) as well as the arrivals file itself.  It should be noted that keeping the arrivals file enables rapid calculation of new waveform predictions if the source is modified.  That is, if the above simulation has been run and one wants to see how the results change for a 100 ton eq. TNT source, one can simply modify the :code:`--wvfrm-yield` parameter and the Python methods will check whether eigenray results are already present and skip that portion of the analysis if results are already present.
+The :code:`--keep-eig-results` option preserves the individual eigenray path files from the eigenray stage (useful if you want to run the eigenray visualization to see each arrival's characteristics) as well as the arrivals file itself.  It should be noted that keeping the arrivals file enables rapid calculation of new waveform predictions if the source is modified.  That is, if the above simulation has been run and one wants to see how the results change for a 100 ton eq. TNT source, one can simply modify the :code:`--wvfrm-yield` parameter and the Python methods will check whether eigenray results are already present and skip that portion of the analysis if results are found.
 
 The combined eigenray and waveform predictions can be visualized using similar syntax to the azimuthal and eigenray visualizations :code:`infraga plot eig_wvfrms --atmo-file ToyAtmo.met`,
 
@@ -461,3 +467,6 @@ Lastly, similar to the azimuthal and eigenray visualization methods, the lower p
       :align: center
 
 
+**Supersonic Source Calculations**
+
+Info will be added pending publication of a related manuscript...

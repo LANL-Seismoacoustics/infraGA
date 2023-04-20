@@ -127,9 +127,9 @@ The Python *infraga* interface includes a number of plotting functions that are 
         :width: 1200px
         :align: center
         
-This produces a plot containing 3 panels as shown below.  The upper left panel shows the sound speed (dashed line) and effective sound speed in the direction of propagation (solid line).  The upper right panel shows the ray paths including the transport equation amplitude losses (geometric spread + impedance differences with altitude due to the varying sound speed and density) as well as the Sutherland & Bass thermo-viscous losses that are frequency dependent (the frequency used for this calculation can be modified using :code:`--freq` and has a default value of 0.1 Hz).  The lower right panel in this instance shows the launch inclination of each ray path as a function of arrival range.
+This produces a plot containing 3 panels as shown above.  The upper left panel shows the sound speed (dashed line) and effective sound speed in the direction of propagation (solid line).  The upper right panel shows the ray paths including the transport equation amplitude losses (geometric spread + impedance differences with altitude due to the varying sound speed and density) as well as the Sutherland & Bass (2004) thermo-viscous losses that are frequency dependent (the frequency used for this calculation can be modified using :code:`--freq` and has a default value of 0.1 Hz).  The lower right panel in this instance shows the launch inclination of each ray path as a function of arrival range.
 
-The data visualized in the lower right plot can be modified using the :code:`--y-axis-option` option and a second arrival characteristic can be included using a colormap option.  An example usage of this is shown below where the vertical axis shows celerity and the colormap shows arrival trace velocity:
+The data visualized in the lower right plot can be modified using the :code:`--y-axis-option` option and a second arrival characteristic can be included using a colormap, :code:`--cmap-option`.  An example usage of this is shown below where the vertical axis shows celerity and the colormap shows arrival trace velocity:
 
     .. code-block:: none
 
@@ -297,17 +297,17 @@ This produces a longer set of output that cycles through the various azimuthal a
     Calculating ray paths: (39, 42) degrees inclination range, 177 degrees azimuth.
     Calculating ray paths: (42.5, 45) degrees inclination range, 177 degrees azimuth.
 
-Note that this simulation didn't create a new ToyAtmo.raypaths.dat file because the OpenMPI methods default to not writing ray paths (this is done because it's assumed that the methods are used for large simulation runs).
+Note that this simulation didn't create a new ToyAtmo.raypaths.dat file because the OpenMPI methods default to not writing ray paths.  This is done because it's assumed that the methods are used for large simulation runs. 
 
 **Visualizing the Results**
 
-The *infraga* plotting methods include a function that utilized the `Cartopy <https://scitools.org.uk/cartopy/docs/latest/>`_.` mapping methods to draw arrival information onto a regional map.  This can be access using,
+The *infraga* plotting methods include a function that utilized the `Cartopy <https://scitools.org.uk/cartopy/docs/latest/>`_ mapping methods to draw arrival information onto a regional map.  This can be access using,
 
   .. code:: none
     
     infraga plot map --arrivals ToyAtmo.arrivals.dat --plot-option amplitude
 
-In this case, the plot option specified 'amplitude' and the arrival amplitude (relative to 1 km from the source) is visualized showing several regions of ensonification.
+In this case, the plot option specified 'amplitude' and the arrival power (squared amplitude, relative to 1 km from the source) is visualized showing several regions of ensonification.
 
   .. image:: _static/_images/map-amplitude.png
       :width: 1200px
@@ -334,14 +334,14 @@ In addition to the above additional parameter usage, there are several options t
 
   > In the above discussion, the :code:`--azimuth` parameter was used to modify the direction in which to run ray calculations.  For multi-azimuth simulations the :code:`--az-min` and :code:`--az-max` parameters are useful for limiting the range of azimuths considered in a simulation.  For example, if all stations are east of a source, it might be appropriate to run a simulation using :code:`--az-min 30 --az-max 150` to limit propagation in the direction of the stations.  Such a limitation can be also be applied by limiting the latitude and longitude bounds of the domain as mentioned above, but that will still compute ray paths out the short distance to the west that defines the edge of the domain.
 
-  > In some scenarios only the ray paths geometry (e.g., back azimuth deviation) and travel time information is needed for analysis.  In such a case, the auxiliary parameter computations needed to solve the Transport equation can be disabled using the :code:`--calc-amp False` option to turn off computation of the geometry spreading factor.  It should be noted that for such a simulation, the thermo-viscous losses computed using Sutherland-Bass is still evaluated so that the column of values in the results file will have 0's for the transport equation losses and the computed values for the thermo-viscous losses.
+  > In some scenarios only the ray paths geometry (e.g., back azimuth deviation) and travel time information is needed for analysis.  In such a case, the auxiliary parameter computations needed to solve the Transport equation can be disabled using the :code:`--calc-amp False` option to turn off computation of the geometry spreading factor.  It should be noted that for such a simulation, the thermo-viscous losses computed using Sutherland & Bass (2004) is still evaluated so that the column of values in the results file will have 0's for the transport equation losses and the computed values for the thermo-viscous losses.
 
   > In the above simulation, it's likely that both the :code:`[...].arrivals.dat` and :code:`[...].raypaths.dat` file were computed.  The default behavior of the infraGA/GeoAc methods is to compute the ray path information when using single-CPU methods and disable it when using the OpenMPI methods (if you defined a :code:`cpu_cnt` value in the config file or used :code:`--cpu-cnt` in the command line call).  If this behavior is not what's intended, then the :code:`--write-rays` flag can be used to turn the output of the :code:`[...].raypaths.dat` file on or off as needed.  In general, when considering multi-azimuth simulations it's highly recommended to disable the ray path output because the resulting file can be excessively large and it's difficult to interrogate the data in a straightforward way.
 
 
 **Visualization of Predicted Waveguides**
 
-As noted above, multi-azimuth simulations can be time consuming so that it's often useful to consider the structure of the atmospheric specification and identify likely waveguide directions prior to running a full multi-azimuth simulation.  This can be done using the :code:`plot atmo` function with the atmospheric file,
+As noted above, multi-azimuth simulations can be time consuming so that it's often useful to consider the structure of the atmospheric specification and identify likely waveguide directions prior to running a full multi-azimuth simulation.  This can be done using the :code:`infraga plot atmo` function with the atmospheric file,
 
   .. code:: none
 
