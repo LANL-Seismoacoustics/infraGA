@@ -509,6 +509,7 @@ void run_prop(char* inputs[], int count){
                 results << '\t' << solution[k][0];
                 results << '\t' << solution[k][1];
                 results << '\t' << travel_time_sum;
+                results << '\t' << sqrt(pow(solution[k][0]- x_src, 2) + pow(solution[k][1] - y_src, 2)) / travel_time_sum;
                 results << '\t' << z_max;
                 results << '\t' << inclination;
                 results << '\t' << back_az;

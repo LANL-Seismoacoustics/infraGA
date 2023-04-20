@@ -473,8 +473,8 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
 @click.option("--config-file", help="Configuration file for simulation", default=None)
 @click.option("--atmo-file", help="Atmosphere file", default=None)
 @click.option("--atmo-prefix", help="Atmosphere file prefix (range dependent)", default=None)
-@click.option("--grid-lats", help="Atmosphere grid latitudes file", default=None)
-@click.option("--grid-lons", help="Atmosphere grid longitudes file", default=None)
+@click.option("--grid-x", help="Atmosphere grid x (E/W) file", default=None)
+@click.option("--grid-y", help="Atmosphere grid y (N/S) file", default=None)
 
 @click.option("--incl-min", help="Minimum inclination angle (rel. horizontal)", default=None)
 @click.option("--incl-max", help="Maximum inclination angle (rel. horizontal)", default=None)
@@ -513,7 +513,7 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 @click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
-def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, incl_step, inclination, 
+def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, incl_max, incl_step, inclination, 
                 az_min, az_max, az_step, azimuth, bounces, src_x, src_y, src_alt, write_rays, write_topo, freq, 
                 abs_coeff, z_grnd, write_atmo, prof_format, output_id, calc_amp, max_alt, max_rng, min_x, max_x, min_y, max_y, 
                 min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt):
@@ -524,6 +524,7 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
     Examples:
     \t infraga 3d prop --atmo-file ToyAtmo.met
     \t infraga 3d prop --atmo-file ToyAtmo.met --config-file example.cnfg
+    \t infraga 3d prop --atmo-prefix profs/example --grid-x profs/example_x.dat --grid-y profs/example_x.dat --azimuth -90.0
 
     '''
 
@@ -599,10 +600,10 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
 
     if atmo_file is not None:
         command = command + " -prop " + atmo_file
-    elif atmo_prefix is not None and grid_lats is not None and grid_lons is not None:
-        command = command + " -prop " + atmo_prefix + " " + grid_lats + " " + grid_lons
+    elif atmo_prefix is not None and grid_x is not None and grid_y is not None:
+        command = command + " -prop " + atmo_prefix + " " + grid_x + " " + grid_y
     else:
-        click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-lats and --grid-lons)")
+        click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-x and --grid-y)")
         return 0
 
     # Set parameters
@@ -669,8 +670,8 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
 @click.option("--config-file", help="Configuration file for simulation", default=None)
 @click.option("--atmo-file", help="Atmosphere file", default=None)
 @click.option("--atmo-prefix", help="Atmosphere file prefix (range dependent)", default=None)
-@click.option("--grid-lats", help="Atmosphere grid latitudes file", default=None)
-@click.option("--grid-lons", help="Atmosphere grid longitudes file", default=None)
+@click.option("--grid-x", help="Atmosphere grid x (E/W) file", default=None)
+@click.option("--grid-y", help="Atmosphere grid y (N/S) file", default=None)
 
 @click.option("--incl-min", help="Minimum inclination angle (rel. horizontal)", default=None)
 @click.option("--incl-max", help="Maximum inclination angle (rel. horizontal)", default=None)
@@ -714,7 +715,7 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 @click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
-def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, bnc_min, bnc_max, bounces, 
+def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_x, src_y, src_alt, rcvr_x, rcvr_y, verbose, iterations, damping, tolerance, az_dev_lim, 
                 incl_step_min, incl_step_max, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, 
                 min_x, max_x, min_y, max_y, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt):
@@ -725,6 +726,7 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_m
     Examples:
     \t infraga 3d eigenray --atmo-file ToyAtmo.met --rcvr-x -175.0 --rcvr-y 75.0 --bnc-max 1 --verbose True
     \t infraga 3d eigenray --atmo-file ToyAtmo.met --config-file example.cnfg
+    \t infraga 3d eigenray --atmo-prefix profs/example --grid-x profs/example_x.dat --grid-y profs/example_x.dat --src-x 0.0 --src-y 0.0 --rcvr-x -500.0 --rcvr-y -100.0 --bnc-max 1 --incl-min 10.0 --incl-max 20.0 --verbose true
 
     '''
 
@@ -800,10 +802,10 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_m
 
     if atmo_file is not None:
         command = command + " -eig_search " + atmo_file
-    elif atmo_prefix is not None and grid_lats is not None and grid_lons is not None:
-        command = command + " -eig_search " + atmo_prefix + " " + grid_lats + " " + grid_lons
+    elif atmo_prefix is not None and grid_x is not None and grid_y is not None:
+        command = command + " -eig_search " + atmo_prefix + " " + grid_x + " " + grid_y
     else:
-        click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-lats and --grid-lons)")
+        click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-x and --grid-y)")
         return 0
 
     # Set parameters
@@ -866,8 +868,8 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_m
 @click.option("--config-file", help="Configuration file for simulation", default=None)
 @click.option("--atmo-file", help="Atmosphere file", default=None)
 @click.option("--atmo-prefix", help="Atmosphere file prefix (range dependent)", default=None)
-@click.option("--grid-lats", help="Atmosphere grid latitudes file", default=None)
-@click.option("--grid-lons", help="Atmosphere grid longitudes file", default=None)
+@click.option("--grid-x", help="Atmosphere grid x (E/W) file", default=None)
+@click.option("--grid-y", help="Atmosphere grid y (N/S) file", default=None)
 
 @click.option("--inclination", help="Inclination angle (rel. horizontal)", default=None)
 @click.option("--azimuth", help="Azimuth angle (clockwise rel. N)", default=None)
@@ -912,7 +914,7 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_m
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
-def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inclination, azimuth, bounces, src_x, src_y, 
+def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, inclination, azimuth, bounces, src_x, src_y, 
                 src_alt, write_ray, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step,
                 wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, min_x, max_x, min_y, max_y, 
                 min_ds, max_ds, max_s, topo_file, topo_bl_wind):
@@ -991,10 +993,10 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
 
     if atmo_file is not None:
         command = command + " -wnl_wvfrm " + atmo_file
-    elif atmo_prefix is not None and grid_lats is not None and grid_lons is not None:
-        command = command + " -wnl_wvfrm " + atmo_prefix + " " + grid_lats + " " + grid_lons
+    elif atmo_prefix is not None and grid_x is not None and grid_y is not None:
+        command = command + " -wnl_wvfrm " + atmo_prefix + " " + grid_x + " " + grid_y
     else:
-        click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-lats and --grid-lons)")
+        click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-x and --grid-y)")
         return 0
 
     # Set parameters
@@ -1075,8 +1077,8 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
 @click.option("--config-file", help="Configuration file for simulation", default=None)
 @click.option("--atmo-file", help="Atmosphere file", default=None)
 @click.option("--atmo-prefix", help="Atmosphere file prefix (range dependent)", default=None)
-@click.option("--grid-lats", help="Atmosphere grid latitudes file", default=None)
-@click.option("--grid-lons", help="Atmosphere grid longitudes file", default=None)
+@click.option("--grid-x", help="Atmosphere grid x (E/W) file", default=None)
+@click.option("--grid-y", help="Atmosphere grid y (N/S) file", default=None)
 
 @click.option("--incl-min", help="Minimum inclination angle (rel. horizontal)", default=None)
 @click.option("--incl-max", help="Maximum inclination angle (rel. horizontal)", default=None)
@@ -1135,7 +1137,7 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
 @click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
 
 @click.option("--keep-eig-arrivals", help="Keep eigenray arrivals", default=False)
-def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, bnc_min, bnc_max, bounces, 
+def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_x, src_y, src_alt, rcvr_x, rcvr_y, verbose, iterations, damping, tolerance, az_dev_lim, incl_step_min, 
                 incl_step_max, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step, wvfrm_yield, 
                 wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, min_x, max_x, min_y, 
@@ -1294,10 +1296,10 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, 
 
         if atmo_file is not None:
             command = command + " -eig_search " + atmo_file
-        elif atmo_prefix is not None and grid_lats is not None and grid_lons is not None:
-            command = command + " -eig_search " + atmo_prefix + " " + grid_lats + " " + grid_lons
+        elif atmo_prefix is not None and grid_x is not None and grid_y is not None:
+            command = command + " -eig_search " + atmo_prefix + " " + grid_x + " " + grid_y
         else:
-            click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-lats and --grid-lons)")
+            click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-x and --grid-y)")
             return 0
 
         # Set parameters
@@ -1407,8 +1409,8 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, 
 
             if atmo_file is not None:
                 command = command + " -wnl_wvfrm " + atmo_file
-            elif atmo_prefix is not None and grid_lats is not None and grid_lons is not None:
-                command = command + " -wnl_wvfrm " + atmo_prefix + " " + grid_lats + " " + grid_lons
+            elif atmo_prefix is not None and grid_x is not None and grid_y is not None:
+                command = command + " -wnl_wvfrm " + atmo_prefix + " " + grid_x + " " + grid_y
             else:
                 click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-lats and --grid-lons)")
                 return 0
@@ -1626,7 +1628,8 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
     Examples:
     \t infraga sph prop --atmo-file ToyAtmo.met
     \t infraga sph prop --atmo-file ToyAtmo.met --config-file example.cnfg
-
+    \t infraga sph prop --atmo-prefix profs/example --grid-lats profs/example_lat.dat --grid-lons profs/example_lon.dat --src-lat 40.0 --src-lon -102.5 --azimuth -90.0 --z-grnd 1.0
+    
     '''
 
     if config_file:
@@ -1764,7 +1767,6 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
 
     # print(command)
     subprocess.call(command, shell=True)
-
 
 
 
@@ -1967,8 +1969,6 @@ def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
     subprocess.call(command, shell=True)
 
 
-
-
 @click.command('wnl-wvfrm', short_help="Run weakly non-linear waveform calculation")
 @click.option("--config-file", help="Configuration file for simulation", default=None)
 @click.option("--atmo-file", help="Atmosphere file", default=None)
@@ -2030,7 +2030,6 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
     \b
     Examples:
     \t infraga sph wnl-wvfrm --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --inclination 4.1314876 --azimuth -84.969455 --bounces 1 --wvfrm-yield 10e3
-    \t infraga sph wnl-wvfrm --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --inclination 31.703267 --azimuth -84.583914 --bounces 1 --wvfrm-yield 10e3
     \t infraga sph wnl-wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
     '''
 
@@ -2178,7 +2177,6 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
 
     # print(command)
     subprocess.call(command, shell=True)
-
 
 
 @click.command('eig_wvfrm', short_help="Run eigenray search and compute waveform contributions")

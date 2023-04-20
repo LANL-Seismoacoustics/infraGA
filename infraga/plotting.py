@@ -419,7 +419,7 @@ def plot_eigenrays(atmo_file, arrivals, eigenrays, y_axis_option, tr_vel_ref, fi
         elif "source" in line:
             src_loc = np.array([float(val) for val in line.split(":")[-1].split(",")[:2]])
 
-    arr_data = np.loadtxt(arrivals_file)
+    arr_data = np.atleast_2d(np.loadtxt(arrivals_file))
     if len(arr_data) < 1:
         print('\t' + "Arrivals file (" + arrivals_file + ") empty.")
         return 0
@@ -445,7 +445,7 @@ def plot_eigenrays(atmo_file, arrivals, eigenrays, y_axis_option, tr_vel_ref, fi
     if "/" in eigenray_id:
         for file in np.sort(os.listdir(os.path.dirname(eigenray_path))):
             if fnmatch.fnmatch(file, os.path.basename(eigenray_id)):
-                eigenray_data = eigenray_data + [np.loadtxt(file)]
+                eigenray_data = eigenray_data + [np.loadtxt(eigenray_path + file)]
     else:        
         for file in np.sort(os.listdir(".")):
             if fnmatch.fnmatch(file, os.path.basename(eigenray_id)):
@@ -479,7 +479,7 @@ def plot_eigenrays(atmo_file, arrivals, eigenrays, y_axis_option, tr_vel_ref, fi
     color_seq = ['blue', 'orange', 'green', 'red', 'cyan', 'magenta', 'black']
     for n, path in enumerate(eigenray_data):
         if geom == '3d':
-            ray_rngs = np.sqrt(path[:, 0]**2 + path[:, 1]**2)
+            ray_rngs = np.sqrt((src_loc[0] - path[:, 0])**2 + (src_loc[1] - path[:, 1])**2)
         else:
             ray_rngs = sph_proj.inv([src_loc[1]] * len(path), [src_loc[0]] * len(path), path[:, 1], path[:, 0])[2] * 1.0e-3
         ax1.plot(ray_rngs, path[:, 2], color=color_seq[n], linewidth=2.5)  
