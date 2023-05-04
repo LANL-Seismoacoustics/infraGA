@@ -98,7 +98,7 @@ Solving this condition leads to the transport equation,
         
         \vec{\nabla} \cdot \left( \mathcal{P}_0^2 \vec{c}_g \right) = \mathcal{P}_0^2 \vec{c}_g \cdot \vec{\nabla} \ln \left( \rho_0 c^3 \psi \right),
 
-and the resulting amplitude term is defined in terms of the Jacobian, :math:`D \left( s, \vartheta, \varphi \right)` where :math`s`, :math:`\vartheta`, and :math:`\varphi` are the ray length, initial inclination angle, and initial azimuthal angle of the ray path respectively, that describes the coordinate transformation between Cartesian and ray coordinates, 
+and the resulting amplitude term is defined in terms of the Jacobian, :math:`D \left( s, \vartheta, \varphi \right)` where :math:`s`, :math:`\vartheta`, and :math:`\varphi` are the ray length, initial inclination angle, and initial azimuthal angle of the ray path respectively, that describes the coordinate transformation between Cartesian and ray coordinates, 
 
 
     .. math::
@@ -109,7 +109,7 @@ and the resulting amplitude term is defined in terms of the Jacobian, :math:`D \
 Spherical spreading at the source has been assumed so that :math:`\mathcal{P}_0 \left( s, \vartheta, \varphi \right)_{s \downarrow 0} = \frac{1}{4\pi s^2}` and :math:`D \left( s, \vartheta, \varphi \right)_{s \downarrow 0} = s^2 \cos \vartheta`, 
 
 
-The Eikonal Equation can be used to define a Hamiltonian, :math:`  H \left( \vec{x}, \vec{\psi} \right) = 0 ` and the Hamilton-Jacobi relations used to define equations governing ray paths,
+The Eikonal Equation can be used to define a Hamiltonian, :math:`H \left( \vec{x}, \vec{\psi} \right) = 0` and the Hamilton-Jacobi relations used to define equations governing ray paths,
 
     .. math::
         

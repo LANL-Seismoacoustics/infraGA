@@ -4,21 +4,21 @@
 Atmospheric Data
 =====================================
 
-InfraGA/GeoAc requires atmospheric information to specify the acoustic sound speed, ambient winds, and atmospheric density in order to compute propagation information.  A climatological model (ToyAtmo.met) is included with the git repo for some basic simulations and tests as well as a sample Ground-to-Space (G2S) atmospheric specification.  The climatological model is based on the polynomial fit to the US Standard atmosphere with Gaussian wind structures in the lower- and middle atmosphere as well as idealized atmospheric tidal winds in the meso- and thermosphere (see Lingevitch et al., 1999 and Blom & Waxler, 2021).
+InfraGA/GeoAc requires atmospheric information to specify the acoustic sound speed, ambient winds, and atmospheric density in order to compute propagation information.  A climatological model ('examples/ToyAtmo.met') is included with the git repo for some basic simulations and tests as well as a sample Ground-to-Space (G2S) atmospheric specification.  The climatological model is based on the polynomial fit to the US Standard atmosphere with Gaussian wind structures in the lower- and middle atmosphere as well as idealized atmospheric tidal winds in the meso- and thermosphere (see Lingevitch et al., 1999 and Blom & Waxler, 2021).
 
 The format of atmospheric data can be defined using :code:`prof_format` when using C/C++ binaries or Python configuration files and with :code:`--prof-format` in the Python command line interface.  The default atmospheric file format contains columns describing altitude (km), temperature (Kelvin), zonal (east/west) winds (m/s), meridional (north/south) winds (m/s), density (g/cm :math:`^3`), and pressure (mbar).  The zonal and meridional winds are typically denoted as 'u' and 'v', so that this format is defined as :code:`zTuvdp`.  From this ingested atmospheric data, acoustic sound speed is computed using the adiabatic assumption, :math:`p \propto \rho^\gamma \, \rightarrow \, c^2 = \frac{\partial p}{\partial \rho} = \gamma \frac{p}{\rho}` where :math:`p` is pressure, :math:`\rho` is density, and :math:`\gamma` is the specific heat ratio for the atmosphere (1.4 for dry air).
 
 Two other profile formats are accepted in the current implementation of infraGA/GeoAc: :code:`zuvwTdp` and :code:`zcuvd`.  The first of these also includes a vertical wind component and was used in earlier output options of G2S.  The later defines the sound speed directly and doesn't include temperature or pressure.  The units on these alternate formats are the same as the :code:`zTuvdp` and summarized below in the table for easy reference.
 
-+--------------------------+---------------------------------------------------------------+
-| **Profile Format**       | **Fields/Units**                                              |
-+--------------------------+---------------------------------------------------------------+
-| :code:`zTuvdp` (default) | z (km), T (K), u (m/s), v (m/s), d (g/cm3), p (mbar)          | 
-+--------------------------+---------------------------------------------------------------+
-| :code:`zcuvd`            | z (km), c (m/s), u (m/s), v (m/s), d (g/cm3)                  |  
-+--------------------------+---------------------------------------------------------------+
-| :code:`zuvwTdp`          | z (km), u (m/s), v (m/s), w (m/s), T (K), d (g/cm3), p (mbar) |
-+--------------------------+---------------------------------------------------------------+
++--------------------------+-------------------------------------------------------------------------------+
+| **Profile Format**       | **Fields/Units**                                                              |
++--------------------------+-------------------------------------------------------------------------------+
+| :code:`zTuvdp` (default) | z (km), T (K), u (m/s), v (m/s), d :math:`(\text{g/cm}^3)`, p (mbar)          |  
++--------------------------+-------------------------------------------------------------------------------+
+| :code:`zcuvd`            | z (km), c (m/s), u (m/s), v (m/s), d :math:`(\text{g/cm}^3)`                  |   
++--------------------------+-------------------------------------------------------------------------------+
+| :code:`zuvwTdp`          | z (km), u (m/s), v (m/s), w (m/s), T (K), d :math:`(\text{g/cm}^3)`, p (mbar) |
++--------------------------+-------------------------------------------------------------------------------+
 
 ********************
 Climatological Model
@@ -35,7 +35,7 @@ Atmospheric Data Resources
 **************************
 
 The Ground-to-Space (G2S) methodologies (Drob et al., 2003) interpolate and merge numerical weather prediction data with climatological models for the meso- and thermosphere to produce atmospheric structure information that extends from the ground surface to above 100 km altitude.  Currently, a server hosting G2S atmospheric data is run by infrasound experts at the  
-`University of Mississippi's National Center for Physical Acoustics <http://g2s.ncpa.olemiss.edu/>`_.  Through this web interface, one can request atmospheric data files for single locations, along great-circle paths, or on latitude/longitude grids.  The interface for the server is relatively straightforward to navigate and requested atmospheric data is shared via a download link sent to the requester's email.
+`University of Mississippi's National Center for Physical Acoustics <https://g2s.ncpa.olemiss.edu/>`_.  Through this web interface, one can request atmospheric data files for single locations, along great-circle paths, or on latitude/longitude grids.  The interface for the server is relatively straightforward to navigate and requested atmospheric data is shared via a download link sent to the requester's email.
 
   .. image:: _static/_images/G2S_NCPA.png
       :width: 900px
@@ -66,7 +66,7 @@ Atmospheric data files from the NCPA G2S system have file names that specify the
       ...
 
 
-In addition to the NCPA G2S server, the framework developed by Drob et al. (2003) for G2S construction has been reproduced by infrasound and atmospheric scientists at the Alaska Volcano Observatory (AVO) and made available as `AVO G2S <https://github.com/DOI-USGS/volcano-avog2s>`_.  The methods included require some additional downloads of USGS libraries but provide a more robust system above to ingest additional low- and middle atmosphere weather data; however, for simplicity of use, the NCPA G2S tools are the recommended means of requesting and obtaining atmospheric data for infrasonic propagation modeling.
+In addition to the NCPA G2S server, the framework developed by Drob et al. (2003) for G2S construction has been reproduced by infrasound and atmospheric scientists at the Alaska Volcano Observatory (AVO) and made available as `AVO G2S <https://github.com/DOI-USGS/volcano-avog2s>`_.  The methods included require some additional downloads of USGS libraries but provide a more robust system able to ingest additional low- and middle atmosphere weather data; however, for simplicity of use, the NCPA G2S server is the recommended means of requesting and obtaining atmospheric data for infrasonic propagation modeling.
 
   .. image:: _static/_images/AVO_G2S.png
       :width: 900px

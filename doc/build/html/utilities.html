@@ -181,7 +181,7 @@ Commands:
 </div>
 </div></blockquote>
 <p><strong>Building a Range Dependent Grid</strong></p>
-<p>The range dependent methods in infraGA/GeoAc require specifying a grid of nodes and atmospheric structure at each defined by a single atmospheric specification file.  Such information is ingested as, <code class="code docutils literal notranslate"><span class="pre">--atmo-prefix</span> <span class="pre">profs/example</span> <span class="pre">--grid-lats</span> <span class="pre">profs/example_lat.dat</span> <span class="pre">--grid-lons</span> <span class="pre">profs/example_lon.dat</span></code> for the example grid included with the software.  Building a custom grid from a set of G2S specification files can be accomplished using the <code class="code docutils literal notranslate"><span class="pre">inferaga</span> <span class="pre">utils</span> <span class="pre">build-g2s-grid</span></code> utility.</p>
+<p>The range dependent methods in infraGA/GeoAc require specifying a grid of nodes and atmospheric structure at each defined by a single atmospheric specification file.  Such information is ingested as, <code class="code docutils literal notranslate"><span class="pre">--atmo-prefix</span> <span class="pre">profs/example</span> <span class="pre">--grid-lats</span> <span class="pre">profs/example_lat.dat</span> <span class="pre">--grid-lons</span> <span class="pre">profs/example_lon.dat</span></code> for the example grid included with the software.  Building a custom grid from a set of G2S specification files can be accomplished using the <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">utils</span> <span class="pre">build-g2s-grid</span></code> utility to load G2S files from a directory (<code class="code docutils literal notranslate"><span class="pre">--g2s-dir</span></code>) and specifying an output path for the indexed atmosphere files and grid info files (<code class="code docutils literal notranslate"><span class="pre">--output-path</span></code>),</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Usage: infraga utils build-g2s-grid [OPTIONS]
 
@@ -250,7 +250,7 @@ Run propagation simulations using:
   Examples:
       infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth -90.0 --range 750.0 --output-file line_topo.dat
       infraga utils extract-terrain --geom pnt2pnt --lat1 40.0 --lon1 -102.5 --lat2 40.0 --lon2 -110.0 --output-file line_topo.dat
-      infraga utils extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
+      infraga utils extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --ref-lat 40.0 --ref-lon -105.0 --output-file xy_topo.dat
       infraga utils extract-terrain --geom latlon-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
 
 Options:

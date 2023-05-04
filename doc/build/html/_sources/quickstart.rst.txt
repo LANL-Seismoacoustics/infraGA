@@ -225,7 +225,7 @@ Running the above analysis can then be accomplished via:
 
 In this situation, the atmospheric file is not included in the configuration file and can be swapped out easily with whichever date and time is of interest.  In other scenarios detailed in the :ref:`advanced` discussion, one might omit other parameters to vary between analysis runs.  
 
-It should be noted that when a parameter is present in a configuration file and also specified on the command line, the command line entry overwrites the command line.  That is, if the above were run with an additional flag of :code:`--z-grnd 1.0`, then the analysis would be run with a ground elevation of 1 km instead of the 1.5 km defined in the configuration file.  Which parameters are defined within which header (e.g., :code:`GENERAL` vs. :code:`PROP`) is detailed in the discussion of :ref:`parameters`.
+It should be noted that when a parameter is present in a configuration file and also specified on the command line, the command line entry overwrites the value from the config file.  That is, if the above were run with an additional flag of :code:`--z-grnd 1.0`, then the analysis would be run with a ground elevation of 1 km instead of the 1.5 km defined in the configuration file.  Which parameters are defined within which header (e.g., :code:`GENERAL` vs. :code:`PROP`) is detailed in the discussion of :ref:`parameters`.
 
 
 *************************
@@ -236,7 +236,7 @@ Running multi-azimuth simulations is more time consuming but provides a more rob
 
 **Running the Simulation**
 
-Consider making the below modifications to the configuration file for a source at UTTR.  The maximum range has been reduced to 500 km to make the simulation time a bit more reasonable and the single azimuth has been replaced with a full :math:`360^\circ` range with :math:`3^\circ` resolution.  Update the :code:`cpu_cnt` parameter to whatever number of CPUs you have available for use (the OpenMPI methods will error out if you oversubscribe your CPUs).
+Consider making the below modifications to the configuration file for a source at UTTR.  The maximum range has been reduced to 500 km to make the simulation time a bit more reasonable and the single azimuth has been replaced with a full :math:`360^\circ` range with :math:`3^\circ` resolution.  Update the :code:`cpu_cnt` parameter in the above 'UTTR_prop.confg' file to whatever number of CPUs you have available for use (the OpenMPI methods will error out if you oversubscribe your CPUs).
 
   .. code:: none
 
@@ -255,7 +255,7 @@ Consider making the below modifications to the configuration file for a source a
 
   .. code:: none
 
-    infraga sph prop --atmo-file G2S_example.met --config-file UTT_prop.cnfg
+    infraga sph prop --atmo-file G2S_example.met --config-file UTTR_prop.cnfg
 
 This produces a longer set of output that cycles through the various azimuthal angles (warning: multi-azimuth simulations can be time consuming, so you might consider increasing the inclination or azimuthal angle steps or limiting the maximum propagation range):
 

@@ -125,7 +125,7 @@ In addition to simulating the visualization of ray path intercepts at the ground
 
     infraga sph prop --atmo-file ToyAtmo.met --inclination 10.0 --az-min -180 --az-max 179.0 --az-step 2 --max-rng 500.0
 
-The visualization of these ray paths can be used to visualize the angular extend of the waveguides at this inclination,
+The visualization of these ray paths can be used to visualize the angular extent of the waveguides at this inclination,
 
   .. code-block:: none
 

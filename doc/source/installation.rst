@@ -8,7 +8,7 @@ Installation
 Operating Systems
 -----------------
 
-InfraGA/GeoAc can currently be installed on machines running newer versions of Linux or Apple OSX.  Installation on Windows system requires C/C++ compilation as well as an Anaconda Python installation.  
+InfraGA/GeoAc can currently be installed on machines running newer versions of Linux or Apple OS X.  Installation on a Windows system requires C/C++ compilation as well as an Anaconda Python installation.
 
 ------------
 Dependencies
@@ -100,8 +100,8 @@ The usage information should be displayed:
       sph    Run spherical layer (moving medium) ray tracing
       utils  Various utility functions
 
-Each of the individual methods have usage information (e.g., :code:`infraga 3d --help`) that will be discussed in the :ref:`quickstart`.
+Each of the individual methods have usage information (e.g., :code:`infraga sph --help`) that will be discussed in the :ref:`quickstart`.
 
 **Updates**
 
-It's highly recommended that users download and keep up with updates of the infraGA/GeoAc methods through the `LANL Seismoacoustics github page <https://github.com/LANL-Seismoacoustics/infraGA>`_.  InfraGA/GeoAc is a research code and bug fixes, new features, and improved utility and plotting methods are frequently pushed to the git repository.  It's possible to download a static copy of the software, but updates can more easily be applied through a git instance where the current version can be readily accessed using a :code:`git pull` command.  The dependency installs above (e.g., FFTW, OpenMPI) don't need to be re-installed and the '-e' option used during the infraga environment build keeps any local updates to the Python methods within the environment; therefore, when updates are applied a simple :code:`make clean`, :code:`make`, :code:`make accel` is all that's needed to update the binaries for infraGA/GeoAc.
+It's highly recommended that users keep up with ongoing R&D and related bug fixes and updates of the infraGA/GeoAc methods through the `LANL Seismoacoustics github page <https://github.com/LANL-Seismoacoustics/infraGA>`_.  InfraGA/GeoAc is a research code and bug fixes, new features, and improved utility and plotting methods are frequently pushed to the git repository.  It's possible to download a static copy of the software, but updates can more easily be applied through a git instance where the current version can be readily accessed using a :code:`git pull` command.  The dependency installs above (e.g., FFTW, OpenMPI) don't need to be re-installed and the '-e' option used during the infraga environment build keeps any local updates to the Python methods within the environment; therefore, when updates are applied a simple :code:`make clean`, :code:`make`, :code:`make accel` is all that's needed to update the binaries for infraGA/GeoAc.

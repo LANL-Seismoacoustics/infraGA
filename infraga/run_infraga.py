@@ -587,6 +587,8 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, i
     topo_bl_wind = define_param(user_config, 'GENERAL', 'topo_bl_wind', topo_bl_wind)
 
     cpu_cnt = define_param(user_config, 'GENERAL', 'cpu_cnt', cpu_cnt)
+    if cpu_cnt is None:
+        cpu_cnt = 1 
     cpu_cnt = int(cpu_cnt)
 
     # Build run command
@@ -714,7 +716,7 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, i
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
-@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
+@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=None)
 def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_x, src_y, src_alt, rcvr_x, rcvr_y, verbose, iterations, damping, tolerance, az_dev_lim, 
                 incl_step_min, incl_step_max, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, 
@@ -789,7 +791,10 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, in
     topo_bl_wind = define_param(user_config, 'GENERAL', 'topo_bl_wind', topo_bl_wind)
 
     cpu_cnt = define_param(user_config, 'GENERAL', 'cpu_cnt', cpu_cnt)
+    if cpu_cnt is None:
+        cpu_cnt = 1 
     cpu_cnt = int(cpu_cnt)
+
 
     # Build run command
     if cpu_cnt < 2:
@@ -1134,7 +1139,7 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, inclinatio
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
-@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
+@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=None)
 
 @click.option("--keep-eig-arrivals", help="Keep eigenray arrivals", default=False)
 def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, incl_max, bnc_min, bnc_max, bounces, 
@@ -1224,8 +1229,9 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
     topo_bl_wind = define_param(user_config, 'GENERAL', 'topo_bl_wind', topo_bl_wind)
 
     cpu_cnt = define_param(user_config, 'GENERAL', 'cpu_cnt', cpu_cnt)
+    if cpu_cnt is None:
+        cpu_cnt = 1 
     cpu_cnt = int(cpu_cnt)
-
 
     # Set parameter values for header output
     def set_header_val(param, default):
@@ -1616,7 +1622,7 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
-@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
+@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=None)
 def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, incl_step, inclination, 
                 az_min, az_max, az_step, azimuth, bounces, src_lat, src_lon, src_alt, write_rays, write_topo, freq, 
                 abs_coeff, z_grnd, write_atmo, prof_format, output_id, calc_amp, max_alt, max_rng, max_lat, min_lat, max_lon, min_lon,
@@ -1691,6 +1697,8 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
     topo_bl_wind = define_param(user_config, 'GENERAL', 'topo_bl_wind', topo_bl_wind)
 
     cpu_cnt = define_param(user_config, 'GENERAL', 'cpu_cnt', cpu_cnt)
+    if cpu_cnt is None:
+        cpu_cnt = 1 
     cpu_cnt = int(cpu_cnt)
 
     # Build run command
@@ -1819,7 +1827,7 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
-@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
+@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=None)
 def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_lat, src_lon, src_alt, rcvr_lat, rcvr_lon, verbose, iterations, damping, tolerance, az_dev_lim, 
                 incl_step_min, incl_step_max, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, 
@@ -1894,6 +1902,8 @@ def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
     topo_bl_wind = define_param(user_config, 'GENERAL', 'topo_bl_wind', topo_bl_wind)
 
     cpu_cnt = define_param(user_config, 'GENERAL', 'cpu_cnt', cpu_cnt)
+    if cpu_cnt is None:
+        cpu_cnt = 1 
     cpu_cnt = int(cpu_cnt)
 
     # Build run command
@@ -2241,7 +2251,7 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
-@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=1)
+@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=None)
 
 @click.option("--keep-eig-results", help="Keep eigenray arrivals", default=False)
 def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, bnc_min, bnc_max, bounces, 
@@ -2331,6 +2341,8 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
     topo_bl_wind = define_param(user_config, 'GENERAL', 'topo_bl_wind', topo_bl_wind)
 
     cpu_cnt = define_param(user_config, 'GENERAL', 'cpu_cnt', cpu_cnt)
+    if cpu_cnt is None:
+        cpu_cnt = 1 
     cpu_cnt = int(cpu_cnt)
 
     # Set parameter values for header output

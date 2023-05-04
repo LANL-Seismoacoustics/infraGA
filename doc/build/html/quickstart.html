@@ -372,13 +372,13 @@ bounces = 100
 </div>
 </div></blockquote>
 <p>In this situation, the atmospheric file is not included in the configuration file and can be swapped out easily with whichever date and time is of interest.  In other scenarios detailed in the <a class="reference internal" href="advanced.html#advanced"><span class="std std-ref">Advanced Usage</span></a> discussion, one might omit other parameters to vary between analysis runs.</p>
-<p>It should be noted that when a parameter is present in a configuration file and also specified on the command line, the command line entry overwrites the command line.  That is, if the above were run with an additional flag of <code class="code docutils literal notranslate"><span class="pre">--z-grnd</span> <span class="pre">1.0</span></code>, then the analysis would be run with a ground elevation of 1 km instead of the 1.5 km defined in the configuration file.  Which parameters are defined within which header (e.g., <code class="code docutils literal notranslate"><span class="pre">GENERAL</span></code> vs. <code class="code docutils literal notranslate"><span class="pre">PROP</span></code>) is detailed in the discussion of <a class="reference internal" href="parameters.html#parameters"><span class="std std-ref">Parameters</span></a>.</p>
+<p>It should be noted that when a parameter is present in a configuration file and also specified on the command line, the command line entry overwrites the value from the config file.  That is, if the above were run with an additional flag of <code class="code docutils literal notranslate"><span class="pre">--z-grnd</span> <span class="pre">1.0</span></code>, then the analysis would be run with a ground elevation of 1 km instead of the 1.5 km defined in the configuration file.  Which parameters are defined within which header (e.g., <code class="code docutils literal notranslate"><span class="pre">GENERAL</span></code> vs. <code class="code docutils literal notranslate"><span class="pre">PROP</span></code>) is detailed in the discussion of <a class="reference internal" href="parameters.html#parameters"><span class="std std-ref">Parameters</span></a>.</p>
 </section>
 <section id="multi-azimuth-simulation">
 <h2>Multi-Azimuth Simulation<a class="headerlink" href="#multi-azimuth-simulation" title="Permalink to this heading">¶</a></h2>
 <p>Running multi-azimuth simulations is more time consuming but provides a more robust understanding of the propagation of infrasonic energy from a source at a given location.  In many scenarios multiple stations are within regional distance of a source and propagation to the entire regional network of stations is useful.  Similarly, in planning a regional deployment of stations to capture signals from a planned event (e.g., a controlled surface explosion) or from a known repeating source (e.g., a mine or volcano) it’s useful to understand the full multi-azimuth propagation prediction.</p>
 <p><strong>Running the Simulation</strong></p>
-<p>Consider making the below modifications to the configuration file for a source at UTTR.  The maximum range has been reduced to 500 km to make the simulation time a bit more reasonable and the single azimuth has been replaced with a full <span class="math notranslate nohighlight">\(360^\circ\)</span> range with <span class="math notranslate nohighlight">\(3^\circ\)</span> resolution.  Update the <code class="code docutils literal notranslate"><span class="pre">cpu_cnt</span></code> parameter to whatever number of CPUs you have available for use (the OpenMPI methods will error out if you oversubscribe your CPUs).</p>
+<p>Consider making the below modifications to the configuration file for a source at UTTR.  The maximum range has been reduced to 500 km to make the simulation time a bit more reasonable and the single azimuth has been replaced with a full <span class="math notranslate nohighlight">\(360^\circ\)</span> range with <span class="math notranslate nohighlight">\(3^\circ\)</span> resolution.  Update the <code class="code docutils literal notranslate"><span class="pre">cpu_cnt</span></code> parameter in the above ‘UTTR_prop.confg’ file to whatever number of CPUs you have available for use (the OpenMPI methods will error out if you oversubscribe your CPUs).</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[GENERAL]
 max_rng = 500
@@ -394,7 +394,7 @@ az_step = 3.0
 bounces = 100
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file G2S_example.met --config-file UTT_prop.cnfg
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file G2S_example.met --config-file UTTR_prop.cnfg
 </pre></div>
 </div>
 </div></blockquote>

@@ -4,7 +4,7 @@
 Authorship & References
 =======================
 
-InfraGA/GeoAc started as part of graduate work by Dr. Philip Blom during his tenure at the University of Mississippi, National Center for Physical Acocustics (NCPA) in 2007 - 2013.  More accessible methods were implemented when Dr. Blom began working at Los Alamos National Laboratory (2013 - present) and the software was licensed as open source in 2014 and continues to be expanded and improved.
+InfraGA/GeoAc started as part of graduate work by Dr. Philip Blom during his tenure at the University of Mississippi, National Center for Physical Acocustics (NCPA) in 2007 - 2013.  More accessible methods were implemented when Dr. Blom began working at Los Alamos National Laboratory (2013 - present).  The software was licensed as open source in 2014 and continues to be expanded and improved.
 
 For questions about installation, usage, algorithm, etc., contact:
 
@@ -14,7 +14,7 @@ Philip Blom (pblom@lanl.gov)
 Citing Usage
 ------------
 
-The algorithms included in *infraGA/GeoAc* have been documented in a number of peer reviewed publications and the authors request that others acknowledge the use of the methods in published research by citing the appropriate manuscript(s) below for the various methodologies.
+The algorithms included in infraGA/GeoAc have been documented in a number of peer reviewed publications and the authors request that others acknowledge the use of the methods in published research by citing the appropriate manuscript(s) below for the various methodologies.
  
     * Blom, P. & Waxler, R. (2012). "Impulse propagation in the nocturnal boundary layer: Analysis of the geometric component". *J. Acoust. Soc. Am.*, **131** (5), 3680 -- 3690. doi: `10.1121/1.3699174 <https://doi.org/10.1121/1.3699174>`_.
     * Blom, P. & Waxler, R. (2017). "Modeling and observations of an elevated, moving infrasonic source: eigenray methods". *J. Acoust. Soc. Am.*, **141** (4), 2681--2692. doi: `10.1121/1.4980096 <https://doi.org/10.1121/1.4980096>`_.
@@ -36,6 +36,6 @@ Also, the ray tracing methods as well as many of the other underlying methods in
     * Lonzaga, J. B., Waxler, R. M., Assink, J. D., & Talmadge, C. L. (2015). "Modelling waveforms of infrasound arrivals from impulsive sources using weakly non-linear ray theory." *Geophysical Journal International*, **200** (3), 1347-1361. doi: `10.1093/gji/ggu479 <https://doi.org/10.1093/gji/ggu479>`_.
     * Pierce, A. D. (1980).  *Acoustics: An introduction to its physical principles and applications.*  McGraw-Hill Inc. doi: `10.1063/1.2914388 <https://doi.org/10.1063/1.2914388>`_. 
     * Waxler, R., Evers, L. G., Assink, J., & Blom, P. (2015). "The stratospheric arrival pair in infrasound propagation." *J. Acoust. Soc. Am.*, **137** (4), 1846-1856. doi: `10.1121/1.4916718 <https://doi.org/10.1121/1.4916718>`_.
-    * Waxler, R. & Assink, J. (2018) "Propagation Modeling Through Realistic Atmosphere and Benchmarking".  In *Infrasound monitoring for atmospheric studies. Second Edition*. Springer Science & Business Media. doi: `10.1007/978-3-319-75140-5_15 <https://doi.org/10.1007/978-3-319-75140-5_15>`_.
+    * Waxler, R. & Assink, J. (2019) "Propagation Modeling Through Realistic Atmosphere and Benchmarking".  In *Infrasound monitoring for atmospheric studies. Second Edition*. Springer Science & Business Media. doi: `10.1007/978-3-319-75140-5_15 <https://doi.org/10.1007/978-3-319-75140-5_15>`_.
     * Sutherland, L. C., & Bass, H. E., (2004). "Atmospheric absorption in the atmosphere up to 160 km." *J. Acoust. Soc. Am.*, **115** (3), pp.1012-1032. doi: `10.1121/1.1631937 <https://doi.org/10.1121/1.1631937>`_.
 

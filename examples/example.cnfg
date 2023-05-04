@@ -2,9 +2,11 @@
 max_rng = 1000.0
 
 [PROP]
-incl_min = 1.0
-incl_max = 60.0
-incl_step = 1.0
+src_lat = 30.0
+src_lon = -100.0
+incl_min = 2.0
+incl_max = 40.0
+incl_step = 2.0
 
 bounces = 100
 

@@ -22,7 +22,7 @@ In addition to the various analysis and visualization capabilities of InfraPy, s
 
 **Building a Range Dependent Grid**
 
-The range dependent methods in infraGA/GeoAc require specifying a grid of nodes and atmospheric structure at each defined by a single atmospheric specification file.  Such information is ingested as, :code:`--atmo-prefix profs/example --grid-lats profs/example_lat.dat --grid-lons profs/example_lon.dat` for the example grid included with the software.  Building a custom grid from a set of G2S specification files can be accomplished using the :code:`inferaga utils build-g2s-grid` utility.  
+The range dependent methods in infraGA/GeoAc require specifying a grid of nodes and atmospheric structure at each defined by a single atmospheric specification file.  Such information is ingested as, :code:`--atmo-prefix profs/example --grid-lats profs/example_lat.dat --grid-lons profs/example_lon.dat` for the example grid included with the software.  Building a custom grid from a set of G2S specification files can be accomplished using the :code:`infraga utils build-g2s-grid` utility to load G2S files from a directory (:code:`--g2s-dir`) and specifying an output path for the indexed atmosphere files and grid info files (:code:`--output-path`), 
 
   .. code-block:: none 
 
@@ -97,7 +97,7 @@ Terrain files for use in propagation simulations require some specified geometry
       Examples:
           infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth -90.0 --range 750.0 --output-file line_topo.dat
           infraga utils extract-terrain --geom pnt2pnt --lat1 40.0 --lon1 -102.5 --lat2 40.0 --lon2 -110.0 --output-file line_topo.dat
-          infraga utils extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
+          infraga utils extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --ref-lat 40.0 --ref-lon -105.0 --output-file xy_topo.dat
           infraga utils extract-terrain --geom latlon-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
 
     Options:
