@@ -22,6 +22,7 @@ import matplotlib.ticker as mticker
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+import cartopy 
 import cartopy.crs as crs
 import cartopy.feature as cfeature
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
@@ -41,7 +42,10 @@ def usage():
     print('\t' + "turning-height" + '\t\t' + "Plot the turning height of arrivals (visualize tropospheric, stratospheric, and thermospheric arrivals)")
     print('\t' + "celerity" + '\t\t' + "Plot the celerity (horizontal group velocity) of arrivals" + '\n')
 
-def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, title_text="infraga-sph predictions", time1=None, time2=None, include_absorp=True):
+def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, title_text="infraga-sph predictions", time1=None, time2=None, include_absorp=True, cartopy_data_dir=None):
+    if cartopy_data_dir is not None:
+        cartopy.config['pre_existing_data_dir'] = cartopy_data_dir
+
     if arrivals_file is not None:
         # extract source info from the header
         arrivals_file = open(arrivals_file, 'r')
@@ -81,7 +85,8 @@ def run(arrivals_file, ray_paths_file, plot_option, file_out, rcvrs_file=None, t
     gl.top_labels = False
     gl.right_labels = False
 
-    lat_tick, lon_tick = int((lat_max - lat_min) / 5), int((lon_max - lon_min) / 5)
+    lat_tick, lon_tick = max(0.2, int((lat_max - lat_min) / 5.0)), max(0.2, int((lon_max - lon_min) / 5.0))
+
     gl.xlocator = mticker.FixedLocator(np.arange(lon_min - np.ceil(lon_tick / 2), lon_max + lon_tick, lon_tick))
     gl.ylocator = mticker.FixedLocator(np.arange(lat_min - np.ceil(lat_tick / 2), lat_max + lat_tick, lat_tick))
     gl.xformatter = LONGITUDE_FORMATTER
