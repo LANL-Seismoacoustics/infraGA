@@ -72,7 +72,7 @@ void usage(){
     cout << '\t' << '\t' << "az_max"            << '\t' << '\t' << "degrees"    << '\t' << '\t' << "-90.0" << '\n';
     cout << '\t' << '\t' << "az_step"           << '\t' << '\t' << "degrees"    << '\t' << '\t' << "1.0"  << '\n';
     cout << '\t' << '\t' << "azimuth"           << '\t' << '\t' << "see manual" << '\t' << "-90.0" << '\n';
-    cout << '\t' << '\t' << "bounces"           << '\t' << '\t' << "integer"    << '\t' << '\t' << "2" << '\n';
+    cout << '\t' << '\t' << "bounces"           << '\t' << '\t' << "integer"    << '\t' << '\t' << "10" << '\n';
     cout << '\t' << '\t' << "src_lat"           << '\t' << '\t' << "degrees"    << '\t' << '\t' << "30.0" << '\n';
     cout << '\t' << '\t' << "src_lon"           << '\t' << '\t' << "degrees"    << '\t' << '\t' << "0.0" << '\n';
     cout << '\t' << '\t' << "src_alt"           << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
@@ -124,7 +124,7 @@ void usage(){
     cout << '\t' << "calc_amp"          << '\t' << '\t' << "true/false"         << '\t' << "true" << '\n';
     
     cout << '\t' << "max_alt"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation max" << '\n';
-    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
+    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
     cout << '\t' << "max_time"          << '\t' << '\t' << '\t' << "hr"         << '\t' << '\t' << "10.0" << '\n';
     cout << '\t' << "min_lat"           << '\t' << '\t' << '\t' << "degrees"    << '\t' << '\t' << "-90.0" << '\n';
     cout << '\t' << "max_lat"           << '\t' << '\t' << '\t' << "degrees"    << '\t' << '\t' << "+90.0" << '\n';
@@ -132,7 +132,7 @@ void usage(){
     cout << '\t' << "max_lon"           << '\t' << '\t' << '\t' << "degrees"    << '\t' << '\t' << "+180.0" << '\n';
     cout << '\t' << "min_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.001" << '\n';
     cout << '\t' << "max_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.05" << '\n';
-    cout << '\t' << "max_s"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
+    cout << '\t' << "max_s"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
     cout << '\t' << "topo_file"         << '\t' << '\t' << "see manual"         << '\t' << "none" << '\n';
     cout << '\t' << "topo_use_BLw"      << '\t' << '\t' << "see manual"         << '\t' << "false" << '\n' << '\n';
 
@@ -165,7 +165,7 @@ void run_prop(char* inputs[], int count){
     }
     double theta_min = 0.5, theta_max = 45.0, theta_step = 0.5;
     double phi_min = -90.0, phi_max = -90.0, phi_step = 1.0;
-    int bounces=2, file_check;
+    int bounces=10, file_check;
     double lat_src = 30.0, lon_src = 0.0, z_src = 0.0;
     bool write_atmo=false, write_rays=false, write_topo=false, custom_output_id=false;
     double freq = 0.1, turn_ht_min = 0.2;
@@ -400,7 +400,8 @@ void run_prop(char* inputs[], int count){
             }
 
             if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo && world_rank == 0){
-                topo_out.open("topography.dat");
+                sprintf(output_buffer, "%s.terrain.dat", output_id);
+                topo_out.open(output_buffer);
             }
 
             for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){

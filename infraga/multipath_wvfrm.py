@@ -503,7 +503,6 @@ def run(specification, option, src_lat, src_lon, src_alt, rcvr_x, rcvr_y, rcvr_l
 
 
 
-
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         usage()

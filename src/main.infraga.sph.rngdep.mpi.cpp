@@ -54,10 +54,10 @@ void usage(){
     cout << '\t' << "###########################################################" << '\n' << '\n';
     
     cout << '\n';
-    cout << "Usage: mpirun -np [number] infraga-accel-sph-rngdep [option] profile_id nodes-lat.loc nodes-lon.loc [parameters]" << '\n';
+    cout << "Usage: mpirun -np [number] infraga-accel-sph-rngdep [option] profile_id nodes-lat.dat nodes-lon.dat [parameters]" << '\n';
     cout << '\t' << '\t' << "Enter only 1 option." << '\n';
     cout << '\t' << '\t' << "Each profile_id##.met is expected to contain columns describing {z[km]  T[K]  u (zonal wind) [m/s]  v (meridional wind) [m/s]  density[g/cm^3]  p[mbar]} " << '\n';
-    cout << '\t' << '\t' << "The files nodes-lat.loc and nodes-lon.loc are expected to contain columns describing the latitude and longitude locations of the .met files." << '\n';
+    cout << '\t' << '\t' << "The files nodes-lat.dat and nodes-lon.dat are expected to contain columns describing the latitude and longitude locations of the .met files." << '\n';
     cout << '\t' << '\t' << '\t' << "These can be generated using the included Python script for a single .bin file." << '\n';
     cout << '\t' << '\t' << '\t' << "Profiles are ordered such that profile_id[N].met describes the atmosphere at lat = lat_i, lon = lon_j, N = i + n_lat * j" << '\n';
     cout << '\t' << '\t' << '\t' << "Profile format can be modified, see manual document for details." << '\n';
@@ -75,7 +75,7 @@ void usage(){
     cout << '\t' << '\t' << "az_max"            << '\t' << '\t' << "degrees"    << '\t' << '\t' << "-90.0" << '\n';
     cout << '\t' << '\t' << "az_step"           << '\t' << '\t' << "degrees"    << '\t' << '\t' << "1.0"  << '\n';
     cout << '\t' << '\t' << "azimuth"           << '\t' << '\t' << "see manual" << '\t' << "-90.0" << '\n';
-    cout << '\t' << '\t' << "bounces"           << '\t' << '\t' << "integer"    << '\t' << '\t' << "2" << '\n';
+    cout << '\t' << '\t' << "bounces"           << '\t' << '\t' << "integer"    << '\t' << '\t' << "10" << '\n';
     cout << '\t' << '\t' << "src_lat"           << '\t' << '\t' << "degrees"    << '\t' << '\t' << "midpoint of nodes-lat file" << '\n';
     cout << '\t' << '\t' << "src_lon"           << '\t' << '\t' << "degrees"    << '\t' << '\t' << "midpoint of nodes-lon file" << '\n';
     cout << '\t' << '\t' << "src_alt"           << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
@@ -125,7 +125,7 @@ void usage(){
     cout << '\t' << "calc_amp"          << '\t' << '\t' << "true/false"         << '\t' << "true" << '\n';
 
     cout << '\t' << "max_alt"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation limits" << '\n';
-    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
+    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
     cout << '\t' << "max_time"          << '\t' << '\t' << '\t' << "hr"         << '\t' << '\t' << "10.0" << '\n';
     cout << '\t' << "min_lat"           << '\t' << '\t' << '\t' << "degrees"    << '\t' << '\t' << "interpolation limits" << '\n';
     cout << '\t' << "max_lat"           << '\t' << '\t' << '\t' << "degrees"    << '\t' << '\t' << "interpolation limits" << '\n';
@@ -133,7 +133,7 @@ void usage(){
     cout << '\t' << "max_lon"           << '\t' << '\t' << '\t' << "degrees"    << '\t' << '\t' << "interpolation limits" << '\n';
     cout << '\t' << "min_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.001" << '\n';
     cout << '\t' << "max_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.05" << '\n';
-    cout << '\t' << "max_s"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
+    cout << '\t' << "max_s"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
     cout << '\t' << "topo_file"         << '\t' << '\t' << "see manual"         << '\t' << "none" << '\n';
     cout << '\t' << "topo_use_BLw"      << '\t' << '\t' << "see manual"         << '\t' << "false" << '\n' << '\n';
     
@@ -143,8 +143,8 @@ void usage(){
     cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : lat : lon : time : cel : z_max : arrival incl : back az : trans. coeff. : absorption" << '\n' << '\n';
     
     cout << "Examples:" << '\n';
-    cout << '\t' << "mpirun -np 6 ./bin/infraga-accel-sph-rngdep -prop examples/profs/example examples/profs/example_lat.loc examples/profs/example_lon.loc src_lat=40.0 src_lon=-102.5 azimuth=-90.0 write_rays=true" << '\n';
-    cout << '\t' << "mpirun -np 6 ./bin/infraga-accel-sph-rngdep -eig_search examples/profs/example examples/profs/example_lat.loc examples/profs/example_lon.loc src_lat=40.0 src_lon=-102.5 rcvr_lat=41.05 rcvr_lon=-108.25 bnc_max=1 verbose=true" << '\n' << '\n';
+    cout << '\t' << "mpirun -np 6 ./bin/infraga-accel-sph-rngdep -prop examples/profs/example examples/profs/example_lat.dat examples/profs/example_lon.dat src_lat=40.0 src_lon=-102.5 azimuth=-90.0 write_rays=true" << '\n';
+    cout << '\t' << "mpirun -np 6 ./bin/infraga-accel-sph-rngdep -eig_search examples/profs/example examples/profs/example_lat.dat examples/profs/example_lon.dat src_lat=40.0 src_lon=-102.5 rcvr_lat=41.05 rcvr_lon=-108.25 bnc_max=1 verbose=true" << '\n' << '\n';
 }
 
 void run_prop(char* inputs[], int count){
@@ -395,7 +395,8 @@ void run_prop(char* inputs[], int count){
             }
 
             if((fabs(theta - max(theta_min, theta_grnd)) < theta_step) && write_topo && world_rank == 0){
-                topo_out.open("topography.dat");
+                sprintf(output_buffer, "%s.terrain.dat", output_id);
+                topo_out.open(output_buffer);
             }
 
             for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){

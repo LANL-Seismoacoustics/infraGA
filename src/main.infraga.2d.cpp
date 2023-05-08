@@ -64,7 +64,7 @@ void usage(){
     cout << '\t' << '\t' << "incl_step"         << '\t' << "degrees"            << '\t'  << '\t' << "0.5"  << '\n';
     cout << '\t' << '\t' << "inclination"       << '\t' << "see manual"         << '\t' << "0.5" << '\n';
     cout << '\t' << '\t' << "azimuth"           << '\t' << '\t' << "degrees"    << '\t'  << '\t' << "-90.0"  << '\n';
-    cout << '\t' << '\t' << "bounces"           << '\t' << '\t' << "integer"    << '\t'  << '\t' << "2" << '\n';
+    cout << '\t' << '\t' << "bounces"           << '\t' << '\t' << "integer"    << '\t'  << '\t' << "10" << '\n';
     cout << '\t' << '\t' << "src_alt"           << '\t' << '\t' << "km"         << '\t'  << '\t' << "0.0" << '\n' << '\n';
 
     cout << '\t' << "-wnl_wvfrm (compute the weakly non-linear waveform along a specific ray path)" << '\n';
@@ -106,10 +106,10 @@ void usage(){
     cout << '\t' << "write_caustics"    << '\t' << '\t' << "true/false"         << '\t' << "false" << '\n';
     cout << '\t' << "calc_amp"          << '\t' << '\t' << "true/false"         << '\t' << "true" << '\n';
     cout << '\t' << "max_alt"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "interpolation max" << '\n';
-    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
+    cout << '\t' << "max_rng"           << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
     cout << '\t' << "min_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.001" << '\n';
     cout << '\t' << "max_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.05" << '\n';
-    cout << '\t' << "max_s"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "2500.0" << '\n';
+    cout << '\t' << "max_s"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
     cout << '\t' << "topo_file"         << '\t' << '\t' << "see manual" << '\t' << "none" << '\n' << '\n';
 
     cout << "Output (see output files or manual for units):" << '\n';
@@ -118,7 +118,7 @@ void usage(){
     cout << '\t' << "{...}.arrivals.dat -> incl : az : n_bnc : r : time : cel : z_max : arrival incl : trans. coeff. : absorption : perp dist" << '\n' << '\n';
 
     cout << "Examples:" << '\n';
-    cout << '\t' << "./bin/infraga-2d -prop examples/ToyAtmo.met incl_step=1.0 bounces=2 max_rng=500.0" << '\n';
+    cout << '\t' << "./bin/infraga-2d -prop examples/ToyAtmo.met incl_step=1.0 max_rng=500.0" << '\n';
     cout << '\t' << "./bin/infraga-2d -wnl_wvfrm examples/ToyAtmo.met azimuth=-90.0 inclination=12.0 wvfrm_opt=impulse wvfrm_p0=500.0" << '\n' << '\n';
 }
 
@@ -131,7 +131,7 @@ void run_prop(char* inputs[], int count){
     
     double theta_min = 0.5, theta_max=45.0, theta_step=0.5, azimuth=-90.0;
     double r_src = 0.0, z_src = 0.0, freq = 0.1, turn_ht_min = 0.05;
-    int bounces=2, file_check;
+    int bounces=10, file_check;
     bool write_atmo=false, write_caustics=false, custom_output_id=false, print_resid=false;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";

@@ -1,0 +1,423 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Propagation Physics &mdash; infraGA/GeoAc  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Parameters" href="parameters.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> infraGA/GeoAc
+          
+
+          
+            
+            <img src="_static/LANL Logo White.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="userguide.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authorship.html">Authorship &amp; References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="atmospheres.html">Atmospheric Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utility Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Propagation Physics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#geometric-acoustics">Geometric Acoustics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#two-and-three-dimensional-propagation">Two- and Three-Dimensional Propagation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#spherical-geometry-propagation">Spherical Geometry Propagation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#eigenray-methods">Eigenray Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#terrain-interactions">Terrain Interactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#weakly-non-linear-waveform-evolution">Weakly Non-Linear Waveform Evolution</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">infraGA/GeoAc</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Propagation Physics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/physics.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="propagation-physics">
+<span id="physics"></span><h1>Propagation Physics<a class="headerlink" href="#propagation-physics" title="Permalink to this heading">¶</a></h1>
+<section id="geometric-acoustics">
+<h2>Geometric Acoustics<a class="headerlink" href="#geometric-acoustics" title="Permalink to this heading">¶</a></h2>
+<p>The propagation of acoustic energy can be described by a linear perturbation of the fluid mechanics equations.  The linear order continuity, Euler, and state equations for an inhomogeneous, moving medium have the forms,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\frac{D \rho}{D t} + \rho \vec{\nabla} \cdot \vec{v}_0 + \vec{\nabla} \cdot \left( \rho_0 \vec{v} \right) &amp; = 0,\\\frac{D \vec{v}}{Dt}  + \left( \vec{v} \cdot \vec{\nabla} \right) \vec{v}_0 &amp; = -\frac{1}{\rho_0} \vec{\nabla} p + \rho \vec{\nabla} \frac{p_0}{\rho_0^2},\\\vec{v} \cdot \vec{\nabla} p_0 + \frac{D p}{D t} &amp; = c^2 \left[ \vec{v} \cdot \vec{\nabla} \rho_0 + \frac{D \rho}{D t} \right] + \left( c^2 \right)^\prime \vec{v}_0 \cdot \vec{\nabla} \rho_0,\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>where subscript 0’s denote ambient quantities that vary in space and those without subscripts denote acoustic perturbations that vary in space and time.  The approximation of geometric acoustics is constructed by expanding each variable with a spatially varying phase, <span class="math notranslate nohighlight">\(e^{i k_0 \lambda \left( \vec{x} \right)}\)</span>, and Debye series, <span class="math notranslate nohighlight">\(\sum{ \frac{\mathcal{P}_j (\vec{x})}{(i k_0)^j}}\)</span>.  The phase function, <span class="math notranslate nohighlight">\(\psi \left( \vec{x} \right)\)</span>, is termed the Eikonal and its solution provides information about the deformation of surfaces of constant phase.  Expanding each linear variable,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}\begin{pmatrix}
+p \\ \vec{v} \\ \rho \\ \left( c^2 \right)^\prime
+\end{pmatrix} =
+e^{i k_0 \lambda \left( \vec{x} \right)} \sum_{j = 0}^\infty{\frac{1}{\left( i k_0 \right)^j}
+\begin{pmatrix}
+\mathcal{P}_j \left( \vec{x} \right) \\
+\vec{\mathcal{V}}_j \left( \vec{x} \right) \\
+\mathcal{D}_j \left( \vec{x} \right) \\
+\mathcal{C}_j \left( \vec{x} \right)
+\end{pmatrix}}.\end{split}\]</div>
+</div></blockquote>
+<p>The linearized fluid mechanics equations can then be expressed as,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned} &amp; \sum_{j = 0}^\infty{\frac{1}{\left( i k_0 \right)^j} \Big\{ -i k_0 \mathcal{D}_j \left( c_0  - \vec{v}_0 \cdot \vec{\psi} \right) + \vec{v}_0 \cdot \vec{\nabla} \mathcal{D}_j + \mathcal{D}_j \vec{\nabla} \cdot \vec{v}_0}\\ &amp; \hspace{2.5in} + \rho_0 \vec{\nabla} \cdot \vec{\mathcal{V}}_j + \rho_0 i k_0 \vec{\mathcal{V}}_j \cdot \vec{\psi} + \vec{\mathcal{V}}_j \cdot \vec{\nabla} \rho_0 \Big\} = 0,\\ &amp;\sum_{j = 0}^\infty{\frac{1}{\left( i k_0 \right)^j} \left\{ -i k_0 \vec{\mathcal{V}}_j \left( c_0 - \vec{v}_0 \cdot \vec{\psi} \right) + \vec{v}_0 \cdot \vec{\nabla} \vec{\mathcal{V}}_j + \vec{\mathcal{V}}_j \cdot \vec{\nabla} \vec{v}_0 \right\}}\\ &amp; \hspace{2.5in} = \sum_{j = 0}^\infty{\frac{1}{\left( i k_0 \right)^j}  \left\{ -  \frac{i k_0}{\rho_0}  \mathcal{P}_j   \vec{\psi} - \frac{1}{\rho_0} \vec{\nabla} \mathcal{P}_j  + \mathcal{D}_j \vec{\nabla} \frac{p_0}{\rho_0{}^2} \right\} },\\ &amp; \sum_{j = 0}^\infty{\frac{1}{\left( i k_0 \right)^j} \left\{ \vec{\mathcal{V}}_j \cdot \vec{\nabla} p_0 - i k_0 \mathcal{P}_j \left( c_0 -  \vec{v}_0 \cdot \vec{\psi} \right) + \vec{v}_0 \cdot \vec{\nabla} \mathcal{P}_j \right\} }\\&amp; \hspace{1.0in} = \sum_{j = 0}^\infty{\frac{1}{\left( i k_0 \right)^j} \Big\{ c^2 \left[ \vec{\mathcal{V}}_j \cdot \vec{\nabla} \rho_0  -i k_0 \mathcal{D}_j \left( c_0 - \vec{v}_0 \cdot \vec{\psi} \right) + \vec{v}_0 \cdot \vec{\nabla} \mathcal{D}_j \right]} + \mathcal{C}_j \vec{v}_0 \cdot \vec{\nabla} \rho_0 \Big\},\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>where we’ve defined <span class="math notranslate nohighlight">\(\vec{\psi} = \vec{\nabla} \lambda\)</span>.  Collecting terms in powers of <span class="math notranslate nohighlight">\(k_0\)</span>, the leading order contributions require,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\left( 1 - \frac{\vec{v}_0 \cdot \vec{\psi}}{c_0} \right) \mathcal{D}_0 &amp; = \frac{\rho_0}{c_0} \vec{\mathcal{V}}_0 \cdot \vec{\psi},\\\left( 1 - \frac{\vec{v}_0 \cdot \vec{\psi}}{c_0} \right) \vec{\mathcal{V}}_0 &amp; = \frac{1}{\rho_0 c_0} \mathcal{P}_0 \vec{\psi},\\\mathcal{P}_0 &amp; = c^2 \mathcal{D}_0,\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>which can be combined to obtain the Eikonal Equation,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\psi^2 = \frac{c_0^2}{c^2 \left( \vec{x} \right) } \left[ 1 - \frac{\vec{v}_0 \left( \vec{x} \right) \cdot \vec{\psi}}{c_0} \right]^2.\]</div>
+</div></blockquote>
+<p>In addition to the ray path geometry defined by the Eikonal Equation, higher order terms in the expansion provide a means to estimate ray spreading and geometric attenuation.  Taking the terms in the expansion proportional to <span class="math notranslate nohighlight">\(k_0\)</span>,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}&amp; \left( 1 - \frac{\vec{v}_0 \cdot \vec{\psi}}{c_0} \right) \vec{\mathcal{V}}_1 - \frac{1}{\rho_0 c_0} \mathcal{P}_1 \vec{\psi}\\&amp; \hspace{0.5in} =  \frac{1}{c_0} \left[ \vec{v}_0 \cdot\vec{\nabla}\vec{\mathcal{V}}_0 + \vec{\mathcal{V}}_0 \cdot\vec{\nabla}\vec{v}_0 + \frac{1}{\rho_0} \vec{\nabla} \mathcal{P}_0 - \frac{\mathcal{D}_0}{\rho_0{}^2}\vec{\nabla}p_0 \right] = \vec{b},\\&amp;\left( 1 - \frac{\vec{v}_0 \cdot \vec{\psi}}{c_0} \right) \mathcal{D}_1 - \frac{\rho_0}{c_0} \vec{\psi} \cdot \vec{\mathcal{V}}_1 = \frac{1}{c_0}\vec{\nabla}\cdot \left( \mathcal{D}_0 \vec{v}_0 + \rho_0 \vec{\mathcal{V}}_0 \right) = b_1,\\&amp;\mathcal{P}_1 - c^2 \mathcal{D}_1 = \frac{1}{c \psi} \left[ \vec{\mathcal{V}}_0 \cdot\vec{\nabla} p_0 + \vec{v}_0 \cdot\vec{\nabla}\mathcal{P}_0 - c^2 \vec{v}_0 \cdot\vec{\nabla} \mathcal{D}_0 - \frac{\mathcal{P}_0}{c^2} \vec{v}_0 \cdot \vec{\nabla} c^2 - c^2 \vec{\mathcal{V}}_0 \cdot\vec{\nabla}\rho_0 \right] = b_2,\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>Using the Eikonal Equation condition, these equations can be combined in a manner which goes to zero,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}\left\{
+\begin{matrix}
+\psi \vec{\mathcal{V}}_1 - \frac{1}{\rho_0 c_0} \mathcal{P}_1 \vec{\psi} = \vec{b} \\ \\
+\psi \mathcal{D}_1 - \frac{\rho_0}{c_0} \vec{\psi} \cdot \vec{\mathcal{V}}_1 = b_1 \\ \\
+\mathcal{P}_1 - c^2 \mathcal{D}_1 = b_2
+\end{matrix}
+\right. \quad \quad \rightarrow \quad
+\frac{c_0 \rho_0}{\psi} \vec{\psi} \cdot \vec{b} + c_0 c b_1 + \psi b_2 = 0.\end{split}\]</div>
+</div></blockquote>
+<p>Solving this condition leads to the transport equation,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\vec{\nabla} \cdot \left( \mathcal{P}_0^2 \vec{c}_g \right) = \mathcal{P}_0^2 \vec{c}_g \cdot \vec{\nabla} \ln \left( \rho_0 c^3 \psi \right),\]</div>
+</div></blockquote>
+<p>and the resulting amplitude term is defined in terms of the Jacobian, <span class="math notranslate nohighlight">\(D \left( s, \vartheta, \varphi \right)\)</span> where <span class="math notranslate nohighlight">\(s\)</span>, <span class="math notranslate nohighlight">\(\vartheta\)</span>, and <span class="math notranslate nohighlight">\(\varphi\)</span> are the ray length, initial inclination angle, and initial azimuthal angle of the ray path respectively, that describes the coordinate transformation between Cartesian and ray coordinates,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\mathcal{P}_0 \left( s, \vartheta, \varphi \right) = \frac{1}{4 \pi} \sqrt{ \frac{\rho_0 \left( s \right) \psi \left( s \right) c^3 \left( s \right)}{\rho_0 \left( 0 \right) \psi \left( 0 \right) c^3 \left( 0 \right)} \frac{c_g \left( 0 \right) \,  \cos \vartheta}{c_g \left( s \right) D \left( s, \vartheta, \varphi \right) }}.\]</div>
+</div></blockquote>
+<p>Spherical spreading at the source has been assumed so that <span class="math notranslate nohighlight">\(\mathcal{P}_0 \left( s, \vartheta, \varphi \right)_{s \downarrow 0} = \frac{1}{4\pi s^2}\)</span> and <span class="math notranslate nohighlight">\(D \left( s, \vartheta, \varphi \right)_{s \downarrow 0} = s^2 \cos \vartheta\)</span>,</p>
+<p>The Eikonal Equation can be used to define a Hamiltonian, <span class="math notranslate nohighlight">\(H \left( \vec{x}, \vec{\psi} \right) = 0\)</span> and the Hamilton-Jacobi relations used to define equations governing ray paths,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\frac{\partial \vec{x}}{\partial \tau} &amp; = \frac{\partial H}{\partial \vec{\psi}}, \quad \quad\\\frac{\partial \vec{\psi}}{\partial \tau} &amp; = - \frac{\partial H}{\partial \vec{x}}.\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>For the methods in infraGA, the parameter <span class="math notranslate nohighlight">\(\tau\)</span> is replaced by ray length, <span class="math notranslate nohighlight">\(s\)</span>, such that <span class="math notranslate nohighlight">\(\left\| d \vec{x} \right\| = ds\)</span>.  The transport coefficient depends on the Jacobian determinant which is defined by the variation between coordinate systems.  Denoting the initial launch inclination and azimuth as <span class="math notranslate nohighlight">\(\vartheta\)</span> and <span class="math notranslate nohighlight">\(\varphi\)</span>, respectively, one has,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}D \left( x, y, z; s, \vartheta, \varphi \right) = \left\| \frac{\partial \left( x, y, z \right)}{\partial \left( s, \vartheta, \varphi \right)} \right\| = \textbf{det} \begin{pmatrix}
+\frac{\partial x}{\partial s} &amp;&amp; \frac{\partial x}{\partial \vartheta} &amp;&amp; \frac{\partial x}{\partial \varphi} \\ \\
+\frac{\partial y}{\partial s} &amp;&amp; \frac{\partial y}{\partial \vartheta} &amp;&amp; \frac{\partial y}{\partial \varphi} \\ \\
+\frac{\partial z}{\partial s} &amp;&amp; \frac{\partial z}{\partial \vartheta} &amp;&amp; \frac{\partial z}{\partial \varphi}
+\end{pmatrix}\end{split}\]</div>
+</div></blockquote>
+<p>As detailed in Blom &amp; Waxler (2012), the <span class="math notranslate nohighlight">\(s\)</span> derivatives can be defined directly from the Eikonal Equation condition, but the <span class="math notranslate nohighlight">\(\vartheta\)</span> and <span class="math notranslate nohighlight">\(\varphi\)</span> derivatives require the introduction of auxiliary parameters, <span class="math notranslate nohighlight">\(\mathcal{X}^{(\vartheta)} = \frac{\partial x}{\partial \vartheta}\)</span>, <span class="math notranslate nohighlight">\(\mathcal{X}^{(\varphi)} = \frac{\partial x}{\partial \varphi}\)</span> with similar parameters defined for <span class="math notranslate nohighlight">\(\mathcal{Y}\)</span> and <span class="math notranslate nohighlight">\(\mathcal{Z}\)</span>.  The governing equations for the auxiliary parameters are defined by taking launch angle derivatives of the governing spatial and Eikonal differential equations, for example,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}\frac{\partial \mathcal{X}^{(\vartheta)}}{\partial s} &amp; = \frac{\partial}{\partial \vartheta} \frac{\partial x}{\partial s}, \\
+\frac{\partial \Phi_x^{(\vartheta)}}{\partial s} &amp; = \frac{\partial}{\partial \vartheta} \frac{\partial \psi_x}{\partial s}\end{split}\]</div>
+</div></blockquote>
+<p>This increases the number of coupled equations needed for ray computation by a factor of 2 for 2-dimensional simulations and by a factor of 3 for 3-dimensional and spherical geometry simulations in which variations with respect to both <span class="math notranslate nohighlight">\(\vartheta\)</span> and <span class="math notranslate nohighlight">\(\varphi\)</span> must be considered.</p>
+</section>
+<section id="two-and-three-dimensional-propagation">
+<h2>Two- and Three-Dimensional Propagation<a class="headerlink" href="#two-and-three-dimensional-propagation" title="Permalink to this heading">¶</a></h2>
+<p>In the case of the effective sound speed approximation, one re-defines <span class="math notranslate nohighlight">\(c \rightarrow c + \vec{v}_0 \cdot \hat{\psi}_\perp\)</span> (adding the wind in the direction of propagation to the adiabatic sound speed) and <span class="math notranslate nohighlight">\(\vec{v} = 0\)</span> in the relations.  This reduces the Eikonal to, <span class="math notranslate nohighlight">\(\psi^2 = \frac{c_0^2}{c^2}\)</span>, and the propagation relations become simply,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\frac{\partial \vec{x}}{\partial s} = \frac{c_0}{c} \vec{\psi} , \quad \quad \frac{\partial \psi_j}{\partial s} = - \frac{c_0}{c^2} \frac{\partial c}{\partial x_j} ,\]</div>
+</div></blockquote>
+<p>For three-dimensional propagation simulations, the differential equations describing the geometric ray paths in an arbitrary moving medium can be found from the unmodified Eikonal derived above,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\frac{\partial \vec{x}}{\partial s} &amp; = \frac{\vec{c}_g}{c_g}, \quad \vec{c}_g = c \frac{\vec{\psi}}{\psi} + \vec{v}_0\\\frac{\partial \psi_j}{\partial s} &amp; = - \frac{1}{c_g} \left[ \psi \frac{\partial c}{\partial x_j} + \vec{\psi} \cdot \frac{\partial \vec{v}_0}{\partial x_j} \right].\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>where <span class="math notranslate nohighlight">\(\vec{c}_g\)</span> is the group velocity of energy along the ray paths.  See Blom &amp; Waxler 2012 and 2017 for full discussion of the Cartesian ray tracing development and inclusion of auxiliary parameters.</p>
+</section>
+<section id="spherical-geometry-propagation">
+<h2>Spherical Geometry Propagation<a class="headerlink" href="#spherical-geometry-propagation" title="Permalink to this heading">¶</a></h2>
+<p>The eikonal solution in spherical coordinates requires geometric corrections to the scaling of <span class="math notranslate nohighlight">\(d\vec{x}\)</span> as well as additional terms in the <span class="math notranslate nohighlight">\(\frac{\partial \psi_j}{\partial s}\)</span> relations to preserve the Eikonal vector direction as unit vectors vary in space,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\frac{\partial u_j}{\partial s} &amp; = \mathcal{G}_j\frac{c_{g,j}}{c_g} , \quad \quad c_{g,j} = c \frac{\psi_j}{\psi} + v_j,\\\frac{\partial \psi_j}{\partial s} &amp; = - \frac{\mathcal{G}_j}{c_g} \left( \psi \frac{\partial c}{\partial u_j} + \sum_k{ \psi_k \frac{\partial v_k}{\partial u_j}} + \mathcal{T}_j \right),\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>where geometric scaling coefficients and corrective terms for the spatial variability of the spherical coordinate unit vectors produce,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mathcal{G}_r &amp; = 1,  \quad
+\mathcal{G}_\theta = \frac{1}{r}, \quad
+\mathcal{G}_\phi = \frac{1}{r \cos \theta},\\\mathcal{T}_r &amp; =  \frac{1}{r} \left( \psi_\theta c_{g,\theta} + \psi_\phi  c_{g,\phi} \right),\\\mathcal{T}_\theta &amp; =  \left( \psi_r v_\theta - \psi_\theta v_r \right) - \left( \psi_r c_{g,\theta} - \psi_\phi  c_{g,\phi}  \tan \theta \right),\\\mathcal{T}_\phi &amp; =  \left( \psi_r v_\phi - \psi_\phi v_r \right) \cos \theta\\&amp; \hspace{0.5in} + \left( \psi_\theta v_\phi - \psi_\phi v_\theta \right) \sin \theta\\&amp; \hspace{1.0in} - c_{g,\phi} \left( \psi_r \cos \theta + \psi_\theta \sin \theta \right).\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>This is the equation set used in the <em>infraga-sph</em> methods and the full derivation of these relations is included in Blom, 2019.</p>
+</section>
+<section id="eigenray-methods">
+<h2>Eigenray Methods<a class="headerlink" href="#eigenray-methods" title="Permalink to this heading">¶</a></h2>
+<p>Eigenrays are identified using the auxiliary parameters defined in order to compute the Jacobian components needed to calculate geometric spreading.  Considering the arrival location of a ray path in 3D,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\begin{split}x_0 \left( \vartheta + \delta \vartheta, \varphi + \delta \varphi \right) = x_0 \left( \vartheta, \varphi \right) + \frac{\partial x_0}{\partial \vartheta} \delta \vartheta + \frac{\partial x_0}{\partial \varphi} \delta \varphi + O \left( \delta^2 \right),  \\\end{split}\\y_0 \left( \vartheta + \delta \vartheta, \varphi + \delta \varphi \right) = y_0 \left( \vartheta, \varphi \right) + \frac{\partial y_0}{\partial \vartheta} \delta \vartheta + \frac{\partial y_0}{\partial \varphi} \delta \varphi + O \left( \delta^2 \right),\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>The arrival location shifts with respect to launch angle variations (<span class="math notranslate nohighlight">\(\frac{\partial x_0}{\partial \vartheta}\)</span>, <span class="math notranslate nohighlight">\(\frac{\partial x_0}{\partial \varphi}\)</span>, etc.) can be defined from the auxiliary parameters introduced to solve the Transport equation.  This can be written more compactly as,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}\begin{pmatrix}
+\delta x_0 \\
+\delta y_0
+\end{pmatrix} =
+\begin{pmatrix}
+\frac{\partial x_0}{\partial \vartheta} &amp; \frac{\partial x_0}{\partial \varphi} \\
+\frac{\partial y_0}{\partial \vartheta} &amp; \frac{\partial y_0}{\partial \varphi}
+\end{pmatrix}
+\begin{pmatrix}
+\delta \vartheta \\ \delta \varphi
+\end{pmatrix},\end{split}\]</div>
+</div></blockquote>
+<p>or simply,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\delta \vec{x}_0 = \boldsymbol{\mathcal{D}}_0 \, \delta \vec{\vartheta}.\]</div>
+</div></blockquote>
+<p>From this linear approximation, a Levenberg-Marquardt algorithm can be constructed,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\delta \vec{\vartheta} = \left( \boldsymbol{\mathcal{D}}_0 + \lambda  \text{ diag} \left(\boldsymbol{\mathcal{D}}_0 \right) \right)^{-1} \delta \vec{x}_0,\]</div>
+</div></blockquote>
+<p>that will identify the changes in ray launch angles, <span class="math notranslate nohighlight">\(\delta \vec{\vartheta}\)</span> needed to shift the arrival location by some distance, <span class="math notranslate nohighlight">\(\delta \vec{x}_0\)</span>.  This algorithm is utilized as a stand alone method in <em>-eig_direct</em> and as the precision search step in <em>-eig_search</em> where a preliminary inclination/range search is used to identify initial solutions near eigenrays.  See Blom &amp; Waxler 2017 for a full discussion of the eigenray methods.</p>
+</section>
+<section id="terrain-interactions">
+<h2>Terrain Interactions<a class="headerlink" href="#terrain-interactions" title="Permalink to this heading">¶</a></h2>
+<p>The reflection conditions for including topography are modified so that the eikonal vector components along the ground surface are conserved and the normal component to the ground changes sign,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\vec{\psi}_\text{refl} \cdot \hat{n}_\text{grnd} = - \vec{\psi}_0 \cdot \hat{n}_\text{grnd}, \quad
+\vec{\psi}_\text{refl} \times \hat{n}_\text{grnd} = \vec{\psi}_0 \times \hat{n}_\text{grnd}.\]</div>
+</div></blockquote>
+<p>where <span class="math notranslate nohighlight">\(\vec{\psi}_0\)</span> denotes the incident eikonal vector.  The resulting reflection conditions can then be defined by relating the ground normal to the derivative of the functional ground surface specification, <span class="math notranslate nohighlight">\(z_g \left( x, y \right)\)</span>,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}\psi_x \left( s_0 + 0^+, \vartheta, \varphi \right) &amp; = \mathcal{C}_1^{(x)}  \psi_{x,0} + \mathcal{C}_2^{(x)} \left( \psi_{z,0} - \psi_{y,0} \frac{\partial z_g}{\partial y} \right), \\
+\psi_y \left( s_0 + 0^+, \vartheta, \varphi \right) &amp; = \mathcal{C}_1^{(y)}  \psi_{y,0} + \mathcal{C}_2^{(y)} \left( \psi_{z,0} - \psi_{x,0} \frac{\partial z_g}{\partial x} \right), \\
+\psi_z \left( s_0 + 0^+, \vartheta, \varphi \right) &amp; = -\mathcal{C}_1^{(z)} \psi_{z, 0} + \mathcal{C}_2^{(x)} \psi_{x,0} + \mathcal{C}_2^{(y)} \psi_{y,0}.\end{split}\]</div>
+</div></blockquote>
+<p>where,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}\mathcal{C}_1^{(x)} &amp; = \frac{1 - \left(\frac{\partial z_g}{\partial x} \right)^2 + \left(\frac{\partial z_g}{\partial y} \right)^2}{1 + \left(\frac{\partial z_g}{\partial x} \right)^2 + \left(\frac{\partial z_g}{\partial y} \right)^2}, &amp; \quad \quad
+\mathcal{C}_2^{(x)} &amp;= \frac{2 \frac{\partial z_g}{\partial x}}{1 + \left(\frac{\partial z_g}{\partial x} \right)^2 +\left(\frac{\partial z_g}{\partial y} \right)^2}, \\
+\mathcal{C}_1^{(y)} &amp; =\frac{1 + \left(\frac{\partial z_g}{\partial x} \right)^2 - \left(\frac{\partial z_g}{\partial y} \right)^2}{1 + \left(\frac{\partial z_g}{\partial x} \right)^2 + \left(\frac{\partial z_g}{\partial y} \right)^2}, &amp; \quad \quad
+\mathcal{C}_2^{(y)} &amp; = \frac{2 \frac{\partial z_g}{\partial y}}{1 + \left(\frac{\partial z_g}{\partial x} \right)^2 +\left(\frac{\partial z_g}{\partial y} \right)^2}, \\
+\mathcal{C}_1^{(z)} &amp; = \frac{1 - \left(\frac{\partial z_g}{\partial x} \right)^2 - \left(\frac{\partial z_g}{\partial y} \right)^2}{1 + \left(\frac{\partial z_g}{\partial x} \right)^2 + \left(\frac{\partial z_g}{\partial y} \right)^2}.\end{split}\]</div>
+</div></blockquote>
+<p>See Blom 2020 for a full derivation and discussion of the reflection conditions.</p>
+</section>
+<section id="weakly-non-linear-waveform-evolution">
+<h2>Weakly Non-Linear Waveform Evolution<a class="headerlink" href="#weakly-non-linear-waveform-evolution" title="Permalink to this heading">¶</a></h2>
+<p>The waveform evolution is computed using the methods developed by Lonzaga textit{et al.} (2015) using a Heun’s solver (RK2).  The equations being solved are,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}\frac{\partial u}{\partial s} = \tilde{\beta} u \frac{\partial u}{\partial \tau}, \quad
+\tilde{\beta} \left( s\right) &amp; = \beta \frac{p_0}{\rho_0 c_0^2} \frac{\psi_0 c_0}{c_{g,0} c_\text{src}} \sqrt{ \frac{D_0 \rho_0 c_{g,0}^3}{D \rho c_g^3} \frac{c \psi^3}{c_0 \psi_0^3}}, \\
+u \left( s, \tau \right) &amp; = \frac{p \left( s, \tau \right)}{p_\text{ref}} \sqrt{ \frac{\rho_0 c_0^3 \psi_0}{\rho c^3 \psi} \frac{c_{g} D}{c_{g,0} D_0}},\end{split}\]</div>
+</div></blockquote>
+<p>where subscript zeros denote evaluation at some reference point, <span class="math notranslate nohighlight">\(s = s_0\)</span>, along the ray path.  The variable step size in the solver is defined as <span class="math notranslate nohighlight">\(ds = ds_0 /  \left( \pi \tilde{\beta} \left( s \right) \text{max} \left(\mathcal{U} \left( s, f \right) \right) \right)\)</span>, where <span class="math notranslate nohighlight">\(\mathcal{U} \left( s, f \right)\)</span> is the FFT of <span class="math notranslate nohighlight">\(u \left(s, t \right)\)</span> along the ray path and <span class="math notranslate nohighlight">\(ds_0\)</span> is defined in the code as verb=wvfrm_ds=.</p>
+<p>In cases for which little energy is expected hear the Nyquist frequency, a value of <span class="math notranslate nohighlight">\(ds_0 \sim1.0\)</span> can be used; however, for source waveforms with high frequency content (e.g., a blast wave) or propagation paths extending into the upper atmosphere where rarefaction leads to strong relatively strong non-linear effects and generation of high frequency energy, a value of <span class="math notranslate nohighlight">\(\sim0.1\)</span> might be required.  Best practice is to vary the value of verb=wvfrm_ds= to be sure your analysis has converged.  See Lonzaga et al., 2015 and Blom &amp; Waxler, 2021 for a full description of the Burgers equation methods.</p>
+<p>The blastwave/impulse source available in the software has the form,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}p \left( t; p_0, t_0, \alpha \right) = \left\{
+\begin{matrix}
+\frac{p_0}{\mathcal{C}} x^\alpha \left( 1 - \frac{x}{1 + \alpha} \right) e^{-x} &amp;  x \geq 0 \\ \\
+0                                                                       &amp; x &lt; 0
+\end{matrix}
+\right., \quad \quad x = \frac{t}{t_0}.\end{split}\]</div>
+</div></blockquote>
+<p>for peak overpressure, <span class="math notranslate nohighlight">\(p_0\)</span>, positive phase duration, <span class="math notranslate nohighlight">\(t_0\)</span>, and shaping parameter, <span class="math notranslate nohighlight">\(\alpha\)</span>.  This waveform was introduced by Waxler &amp; Assink (2018) an improved source model for waveform simulations as it avoids the symmetry and narrow-banded limitations of a Gaussian enveloped sinusoid.  Interestingly, when the shaping parameter, <span class="math notranslate nohighlight">\(\alpha\)</span>, approaches zero, the impulse becomes the Friedlander (1946) blastwave.</p>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="parameters.html" class="btn btn-neutral float-left" title="Parameters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, P.Blom
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
