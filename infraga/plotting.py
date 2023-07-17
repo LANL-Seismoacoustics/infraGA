@@ -291,7 +291,7 @@ def plot_azimuthal(atmo_file, arrivals, ray_paths, y_axis_option, cmap_option, r
     if y_axis_option == 'inclination':
         print('\t' + "Launch inclination info...")
         ax2.set_ylabel("Launch Inclination [deg]")
-        plot_vals = arr_incl_vals
+        plot_vals = incl_vals
     elif y_axis_option == 'celerity':
         print('\t' + "Arrival celerity info...")
         ax2.set_ylabel("Celerity [m/s]")
@@ -631,10 +631,15 @@ def plot_eig_wvfrm(atmo_file, eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap
     ax0.set_xlabel("Range [km]")
 
     indices = np.flatnonzero(np.gradient(eigenray_data[:, 5]) < 0.0)
-    ax0.plot(ray_rngs[:indices[0]], eigenray_data[:, 2][:indices[0]], '-k', linewidth=2.5)
-    for n, j in enumerate(indices):
-        ax0.plot(ray_rngs[indices[n - 1]:j], eigenray_data[:, 2][indices[n - 1]:j], '-k', linewidth=2.5)
-    ax0.plot(ray_rngs[indices[-1]:], eigenray_data[:, 2][indices[-1]:], '-k', linewidth=2.5)
+
+    if len(indices) > 0:
+        ax0.plot(ray_rngs[:indices[0]], eigenray_data[:, 2][:indices[0]], '-k', linewidth=2.5)
+        for n, j in enumerate(indices):
+            ax0.plot(ray_rngs[indices[n - 1]:j], eigenray_data[:, 2][indices[n - 1]:j], '-k', linewidth=2.5)
+        ax0.plot(ray_rngs[indices[-1]:], eigenray_data[:, 2][indices[-1]:], '-k', linewidth=2.5)
+    else:
+        ax0.plot(ray_rngs, eigenray_data[:, 2], '-k', linewidth=2.5)
+
 
     ax0.set_xlim(left=0.0)    
     ax0.set_ylim(bottom=0.0) 
@@ -678,7 +683,7 @@ def plot_eig_wvfrm(atmo_file, eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap
     ax1.set_ylabel("Pressure [Pa]")
     ax1.set_xlabel(" ")
 
-    ax1.set_xlim(25.0 * np.floor(min(arr_tms) / 25.0), 25.0 * np.ceil(max(arr_tms) / 25.0))
+    ax1.set_xlim(50.0 * np.floor((min(arr_tms) - 50.0) / 50.0), 50.0 * np.ceil((max(arr_tms) + 50.0) / 50.0))
     ax1.plot(wvfrm_data[:, 0], np.sum(wvfrm_data[:, 1:], axis=1), '-k', linewidth=1.5)
     
 
@@ -711,22 +716,30 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
     \t infraga plot map --ray-paths ToyAtmo.raypaths.dat --title 'Toy Atmo ray paths' --figure-name ToyAtmo.raypaths.png
 
     '''
-    if arrivals is not None:
+    if arrivals is not None:       
         # extract source info from the header
-        arrivals = open(arrivals, 'r')
-        for line in arrivals: 
+        arrival_data = open(arrivals, 'r')
+
+        src_loc = None
+        for line in arrival_data: 
             if "source location" in line: 
                 src_loc = [float(val) for val in line[35:-1].split(", ")[:2]] 
                 break
 
         # load data and extract lat/lon info for the map
         arrivals = np.loadtxt(arrivals)
+        print(arrivals.shape)
 
         lats = arrivals[:, 3]
         lons = arrivals[:, 4]
 
-        lat_min, lat_max = np.floor(min(min(lats), src_loc[0])), np.ceil(max(max(lats), src_loc[0]))
-        lon_min, lon_max = np.floor(min(min(lons), src_loc[1])), np.ceil(max(max(lons), src_loc[1]))
+        if src_loc is not None:
+            lat_min, lat_max = np.floor(min(min(lats), src_loc[0])), np.ceil(max(max(lats), src_loc[0]))
+            lon_min, lon_max = np.floor(min(min(lons), src_loc[1])), np.ceil(max(max(lons), src_loc[1]))
+        else:
+            lat_min, lat_max = np.floor(min(lats)), np.ceil(max(lats))
+            lon_min, lon_max = np.floor(min(lons)), np.ceil(max(lons))
+
     else:
         src_loc = None
 
@@ -763,7 +776,7 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
     # Add features (coast lines, borders)
     ax.add_feature(cartopy.feature.COASTLINE, linewidth=0.5)
     ax.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
-    if (lon_max - lon_min) < 20.0:
+    if (lon_max - lon_min) < 30.0:
         ax.add_feature(cartopy.feature.STATES, linewidth=0.5)
         ax.add_feature(cartopy.feature.RIVERS, edgecolor='dodgerblue', alpha=0.3)
         ax.add_feature(cartopy.feature.LAKES, facecolor='dodgerblue', edgecolor='dodgerblue', alpha=0.3)
@@ -831,7 +844,8 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
         else:
             ax.plot(arrivals[:,4][time_mask], arrivals[:,3][time_mask], "b.", transform=map_proj, markersize=marker_size / 2.0)
 
-        ax.plot([src_loc[1]], [src_loc[0]], 'r*', markersize=5.0, transform=map_proj)
+        if src_loc is not None:
+            ax.plot([src_loc[1]], [src_loc[0]], 'r*', markersize=5.0, transform=map_proj)
     else:
         time_mask = np.ones_like(ray_paths[:, 0], dtype=bool)
         if start_time is not None:

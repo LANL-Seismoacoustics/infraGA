@@ -59,7 +59,7 @@ def set_param(command, param, param_label):
 #                      #
 ########################
 
-def kg_op(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
+def kg_op(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
     """
         Kinney & Graham scaling law peak overpressure model
                 
@@ -83,9 +83,10 @@ def kg_op(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
     """
     
     fd = (p_amb / 101.325)**(1.0 / 3.0) * (T_amb / 288.15)**(1.0 / 3.0)
-    sc_rng = fd / W**(1.0 / 3.0) * r * 1000.0
     
-    if type=="chemical":
+    if exp_type=="chemical":
+        sc_rng = fd / W**(1.0 / 3.0) * r * 1000.0
+    
         term1 = 1.0 + (sc_rng / 4.5)**2
         term2 = np.sqrt(1.0 + (sc_rng / 0.048)**2)
         term3 = np.sqrt(1.0 + (sc_rng / 0.32)**2)
@@ -93,6 +94,8 @@ def kg_op(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
         
         result = 808.0 * term1 / (term2 * term3 * term4)
     else:
+        sc_rng = fd / (W * 1.0e-6)**(1.0 / 3.0) * r * 1000.0
+
         term1 = (1.0 + sc_rng / 800.0)
         term2 = np.sqrt(1.0 + (sc_rng / 87.0)**2)
         
@@ -101,7 +104,7 @@ def kg_op(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
     return p_amb * 1.0e3 * result
 
 
-def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
+def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
     """
         Kinney & Graham scaling law positive phase duration model
                 
@@ -125,24 +128,27 @@ def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, type="chemical"):
     """
 
     fd = (p_amb / 101.325)**(1.0 / 3.0) * (T_amb / 288.15)**(1.0 / 3.0)
-    sc_rng = fd / W**(1.0 / 3.0) * r * 1000.0
     
-    if type=="chemical":
+    if exp_type=="chemical":
+        sc_rng = fd / W**(1.0 / 3.0) * r * 1000.0
+
         term1 = 1.0 + (sc_rng / 0.54)**10
         term2 = 1.0 + (sc_rng / 0.02)**3
         term3 = 1.0 + (sc_rng / 0.74)**6
         term4 = np.sqrt(1.0 + (sc_rng / 6.9)**2)
         
-        result = 980.0 * term1 / (term2 * term3 * term4)
+        result = 980.0 * term1 / (term2 * term3 * term4) * W**(1.0 / 3.0)
     else:
+        sc_rng = fd / (W * 1.0e-6)**(1.0 / 3.0) * r * 1000.0
+
         term1 = np.sqrt(1.0 + (sc_rng / 100.0)**3)
         term2 = np.sqrt(1.0 + (sc_rng / 40.0))
         term3 = (1.0 + (sc_rng / 285.0)**5)**(1.0 / 6.0)
         term4 = (1.0 + (sc_rng / 50000.0))**(1.0 / 6.0)
         
-        result = 180.0 * term1 / (term2 * term3 * term4)
+        result = 180.0 * term1 / (term2 * term3 * term4) * (W * 1.0e-6) **(1.0 / 3.0)
 
-    return result * W**(1.0 / 3.0) / 1e3
+    return result / 1e3
 
 
 
@@ -895,6 +901,7 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, in
 @click.option("--wvfrm-ref", help="Waveform reference distance", default=None)
 @click.option("--wvfrm-out-step", help="Waveform output step along ray path", default=None)
 @click.option("--wvfrm-yield", help="Eq. TNT yield (kg) for an explosive source", default=None)
+@click.option("--expl-type", help="Explosion type ('chemical' vs. 'nuclear')", default="chemical")
 
 @click.option("--wvfrm-ds", help="Burgers equation solver resolution [km]", default=None)
 @click.option("--wvfrm-len", help="Waveform sample count (default = 2e13)", default=None)
@@ -921,8 +928,8 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, in
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, inclination, azimuth, bounces, src_x, src_y, 
                 src_alt, write_ray, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step,
-                wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, min_x, max_x, min_y, max_y, 
-                min_ds, max_ds, max_s, topo_file, topo_bl_wind):
+                wvfrm_yield, expl_type, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id,
+                max_alt, max_rng, min_x, max_x, min_y, max_y, min_ds, max_ds, max_s, topo_file, topo_bl_wind):
     '''
     Run weakly non-linear waveform analysis along a 3D Cartesian ray path.
 
@@ -1115,6 +1122,7 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, inclinatio
 @click.option("--wvfrm-ref", help="Waveform reference distance", default=None)
 @click.option("--wvfrm-out-step", help="Waveform output step along ray path", default=None)
 @click.option("--wvfrm-yield", help="Eq. TNT yield (kg) for an explosive source", default=None)
+@click.option("--expl-type", help="Explosion type ('chemical' vs. 'nuclear')", default="chemical")
 
 @click.option("--wvfrm-ds", help="Burgers equation solver resolution [km]", default=None)
 @click.option("--wvfrm-len", help="Waveform sample count (default = 2e13)", default=None)
@@ -1145,8 +1153,8 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, inclinatio
 def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_x, src_y, src_alt, rcvr_x, rcvr_y, verbose, iterations, damping, tolerance, az_dev_lim, incl_step_min, 
                 incl_step_max, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step, wvfrm_yield, 
-                wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, min_x, max_x, min_y, 
-                max_y, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt, keep_eig_arrivals):
+                expl_type, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, 
+                min_x, max_x, min_y, max_y, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt, keep_eig_arrivals):
     '''
     Run 3d geometry eigenray analysis to identify propagation paths connecting a specific source-receiver geometry and then compute weakly-nonlinear waveform predictions for each eigenray
 
@@ -2005,6 +2013,7 @@ def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
 @click.option("--wvfrm-ref", help="Waveform reference distance", default=None)
 @click.option("--wvfrm-out-step", help="Waveform output step along ray path", default=None)
 @click.option("--wvfrm-yield", help="Eq. TNT yield (kg) for an explosive source", default=None)
+@click.option("--expl-type", help="Explosion type ('chemical' vs. 'nuclear')", default="chemical")
 
 @click.option("--wvfrm-ds", help="Burgers equation solver resolution [km]", default=None)
 @click.option("--wvfrm-len", help="Waveform sample count (default = 2e13)", default=None)
@@ -2032,8 +2041,8 @@ def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inclination, azimuth, bounces, src_lat, src_lon, 
                 src_alt, write_ray, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step,
-                wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, max_lat, min_lat, max_lon, 
-                min_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind):
+                wvfrm_yield, expl_type, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, 
+                max_alt, max_rng, max_lat, min_lat, max_lon, min_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind):
     '''
         Run weakly non-linear waveform analysis along a spherical atmospheric layer ray path.
 
@@ -2226,6 +2235,7 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
 @click.option("--wvfrm-ref", help="Waveform reference distance", default=None)
 @click.option("--wvfrm-out-step", help="Waveform output step along ray path", default=None)
 @click.option("--wvfrm-yield", help="Eq. TNT yield (kg) for an explosive source", default=None)
+@click.option("--expl-type", help="Explosion type ('chemical' vs. 'nuclear')", default="chemical")
 
 @click.option("--wvfrm-ds", help="Burgers equation solver resolution [km]", default=None)
 @click.option("--wvfrm-len", help="Waveform sample count (default = 2e13)", default=None)
@@ -2257,8 +2267,8 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
 def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_min, incl_max, bnc_min, bnc_max, bounces, 
                 src_lat, src_lon, src_alt, rcvr_lat, rcvr_lon, verbose, iterations, damping, tolerance, az_dev_lim, 
                 incl_step_min, incl_step_max, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step,
-                wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, max_rng, min_lat, 
-                max_lat, min_lon, max_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt, keep_eig_results):
+                wvfrm_yield, expl_type, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, output_id, max_alt, 
+                max_rng, min_lat, max_lat, min_lon, max_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind, cpu_cnt, keep_eig_results):
     '''
     Run spherical atmospheric layer eigenray analysis to identify propagation paths connecting a specific source-receiver geometr yand then compute weakly-nonlinear waveform predictions for each eigenray
 
@@ -2281,6 +2291,8 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
         user_config = None
 
     # Set eigenray specific parameters
+    atmo_file = define_param(user_config, 'GENERAL', 'atmo_file', atmo_file)
+
     incl_min = define_param(user_config, 'EIGENRAY', 'incl_min', incl_min)
     incl_max = define_param(user_config, 'EIGENRAY', 'incl_max', incl_max)
 
@@ -2561,8 +2573,8 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
 
                 wvfrm_opt = 'impulse'
                 wvfrm_ref = str(0.035 * float(wvfrm_yield)**(1.0 / 3.0))
-                wvfrm_p0 = str(kg_op(float(wvfrm_yield), float(wvfrm_ref), p_amb=p_ambient, T_amb=T_ambient))
-                wvfrm_t0 = str(kg_ppd(float(wvfrm_yield), float(wvfrm_ref), p_amb=p_ambient, T_amb=T_ambient))
+                wvfrm_p0 = str(kg_op(float(wvfrm_yield), float(wvfrm_ref), p_amb=p_ambient, T_amb=T_ambient, exp_type=expl_type))
+                wvfrm_t0 = str(kg_ppd(float(wvfrm_yield), float(wvfrm_ref), p_amb=p_ambient, T_amb=T_ambient, exp_type=expl_type))
                 wvfrm_alpha = '0.01'
 
             command = set_param(command, wvfrm_opt, "wvfrm_opt")
@@ -2598,6 +2610,7 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
                 if topo_bl_wind is not None:
                     command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
+            print(command)
             subprocess.call(command, shell=True)
 
             temp = np.loadtxt(profile_id + ".wvfrm_out.dat")
@@ -2633,13 +2646,13 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
         print("# 	source location (lat, lon, alt): " + str(src_lat_out) + ", " + str(src_lon_out) + ", " + str(src_alt_out) , file=file_out)
         print("# 	receiver location (lat, lon, alt): " + str(rcvr_lat_out) + ", " + str(rcvr_lon_out) + ", 0.0", file=file_out)
         print("# 	inclination range: " + str(incl_min_out) + ", " + str(incl_max_out), file=file_out)
-        print("# 	inclination step max:", incl_step_max_out, file=file_out)
-        print("# 	bounces: " + str(bnc_min_out) + ", " + str(bnc_max_out), file=file_out)
+        print("#    inclination step max:", incl_step_max_out, file=file_out)
+        print("#    bounces: " + str(bnc_min_out) + ", " + str(bnc_max_out), file=file_out)
         if topo_file is not None:
-            print("# 	terrain file: " + str(topo_file), file=file_out)        
+            print("#    terrain file: " + str(topo_file), file=file_out)        
         else:
-            print("# 	ground elevation: " + str(z_grnd_out), file=file_out)
-        print("# 	damping:", damping_out, file=file_out)
+            print("#    ground elevation: " + str(z_grnd_out), file=file_out)
+        print("#    damping:", damping_out, file=file_out)
         print("#    range max:", max_rng_out, '\n#', file=file_out)
 
         # Waveform calculation parameters
