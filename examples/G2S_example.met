@@ -1,3 +1,14 @@
+# Example G2S file (I don't recall where/when)
+# Fields = [ Z(km), T(K), U(m/s), V(m/s), R(g/cm3), P(mbar) ]
+# Ground Height = 0.0
+# The following lines are formatted input for ncpaprop
+#% 0, Z0, km, 0.0
+#% 1, Z, km
+#% 2, T, degK
+#% 3, U, m/s
+#% 4, V, m/s
+#% 5, RHO, g/cm3
+#% 6, P, mbar
  0.00000E+00  0.29332E+03 -0.33105E+00  0.16769E+00  0.12122E-02  0.10204E+04
  0.20000E+00  0.29177E+03 -0.37106E+00  0.14152E+00  0.11903E-02  0.99671E+03
  0.40000E+00  0.29026E+03 -0.45964E+00  0.96733E-01  0.11686E-02  0.97353E+03

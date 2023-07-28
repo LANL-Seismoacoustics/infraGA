@@ -527,14 +527,16 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852, show_fig=True):
     rng_vals, elev_vals = np.empty(N), np.empty(N)
 
     output = open(file_out, 'w')
-    print("# 'infraga extract-terrain --geom line' summary:", file=output)
+    print("# 'infraga utils extract-terrain --geom line' summary:", file=output)
     print("# lat: " + str(src_loc[0]), file=output)
     print("# lon: " + str(src_loc[1]), file=output)
     print("# azimuth: " + str(azimuth), file=output)
     print("# range: " + str(rng_max), file=output)
+    print("# The following lines are formatted input for ncpaprop epape", file=output)
     print('#% r, km', file=output)
     print('#% z, km', file=output)
 
+    print(0.0, '\t', elev_interp(src_loc[0], src_loc[1])[0], file=output)
     for n in range(N):
         print(sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0, file=output, end='\t')
         print(elev_interp(line_pnts[n][0], line_pnts[n][1])[0], file=output)
