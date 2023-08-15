@@ -802,3 +802,80 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
             print("Place file in /path/to/infraGA/infraga/ (here .py files are located)")
 
 
+
+
+@click.command('nearby-arrivals', short_help="Identify arrivals neary a specified receiver")
+@click.option("--arrivals", help="Arrivals file from 'sph' propagation analysis", default=None, prompt="Arrivals file:")
+@click.option("--rcvr-lat", help="Receiver latitude", default=None, prompt="Receiver latitude:", type=float)
+@click.option("--rcvr-lon", help="Receiver longitude", default=None, prompt="Receiver longitude:", type=float)
+@click.option("--dr-tolerance", help="Tolerance for 'nearby' arrivals (default: 2 km)", default=2.0)
+@click.option("--arrival-tolerance", help="Parameter for removing duplicates (see manual)", default=10.0)
+def nearby_arrivals(arrivals, rcvr_lat, rcvr_lon, dr_tolerance, arrival_tolerance):
+    '''
+    Identify arrival information near a specified receiver.  
+    Useful for scenarios where eigenrays have trouble converging (large distances, terrain interactions, etc.)
+
+    \b
+    Examples:
+    \t infraga utils nearby-arrivals  --arrivals-file ToyAtmo.arrivals.ddat --rcvr-lat 40.0 --rccvr-lon -102.5 
+
+    '''
+
+    # load arrivals
+    print("Loading arrival information from '" + arrivals + "' to identify psuedo-eigenrays near " + str(rcvr_lat) + ", " + str(rcvr_lon) + "...")
+    arrivals_data = np.loadtxt(arrivals)
+    N = len(arrivals_data)
+
+    # compute dr values
+    dr = np.array(sph_proj.inv(arrivals_data[:, 4], arrivals_data[:, 3], [rcvr_lon] * N, [rcvr_lat] * N))[2] / 1.0e3
+
+    dr_temp = dr[dr < dr_tolerance]
+    dr_arrivals = dr_temp[np.argsort(dr_temp)]
+    nearby_arrivals = arrivals_data[dr < dr_tolerance][np.argsort(dr_temp)]
+
+    arrival_cnt = len(nearby_arrivals)
+    print("Identified " + str(arrival_cnt) + " arrivals within " + str(dr_tolerance) + " of the specified reciever...")
+
+    if arrival_cnt > 0:
+        print("Checking for duplicate arrivals...")
+        unique_mask = np.ones(len(nearby_arrivals), dtype=bool)
+        for ref_index in range(0, len(nearby_arrivals)):
+            if ref_index == np.sum(unique_mask.astype(int)):
+                break
+
+            for n, line in enumerate(nearby_arrivals):
+                arrival_diff = (nearby_arrivals[unique_mask][ref_index][0] - line[0])**2
+                arrival_diff = arrival_diff + (nearby_arrivals[ref_index][1] - line[1])**2
+                arrival_diff = arrival_diff + (nearby_arrivals[ref_index][2] - line[2])**2
+                arrival_diff = arrival_diff + (nearby_arrivals[ref_index][5] - line[5])**2
+                arrival_diff = np.sqrt(arrival_diff)
+                
+                if arrival_diff < arrival_tolerance and n != ref_index:
+                    unique_mask[n] = False
+
+        print('\n' + "Finalized near receiver arrival list:")
+        for n, line in enumerate(nearby_arrivals[unique_mask]):
+            print("Arrival " + str(n) + ":")
+            print('\t' + "Arrival offset [km]:" + str(np.round(dr_arrivals[unique_mask][n], 4)))
+            print('\t' + "Launch angles [deg]: (" + str(line[0]) + ", " + str(line[1]) + ")")
+            print('\t' + "Ground bounces (reflection): " + str(line[2]))
+            print('\t' + "Arrival location: (" + str(line[3]) + ", " + str(line[4]) + ")")
+            print('\t' + "Arrival time and celerity: " + str(np.round(line[5],2)) + "s (" + str(line[6] * 1.0e3) + " m/s)")
+            print('\t' + "Turning height [km]: " + str(line[7]))
+            print('\t' + "Arrival inclination and back azimuth [deg]: " + str(line[8]) + ", " + str(line[9]))
+            print('\t' + "Predicted attenuation (transport, S&B) [dB rel. 1 km]: " + str(line[10]) + ", " + str(line[11]) + '\n')
+
+    else:
+        print("Nearest arrival info:")
+        nearest_index = np.argmin(dr)
+
+        line = arrivals_data[nearest_index]
+        print('\t' + "Nearest arrival distance [km]: " + str(dr[nearest_index]))
+        print('\t' + "Launch angles [deg]: (" + str(line[0]) + ", " + str(line[1]) + ")")
+        print('\t' + "Ground bounces (reflection): " + str(line[2]))
+        print('\t' + "Arrival location: (" + str(line[3]) + ", " + str(line[4]) + ")")
+        print('\t' + "Arrival time and celerity: " + str(np.round(line[5],2)) + "s (" + str(line[6] * 1.0e3) + " m/s)")
+        print('\t' + "Turning height [km]: " + str(line[7]))
+        print('\t' + "Arrival inclination and back azimuth [deg]: " + str(line[8]) + ", " + str(line[9]))
+        print('\t' + "Predicted attenuation (transport, S&B) [dB rel. 1 km]: " + str(line[10]) + ", " + str(line[11]) + '\n')
+
