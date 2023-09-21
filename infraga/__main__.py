@@ -1,15 +1,7 @@
 #!/usr/bin/env python
-from email.policy import default
-import sys
-
-import os
 import click
 
-import numpy as np 
-
 from . import run_infraga
-from . import multipath_wvfrm as mltwvfrm
-
 from . import plotting
 from . import utils as infraga_utils
 
@@ -97,6 +89,7 @@ utils.add_command(infraga_utils.build_g2s_grid)
 utils.add_command(infraga_utils.extract_ecmwf)
 utils.add_command(infraga_utils.extract_terrain)
 utils.add_command(infraga_utils.nearby_arrivals)
+
 
 if __name__ == '__main__':
     main()

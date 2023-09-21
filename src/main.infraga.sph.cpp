@@ -1109,7 +1109,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
     double lat_src = 30.0, lon_src = 0.0, z_src = 0.0;
     double freq = 0.1, D, D_prev;
     int bounces = 0, file_check;
-    bool write_atmo = false, write_rays=false, custom_output_id=false;
+    bool write_atmo = false, write_rays=false, custom_output_id=false, start_wvfrm=false;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
     char* output_id;
@@ -1214,6 +1214,9 @@ void run_wnl_wvfrm(char* inputs[], int count){
             if(input_check!='y' && input_check!='Y') return;
         }
     }
+
+    cout << "s_max --> " << geoac::s_max << '\n';
+
     lat_src *= Pi / 180.0;
     lon_src *= Pi / 180.0;
     z_src = max(z_src, topo::z(lat_src, lon_src) - globe::r0);
@@ -1287,10 +1290,14 @@ void run_wnl_wvfrm(char* inputs[], int count){
     travel_time_sum = 0.0;
     attenuation = 0.0;
     r_max = 0.0;
-		
+
+    ray_length = 0.0;
+
     for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){
         k = geoac::prop_rk4(solution, break_check, length);            
-        for(int m = 1; m < k ; m++){     // write profiles to data files and vector arrays
+
+        // write profiles to data files and vector arrays
+        for(int m = 1; m < k ; m++){
             geoac::travel_time(travel_time_sum, solution, m - 1, m);
             geoac::atten(attenuation, solution, m - 1, m, freq);
             r_max = max(r_max, solution[m][0] - globe::r0);
@@ -1305,51 +1312,52 @@ void run_wnl_wvfrm(char* inputs[], int count){
                 raypath << '\n';
             }
         }
-        if(bnc_cnt == 0){
-            wvfrm_ref_k = 0;
-            ray_length = 0.0;
+
+        if(!start_wvfrm){
             for(wvfrm_ref_k = 0; wvfrm_ref_k < k; wvfrm_ref_k++){
-                double dr, dt, dp, ds, r, t, p;
-                
+                double dr, dt, dp, ds, r, t;
+            
                 dr = solution[wvfrm_ref_k + 1][0] - solution[wvfrm_ref_k][0];   r = solution[wvfrm_ref_k][0] + dr / 2.0;
                 dt = solution[wvfrm_ref_k + 1][1] - solution[wvfrm_ref_k][1];   t = solution[wvfrm_ref_k][1] + dt / 2.0;
                 dp = solution[wvfrm_ref_k + 1][2] - solution[wvfrm_ref_k][2];
-                
+            
                 ray_length += sqrt(pow(dr, 2) + pow(r * dt, 2) + pow(r * cos(t) * dp, 2));
-                if (ray_length >= wvfrm_ref) break;
+                if (ray_length >= wvfrm_ref){
+
+                    c0 = atmo::c(solution[wvfrm_ref_k + 1][0], solution[wvfrm_ref_k + 1][1], solution[wvfrm_ref_k + 1][2]);
+                    rho0 = atmo::rho(solution[wvfrm_ref_k + 1][0], solution[wvfrm_ref_k + 1][1], solution[wvfrm_ref_k + 1][2]);
+
+                    nu0 = sqrt(pow(solution[wvfrm_ref_k + 1][3], 2) + pow(solution[wvfrm_ref_k + 1][4], 2) + pow(solution[wvfrm_ref_k + 1][5], 2));
+                    cg0r  = c0 * solution[wvfrm_ref_k + 1][3] / nu0 + atmo::w(solution[wvfrm_ref_k + 1][0], solution[wvfrm_ref_k + 1][1], solution[wvfrm_ref_k + 1][2]);
+                    cg0th = c0 * solution[wvfrm_ref_k + 1][4] / nu0 + atmo::v(solution[wvfrm_ref_k + 1][0], solution[wvfrm_ref_k + 1][1], solution[wvfrm_ref_k + 1][2]);
+                    cg0ph = c0 * solution[wvfrm_ref_k + 1][5] / nu0 + atmo::u(solution[wvfrm_ref_k + 1][0], solution[wvfrm_ref_k + 1][1], solution[wvfrm_ref_k + 1][2]);
+                    cg0 = sqrt(pow(cg0r, 2) + pow(cg0th, 2) + pow(cg0ph, 2));
+
+                    D0 = geoac::jacobian(solution, wvfrm_ref_k + 1);
+
+                    sprintf(output_buffer, "%s.wvfrm_init.dat", output_id);
+                    wvfrm_out.open(output_buffer);
+                    wvfrm_out << "# t [sec]" << '\t' << "p(t) [Pa]" << '\n';
+                    for (int n = 0; n < wvfrm::len; n++){
+                        wvfrm_out << setprecision(8) << geoac::travel_time(solution, wvfrm_ref_k + 1) + wvfrm_array[n][0] << '\t' << wvfrm_array[n][1] << '\n';
+                    }
+                    wvfrm_out.close();
+            
+                    p0 = 0.0;
+                    for (int n = 0; n < wvfrm::len; n++){    p0 = max(p0, fabs(wvfrm_array[n][1]));}
+                    for (int n = 0; n < wvfrm::len; n++){    wvfrm_array[n][1] /= p0;}
+                    start_wvfrm = true;
+
+                    ray_length = geoac::wnl_wvfrm(solution, wvfrm_array, wvfrm_ref_k + 1, k, wvfrm_ref, c0, cg0, nu0, rho0, D0, p0, wvfrm_out_step);                   
+                    break;
+                }
             }
-
-            c0 = atmo::c(solution[wvfrm_ref_k + 1][0], solution[wvfrm_ref_k + 1][1], solution[wvfrm_ref_k + 1][2]);
-            rho0 = atmo::rho(solution[wvfrm_ref_k + 1][0], solution[wvfrm_ref_k + 1][1], solution[wvfrm_ref_k + 1][2]);
-
-            nu0 = sqrt(pow(solution[wvfrm_ref_k + 1][3], 2) + pow(solution[wvfrm_ref_k + 1][4], 2) + pow(solution[wvfrm_ref_k + 1][5], 2));
-            cg0r  = c0 * solution[wvfrm_ref_k + 1][3] / nu0 + atmo::w(solution[wvfrm_ref_k + 1][0], solution[wvfrm_ref_k + 1][1], solution[wvfrm_ref_k + 1][2]);
-            cg0th = c0 * solution[wvfrm_ref_k + 1][4] / nu0 + atmo::v(solution[wvfrm_ref_k + 1][0], solution[wvfrm_ref_k + 1][1], solution[wvfrm_ref_k + 1][2]);
-            cg0ph = c0 * solution[wvfrm_ref_k + 1][5] / nu0 + atmo::u(solution[wvfrm_ref_k + 1][0], solution[wvfrm_ref_k + 1][1], solution[wvfrm_ref_k + 1][2]);
-            cg0 = sqrt(pow(cg0r, 2) + pow(cg0th, 2) + pow(cg0ph, 2));
-
-            D0 = geoac::jacobian(solution, wvfrm_ref_k + 1);
-
-            sprintf(output_buffer, "%s.wvfrm_init.dat", output_id);
-            wvfrm_out.open(output_buffer);
-            wvfrm_out << "# t [sec]" << '\t' << "p(t) [Pa]" << '\n';
-            for (int n = 0; n < wvfrm::len; n++){
-                wvfrm_out << setprecision(8) << geoac::travel_time(solution, wvfrm_ref_k + 1) + wvfrm_array[n][0] << '\t' << wvfrm_array[n][1] << '\n';
-            }
-            wvfrm_out.close();
-    
-            p0 = 0.0;
-            for (int n = 0; n < wvfrm::len; n++){    p0 = max(p0, fabs(wvfrm_array[n][1]));}
-            for (int n = 0; n < wvfrm::len; n++){    wvfrm_array[n][1] /= p0;}
-
-
-            ray_length = geoac::wnl_wvfrm(solution, wvfrm_array, wvfrm_ref_k + 1, k, 0.0, c0, cg0, nu0, rho0, D0, p0, wvfrm_out_step);
         } else {
             ray_length += geoac::wnl_wvfrm(solution, wvfrm_array, 0, k, ray_length, c0, cg0, nu0, rho0, D0, p0, wvfrm_out_step);
         }
 
         if(break_check) break;
-        geoac::set_refl(solution,k);
+        geoac::set_refl(solution, k);
     }
         
     inclination = - asin(atmo::c(solution[k][0], solution[k][1], solution[k][2]) / atmo::c(globe::r0 + z_src, lat_src, lon_src) * solution[k][3]) * (180.0 / Pi);
