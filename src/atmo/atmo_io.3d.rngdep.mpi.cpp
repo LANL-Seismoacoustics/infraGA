@@ -59,6 +59,9 @@ int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* at
     int result = 1;
     if(rank == 0){
         cout << "Interpolating atmosphere data in '" << atmo_prefix << "'* using format '" << atmo_format << "'..." << '\n';
+        if(invert_winds){
+            cout << '\t' << "Inverting wind fields for back projection analysis..." << '\n';
+        }
 
         int x_cnt, y_cnt, z_cnt;
         double temp;
@@ -251,7 +254,10 @@ int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* to
     int result = 1;
     if(rank == 0){
         cout << "Interpolating atmosphere data in '" << atmo_prefix << "#' and topography data in '" << topo_file << "'..." << '\n';
-    
+        if(invert_winds){
+            cout << '\t' << "Inverting wind fields for back projection analysis..." << '\n';
+        }
+
         int x_cnt, y_cnt, z_cnt;
         double temp;
         char output_buffer [512];

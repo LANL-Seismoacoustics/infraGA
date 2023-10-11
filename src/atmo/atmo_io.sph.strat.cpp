@@ -56,7 +56,10 @@ struct interp::natural_cubic_spline_1D  atmo::v_spline;
 //-------------------------------------------//
 int set_region(char* atmo_file, char* atmo_format, bool invert_winds){
     cout << "Interpolating atmosphere data in '" << atmo_file << "' using format '" << atmo_format << "'..." << '\n';
-    
+    if(invert_winds){
+        cout << '\t' << "Inverting wind fields for back projection analysis..." << '\n';
+    }
+
     interp::prep(atmo::c_spline,    file_length(atmo_file));
     interp::prep(atmo::u_spline,    atmo::c_spline.length);
     interp::prep(atmo::v_spline,    atmo::c_spline.length);
@@ -143,6 +146,10 @@ int set_region(char* atmo_file, char* atmo_format, bool invert_winds){
 
 int set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert_winds){
     cout << "Interpolating atmosphere data in '" << atmo_file << "' and topography data in '" << topo_file << "'..." << '\n';
+    if(invert_winds){
+        cout << '\t' << "Inverting wind fields for back projection analysis..." << '\n';
+    }
+
     int n1, n2;
     ifstream file_in;
     

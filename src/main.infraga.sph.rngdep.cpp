@@ -170,6 +170,7 @@ void usage(){
     cout << '\t' << "z_grnd"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.0" << '\n';
     cout << '\t' << "write_atmo"        << '\t' << '\t' << "true/false"         << '\t' << "False" << '\n';
     cout << '\t' << "prof_format"   	<< '\t' << '\t' << "see manual"         << '\t' << "zTuvdp" << '\n';
+    cout << '\t' << "reverse_winds"     << '\t' << '\t' << "true/false"         << '\t' << "false" << '\n';
     cout << '\t' << "output_id"         << '\t' << '\t' << "see manual"         << '\t' << "from profile.met" << '\n';
     cout << '\t' << "write_caustics"    << '\t' << '\t' << "true/false"         << '\t' << "false" << '\n';
     cout << '\t' << "calc_amp"          << '\t' << '\t' << "true/false"         << '\t' << "true" << '\n';
@@ -212,7 +213,7 @@ void run_prop(char* inputs[], int count){
     double phi_min = -90.0, phi_max = -90.0, phi_step = 1.0;
     int bounces = 2, file_check;
     double  lat_src, lon_src, z_src = 0.0;
-    bool write_atmo = false, write_rays = true, write_caustics = false, write_topo=false, custom_output_id=false, print_resid=false;
+    bool write_atmo = false, write_rays = true, write_caustics = false, write_topo=false, custom_output_id=false, print_resid=false, reverse_winds=false;
     double freq = 0.1, turn_ht_min = 0.2;
     char* prof_format = "zTuvdp";
     char* topo_file = "None";
@@ -226,13 +227,14 @@ void run_prop(char* inputs[], int count){
     geoac::is_topo = false;
     
     for(int i = 5; i < count; i++){
-        if (strncmp(inputs[i], "prof_format=", 12) == 0){       prof_format = inputs[i] + 12;}
-        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){        topo::z0 = atof(inputs[i] + 7);}
-        else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
+        if (strncmp(inputs[i], "prof_format=", 12) == 0){           prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){            topo::z0 = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){    reverse_winds = string2bool(inputs[i] + 14);}
+        else if (strncmp(inputs[i], "topo_file=", 10) == 0){        topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
-    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, reverse_winds);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, reverse_winds);}
     if(!file_check){
         return;
     }
@@ -285,6 +287,8 @@ void run_prop(char* inputs[], int count){
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){ 		                                        prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){                                            reverse_winds = string2bool(inputs[i] + 14);}
+
         else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
                                                                                                             output_id = inputs[i] + 10;}
         else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
@@ -773,7 +777,7 @@ void run_eig_search(char* inputs[], int count){
     char* topo_file = "None";
     char* output_id;
     char input_check;
-    bool write_atmo = false, custom_output_id=false;    
+    bool write_atmo = false, custom_output_id=false, reverse_winds=false;
 
     topo::z0 = 0.0;
     atmo::tweak_abs = 1.0;
@@ -782,13 +786,14 @@ void run_eig_search(char* inputs[], int count){
     geoac::verbose = false;
 
     for(int i = 5; i < count; i++){
-        if (strncmp(inputs[i], "prof_format=", 12) == 0){       prof_format = inputs[i] + 12;}
-        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){        topo::z0 = atof(inputs[i] + 7);}
-        else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
+        if (strncmp(inputs[i], "prof_format=", 12) == 0){           prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){            topo::z0 = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){    reverse_winds = string2bool(inputs[i] + 14);}
+        else if (strncmp(inputs[i], "topo_file=", 10) == 0){        topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
-    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, reverse_winds);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, reverse_winds);}
     if(!file_check){
         return;
     }
@@ -956,8 +961,8 @@ void run_eig_direct(char* inputs[], int count){
     char* topo_file = "None";
     char* output_id;
     char input_check;
-    bool write_atmo = false, custom_output_id=false;    
-    
+    bool write_atmo = false, custom_output_id=false, reverse_winds=false;
+
     topo::z0 = 0.0;
     atmo::tweak_abs = 1.0;
     
@@ -965,13 +970,14 @@ void run_eig_direct(char* inputs[], int count){
     geoac::verbose = false;
     
     for(int i = 5; i < count; i++){
-        if (strncmp(inputs[i], "prof_format=", 12) == 0){       prof_format = inputs[i] + 12;}
-        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){        topo::z0 = atof(inputs[i] + 7);}
-        else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
+        if (strncmp(inputs[i], "prof_format=", 12) == 0){           prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){            topo::z0 = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){    reverse_winds = string2bool(inputs[i] + 14);}
+        else if (strncmp(inputs[i], "topo_file=", 10) == 0){        topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
-    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, reverse_winds);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, reverse_winds);}
     if(!file_check){
         return;
     }
@@ -1015,6 +1021,8 @@ void run_eig_direct(char* inputs[], int count){
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){                                            reverse_winds = string2bool(inputs[i] + 14);}
+
         else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
                                                                                                             output_id = inputs[i] + 10;}
         else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
@@ -1081,7 +1089,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
     char input_check;
     double freq = 0.1, D, D_prev;
     int bounces = 0, file_check;
-    bool write_atmo = false, write_rays=false, custom_output_id=false, start_wvfrm=false;
+    bool write_atmo = false, write_rays=false, custom_output_id=false, start_wvfrm=false, reverse_winds=false;
 
     double wvfrm_ref=1.0, wvfrm_out_step=1.0e10;
     double ray_length, c0, nu0, cg0r, cg0th, cg0ph, cg0, rho0, D0, p0;
@@ -1102,13 +1110,14 @@ void run_wnl_wvfrm(char* inputs[], int count){
     geoac::phi = Pi / 2.0 - 90.0 * (Pi / 180.0);
 
     for(int i = 5; i < count; i++){
-        if (strncmp(inputs[i], "prof_format=", 12) == 0){       prof_format = inputs[i] + 12;}
-        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){        topo::z0 = atof(inputs[i] + 7);}
-        else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
+        if (strncmp(inputs[i], "prof_format=", 12) == 0){           prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){            topo::z0 = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){    reverse_winds = string2bool(inputs[i] + 14);}
+        else if (strncmp(inputs[i], "topo_file=", 10) == 0){        topo_file = inputs[i] + 10; geoac::is_topo=true;}
     }
     
-    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, false);}
-    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, false);}
+    if (geoac::is_topo){    file_check = set_region(inputs[2], inputs[3], inputs[4], topo_file, prof_format, reverse_winds);}
+    else{                   file_check = set_region(inputs[2], inputs[3], inputs[4], prof_format, reverse_winds);}
     if(!file_check){
         return;
     }
@@ -1165,6 +1174,8 @@ void run_wnl_wvfrm(char* inputs[], int count){
 
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){                                            reverse_winds = string2bool(inputs[i] + 14);}
+
         else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
                                                                                                             output_id = inputs[i] + 10;}
         else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){

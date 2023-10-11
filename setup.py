@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-try:
-    import setuptools
-except ImportError:
-    pass
 
 from distutils.core import setup
 
@@ -10,7 +6,7 @@ setup(
     name = "infraga",
     license='LANL-MIT',
     version = '1.0.3',
-    description = "A tool for modeling the propagation of infrasound in the limit of geometric acosutics (Python interface).",
+    description = "A tool for modeling the propagation of infrasound in the limit of geometric acoustics (Python interface).",
     keywords=['infrasound', 'geophysics', 'seismic', 'array'],
     author = "LANL Seismoacoustics Infrasound (LANL-SA) Team",
     author_email = 'pblom@lanl.gov',

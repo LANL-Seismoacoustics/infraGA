@@ -60,6 +60,10 @@ struct interp::hybrid_spline_3D atmo::v_spline;
 //-------------------------------------------//
 int set_region(char* atmo_prefix, char* atmo_locs_lat, char* atmo_locs_lon, char* atmo_format, bool invert_winds){
     cout << "Interpolating atmosphere data in '" << atmo_prefix << "'* using format '" << atmo_format << "'..." << '\n';
+    if(invert_winds){
+        cout << '\t' << "Inverting wind fields for back projection analysis..." << '\n';
+    }
+
     int lat_cnt, lon_cnt, z_cnt;
     double temp;
     char output_buffer [512];
@@ -198,6 +202,10 @@ int set_region(char* atmo_prefix, char* atmo_locs_lat, char* atmo_locs_lon, char
 
 int set_region(char* atmo_prefix, char* atmo_locs_lat, char* atmo_locs_lon, char* topo_file, char* atmo_format, bool invert_winds){
     cout << "Interpolating atmosphere data in '" << atmo_prefix << "*' and topography data in '" << topo_file << "'..." << '\n';
+    if(invert_winds){
+        cout << '\t' << "Inverting wind fields for back projection analysis..." << '\n';
+    }
+
     int lat_cnt, lon_cnt, z_cnt;
     double temp;
     char output_buffer [512];
