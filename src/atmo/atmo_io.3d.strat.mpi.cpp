@@ -12,8 +12,10 @@
 
 #include "atmo_state.h"
 #include "atmo_io.3d.strat.h"
+
 #include "../util/interpolation.h"
 #include "../util/fileIO.h"
+
 #include "../geoac/geoac.params.h"
 
 using namespace std;

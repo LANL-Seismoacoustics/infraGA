@@ -567,7 +567,7 @@ void run_prop(char* inputs[], int count){
 void run_back_proj(char* inputs[], int count){
     cout << '\n';
     cout << '\t' << "##########################################" << '\n';
-    cout << '\t' << "####        Running infraga-3d        ####" << '\n';
+    cout << '\t' << "####        Running infraga-sph       ####" << '\n';
     cout << '\t' << "####          Back Projection         ####" << '\n';
     cout << '\t' << "##########################################" << '\n' << '\n';
     

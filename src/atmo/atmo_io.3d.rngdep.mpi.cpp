@@ -12,8 +12,10 @@
 
 #include "atmo_state.h"
 #include "atmo_io.3d.rngdep.h"
+
 #include "../util/interpolation.h"
 #include "../util/fileIO.h"
+
 #include "../geoac/geoac.params.h"
 
 using namespace std;
@@ -93,6 +95,7 @@ int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* at
             file_in.open(atmo_locs_x);
             for (int nx = 0; nx < x_cnt; nx++){
                 file_in >> atmo::c_spline.x_vals[nx];
+
                 atmo::u_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
                 atmo::v_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
                 atmo::rho_spline.x_vals[nx] = atmo::c_spline.x_vals[nx];
@@ -102,6 +105,7 @@ int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* at
             file_in.open(atmo_locs_y);
             for (int ny = 0; ny < y_cnt; ny++){
                 file_in >> atmo::c_spline.y_vals[ny];
+
                 atmo::u_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
                 atmo::v_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
                 atmo::rho_spline.y_vals[ny] = atmo::c_spline.y_vals[ny];
@@ -412,7 +416,7 @@ int set_region(char* atmo_prefix, char* atmo_locs_x, char* atmo_locs_y, char* to
             spline_len[0] = topo::spline.length_x;
             spline_len[1] = topo::spline.length_y;
         }
-       MPI_Bcast(&spline_len, 2, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&spline_len, 2, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Barrier(MPI_COMM_WORLD);
         if(rank != 0){
             interp::prep(topo::spline, spline_len[0], spline_len[1]);

@@ -270,16 +270,17 @@ int set_region(char* atmo_prefix, char* atmo_locs_lat, char* atmo_locs_lon, char
         double temp;
         char output_buffer [512];
         string line;
-        ifstream file_in;
-    
+        ifstream file_in;  
+
+        // Set up topography interpolation
         file_2d_dims(topo_file, lat_cnt, lon_cnt);
         interp::prep(topo::spline, lat_cnt, lon_cnt);
     
+        file_in.open(topo_file);
         if(!file_in.is_open()){
             cout << '\t' << "ERROR: Invalid terrain file (" << topo_file << ")" << '\n' << '\n';
             result = 0;
         } else {
-            file_in.open(topo_file);
             for (int n_lat = 0; n_lat < topo::spline.length_x; n_lat++){
                 for (int n_lon = 0; n_lon < topo::spline.length_y; n_lon++){
                     file_in >> topo::spline.x_vals[n_lat];
@@ -301,7 +302,7 @@ int set_region(char* atmo_prefix, char* atmo_locs_lat, char* atmo_locs_lon, char
         }
 
         sprintf(output_buffer, "%s%i.met", atmo_prefix, 0); z_cnt = file_length(output_buffer);
-            file_in.open(output_buffer);
+        file_in.open(output_buffer);
         if(!file_in.is_open()){
             cout << '\t' << "ERROR: Invalid atmospheric specification (" << output_buffer << ")" << '\n' << '\n';
             result = 0;
@@ -433,21 +434,22 @@ int set_region(char* atmo_prefix, char* atmo_locs_lat, char* atmo_locs_lon, char
         MPI_Barrier(MPI_COMM_WORLD);
     
         for (int nx = 0; nx < topo::spline.length_x; nx++){
-        for (int ny = 0; ny < topo::spline.length_y; ny++){
-            if(rank == 0){
-                spline_vals[0] = topo::spline.x_vals[nx];
-                spline_vals[1] = topo::spline.y_vals[ny];
-                spline_vals[2] = topo::spline.f_vals[nx][ny];
+            for (int ny = 0; ny < topo::spline.length_y; ny++){
+                if(rank == 0){
+                    spline_vals[0] = topo::spline.x_vals[nx];
+                    spline_vals[1] = topo::spline.y_vals[ny];
+                    spline_vals[2] = topo::spline.f_vals[nx][ny];
+                }
+                MPI_Bcast(&spline_vals, 5, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                MPI_Barrier(MPI_COMM_WORLD);
+                if(rank != 0){
+                    topo::spline.x_vals[nx] = spline_vals[0];
+                    topo::spline.y_vals[ny] = spline_vals[1];
+                    topo::spline.f_vals[nx][ny] = spline_vals[2];
+                }
+                MPI_Barrier(MPI_COMM_WORLD);
             }
-            MPI_Bcast(&spline_vals, 5, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            MPI_Barrier(MPI_COMM_WORLD);
-            if(rank != 0){
-                topo::spline.x_vals[nx] = spline_vals[0];
-                topo::spline.y_vals[ny] = spline_vals[1];
-                topo::spline.f_vals[nx][ny] = spline_vals[2];
-            }
-            MPI_Barrier(MPI_COMM_WORLD);
-        }}
+        }
         MPI_Barrier(MPI_COMM_WORLD);
     
         // Broadcast atmosphere spline

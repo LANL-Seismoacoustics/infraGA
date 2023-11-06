@@ -291,6 +291,7 @@ int set_region(char* atmo_file, char* topo_file, char* atmo_format, bool invert_
         }
         file_in.close();
     }
+    
     MPI_Bcast(&result, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
     
