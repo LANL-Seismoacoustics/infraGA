@@ -9,10 +9,15 @@ Author: pblom@lanl.gov
 
 import os 
 import sys
+import warnings
+import glob
+import fnmatch
 
 import click
 import subprocess
 import configparser as cnfg
+
+import matplotlib.pyplot as plt 
 
 from scipy.interpolate import interp1d 
 
@@ -2758,3 +2763,330 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
     if not keep_eig_results:
         os.system("rm " + profile_id + ".eigenray-*.dat")
         os.system("rm " + profile_id + ".arrivals.dat")
+
+
+
+def mach_cone_arrrival_header(atmo_file, traj_file, cone_resol, traj_resol, max_rng, lat_bnds=None, lon_bnds=None):
+    header_text = "# infraga supersonic_source summary:" + '\n'
+    header_text = header_text + "    profile: " + atmo_file + '\n'
+    header_text = header_text + "    trajectory: " + traj_file + '\n'
+    header_text = header_text + "    cone resolution: " + str(cone_resol) + '\n'
+    header_text = header_text + "    trajectory resolution: " + str(traj_resol) + '\n'
+    header_text = header_text + "    max_rng: " + str(max_rng) + '\n'
+    if lat_bnds is not None:
+        header_text = header_text + "    lat_bnds: (" + str(lat_bnds[0]) + ", " + str(lat_bnds[1]) + ')\n'
+    if lon_bnds is not None:
+        header_text = header_text + "    lon_bnds: (" + str(lon_bnds[0]) + ", " + str(lon_bnds[1]) + ')\n'
+
+    header_text = header_text + '\n\n' + "incl [deg]	az [deg]	n_b	lat_0 [deg]	lon_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]"
+    header_text = header_text + " src_lat [deg]   src_lon [deg]   src_alt [deg]"
+
+    return header_text
+
+def supersonic_header(atmo_file, traj_file, cone_resol, traj_resol, max_rng):
+    header_text = "# infraga sph supersonic summary:" + '\n'
+    header_text = header_text + "    profile: " + atmo_file + '\n'
+    header_text = header_text + "    trajectory: " + traj_file + '\n'
+    header_text = header_text + "    cone resolution: " + str(cone_resol) + '\n'
+    header_text = header_text + "    trajectory resolution: " + str(traj_resol) + '\n'
+    header_text = header_text + "    max_rng: " + str(max_rng) + '\n'
+
+    header_text = header_text + '\n\n' + "incl [deg]	az [deg]	n_b	lat_0 [deg]	lon_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]"
+    header_text = header_text + " src_lat [deg]   src_lon [deg]   src_alt [deg]"
+
+    return header_text
+
+
+@click.command('supersonic', short_help="Run Mach cone source for a supersonic source trajectory")
+@click.option("--config-file", help="Configuration file for simulation", default=None)
+@click.option("--atmo-file", help="Atmosphere file", default=None)
+@click.option("--atmo-prefix", help="Atmosphere file prefix (range dependent)", default=None)
+@click.option("--grid-lats", help="Atmosphere grid latitudes file", default=None)
+@click.option("--grid-lons", help="Atmosphere grid longitudes file", default=None)
+
+@click.option("--trajectory", help="Trajectory file (time : lat : lon : alt)", default=None)
+@click.option("--cone-resol", help="Mach cone angular resolution", default=None)
+@click.option("--bounces", help="Number of ground reflections (bounces) to consider", default=None)
+@click.option("--traj-step", help="Trajectory stepping factor (traj[::j]), default=1", default=1)
+
+@click.option("--freq", help="Frequency for Sutherland-Bass losses", default=None)
+@click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
+@click.option("--z-grnd", help="Ground elevation (km rel. sea level)", default=None)
+@click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None, type=bool)
+@click.option("--write-rays", help="Option to write ray paths to file", default=None, type=bool)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
+@click.option("--output-id", help="User specified output file path", default=None)
+
+@click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
+@click.option("--max-rng", help="Maximum range for ray calculation", default=None)
+
+@click.option("--min-lat", help="Minimum latitude for user defined bounds", default=None)
+@click.option("--max-lat", help="Maximum latitude for user defined bounds", default=None)
+@click.option("--min-lon", help="Minimum longitude for user defined bounds", default=None)
+@click.option("--max-lon", help="Maximum longitude for user defined bounds", default=None)
+
+@click.option("--min-ds", help="Minimum step size (near-ground) in RK4 solver", default=None)
+@click.option("--max-ds", help="Maximum step size in RK4 solver", default=None)
+@click.option("--max-s", help="Maximum ray length between bounces", default=None)
+
+@click.option("--topo-file", help="Terrain file", default=None)
+@click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
+@click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=None)
+@click.option("--cleanup", help="Flag to clean up individual trajectory step results", default=False)
+def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, trajectory, cone_resol, traj_step,
+                        bounces, freq, abs_coeff, z_grnd, write_atmo, write_rays, prof_format, output_id, max_alt, 
+                        max_rng, min_lat, max_lat, min_lon, max_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind, 
+                        cpu_cnt, cleanup):
+    
+    '''
+    Run spherical atmospheric layer eigenray analysis to identify propagation paths connecting a specific source-receiver geometr yand then compute weakly-nonlinear waveform predictions for each eigenray
+
+    \b
+    Examples:
+    \t infraga sph supersonic --atmo-file G2S_example.met --trajectory ballistic_traj.dat --traj-step 6 --cpu-cnt 12 --cleanup False
+
+    '''
+
+    if config_file:
+        click.echo('\n' + "Loading configuration info from: " + config_file)
+        if os.path.isfile(config_file):
+            user_config = cnfg.ConfigParser()
+            user_config.read(config_file)
+        else:
+            click.echo('\n' + "Invalid configuration file (file not found)")
+            return 0
+    else:
+        user_config = None
+
+    # Set supersonic source specific parameters
+    trajectory = define_param(user_config, 'SUPERSONIC', 'trajectory', trajectory)
+    cone_resol = define_param(user_config, 'SUPERSONIC', 'cone_resol', cone_resol)
+    traj_step = define_param(user_config, 'SUPERSONIC', 'traj_step', traj_step)
+    bounces = define_param(user_config, 'SUPERSONIC', 'bounces', bounces)
+    cleanup = define_param(user_config, 'SUPERSONIC', 'cleanup', cleanup)
+   
+    # Set general parameters
+    freq = define_param(user_config, 'GENERAL', 'freq', freq)
+    abs_coeff = define_param(user_config, 'GENERAL', 'abs_coeff', abs_coeff)
+
+    write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
+    write_rays = define_param(user_config, 'GENERAL', 'write_rays', write_rays)
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
+    output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
+
+    max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
+    max_rng = define_param(user_config, 'GENERAL', 'max_rng', max_rng)
+
+    min_lat = define_param(user_config, 'GENERAL', 'min_lat', min_lat)
+    max_lat = define_param(user_config, 'GENERAL', 'max_lat', max_lat)
+    min_lon = define_param(user_config, 'GENERAL', 'min_lon', min_lon)
+    max_lon = define_param(user_config, 'GENERAL', 'max_lon', max_lon)
+
+    min_ds = define_param(user_config, 'GENERAL', 'min_ds', min_ds)
+    max_ds = define_param(user_config, 'GENERAL', 'max_ds', max_ds)
+    max_s = define_param(user_config, 'GENERAL', 'max_s', max_s)
+
+    z_grnd = define_param(user_config, 'GENERAL', 'z_grnd', z_grnd)
+    topo_file = define_param(user_config, 'GENERAL', 'topo_file', topo_file)
+    topo_bl_wind = define_param(user_config, 'GENERAL', 'topo_bl_wind', topo_bl_wind)
+
+    cpu_cnt = define_param(user_config, 'GENERAL', 'cpu_cnt', cpu_cnt)
+    if cpu_cnt is None:
+        cpu_cnt = 1 
+    cpu_cnt = int(cpu_cnt)
+
+    if traj_step is not None:
+        traj_step = int(max(1, traj_step))
+
+    if output_id is None:
+        if atmo_file is not None:
+            output_id = atmo_file[:-4]
+        else:
+            output_id = atmo_prefix
+
+    # Prep temporary directory to hold discrete trajectory point results
+    if not os.path.isdir("temp"):
+        print("Creating 'temp' directory for individual source locations...")
+        os.mkdir("temp")
+
+    # read in atmospheric file and define sound speed
+    if atmo_file is not None:
+        g2s = np.loadtxt(atmo_file)
+    else:
+        g2s = np.loadtxt(atmo_prefix + "0.met")
+
+    sndspd = interp1d(g2s[:, 0], np.sqrt(0.14 * g2s[:, 5] / g2s[:, 4]) * 1.0e-3) 
+
+    # read in trajectory and interpolate
+    traj = np.loadtxt(trajectory)
+    time_vals = traj[:, 0]
+    lat_vals = traj[:, 1]
+    lon_vals = traj[:, 2]
+    alt_vals = traj[:, 3]
+
+    # compute the mach number, attack angle, and azimuth angle
+    dz_dt = np.gradient(alt_vals) / np.gradient(time_vals)
+    dlat_dt = np.gradient(np.radians(lat_vals)) / np.gradient(time_vals)
+    dlon_dt = np.gradient(np.radians(lon_vals)) / np.gradient(time_vals)
+
+    r0 = 6370.0
+    dx_dt = (r0 + alt_vals) * dlat_dt
+    dy_dt = (r0 + alt_vals) * np.cos(np.radians(lat_vals)) * dlon_dt
+    ds_dt = np.sqrt(dx_dt**2 + dy_dt**2 + dz_dt**2)
+
+    mach = ds_dt / sndspd(alt_vals)
+    attack = np.degrees(np.arcsin(dz_dt / ds_dt))
+    azimuth = np.degrees(np.arctan2(np.cos(np.radians(dlat_dt)) * np.radians(dlon_dt), np.radians(dlat_dt)))
+
+    # Plot trajectory info and step through mach cone source instances
+    _, ax = plt.subplots(3, 2, figsize=(15, 6), sharex=True)
+
+    for n in range(2):
+        ax[2][n].set_xlabel("Time [s]")
+
+    ax[0][0].set_ylabel("Altitude [km]")
+    ax[1][0].set_ylabel("Latitude [km]")
+    ax[2][0].set_ylabel("Longitude [km]")
+
+    ax[0][1].set_ylabel("Mach [-]")
+    ax[1][1].set_ylabel("Attack [deg]")
+    ax[2][1].set_ylabel("Azimuth [deg]")
+
+    ax[1][1].set_ylim([-90, 90])
+    ax[2][1].set_ylim([-180.0, 180.0])
+
+    ax[0][0].plot(time_vals, alt_vals, '-k', linewidth=4)
+    ax[1][0].plot(time_vals, lat_vals, '-k', linewidth=4)
+    ax[2][0].plot(time_vals, lon_vals, '-k', linewidth=4)
+
+    ax[0][1].plot(time_vals, mach, '--k', linewidth=2)
+    ax[1][1].plot(time_vals, attack, '--k', linewidth=2)
+    ax[2][1].plot(time_vals, azimuth, '--k', linewidth=2)
+
+    ax[0][1].plot(time_vals[mach > 1], mach[mach > 1], '-k', linewidth=4)
+    ax[1][1].plot(time_vals[mach > 1], attack[mach > 1], '-k', linewidth=4)
+    ax[2][1].plot(time_vals[mach > 1], azimuth[mach > 1], '-k', linewidth=4)
+
+    plt.show(block=False)
+
+    # cycle through trajectory and 
+    for jj in range(0, len(time_vals), traj_step):
+        ax[0][0].plot([time_vals[jj]], [alt_vals[jj]], 'or', markersize=3)
+        ax[1][0].plot([time_vals[jj]], [lat_vals[jj]], 'or', markersize=3)
+        ax[2][0].plot([time_vals[jj]], [lon_vals[jj]], 'or', markersize=3)
+
+        ax[0][1].plot([time_vals[jj]], [mach[jj]],  'or', markersize=3)
+        ax[1][1].plot([time_vals[jj]], [attack[jj]],  'or', markersize=3)
+        ax[2][1].plot([time_vals[jj]], [azimuth[jj]],  'or', markersize=3)
+
+        plt.pause(0.001)
+
+        if mach[jj] > 1.0:
+            if not os.path.isfile("temp/t0_" + "%03f" % (time_vals[jj]) + ".arrivals.dat"):
+
+                # Build run command
+                if cpu_cnt < 2:
+                    command = bin_path + "infraga-sph"
+                else:
+                    command = "mpirun -np " + str(cpu_cnt) + " " + bin_path + "infraga-accel-sph"
+
+                if atmo_prefix is not None:
+                    command = command + "-rngdep"
+
+                if atmo_file is not None:
+                    command = command + " -mach_cone " + atmo_file
+                elif atmo_prefix is not None and grid_lats is not None and grid_lons is not None:
+                    command = command + " -mach_cone " + atmo_prefix + " " + grid_lats + " " + grid_lons
+                else:
+                    click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-lats and --grid-lons)")
+                    return 0              
+
+                command = command + " output_id=temp/t0_" + "%03f" % (time_vals[jj])
+
+                command = set_param(command, str(mach[jj]), "src_mach")
+                command = set_param(command, str(attack[jj]), "src_attack")
+                command = set_param(command, str(azimuth[jj]), "src_az")
+                command = set_param(command, cone_resol, "cone_resol")
+                command = set_param(command, bounces, "bounces")
+                
+                if write_rays is not None:
+                    command = set_param(command, str(write_rays), "write_rays")
+
+                command = set_param(command, freq, "freq")
+                command = set_param(command, abs_coeff, "abs_coeff")
+
+                if write_atmo is not None:
+                    command = set_param(command, str(write_atmo), "write_atmo")
+
+                command = set_param(command, prof_format, "prof_format")
+
+                command = set_param(command, max_alt, "max_alt")
+                command = set_param(command, max_rng, "max_rng")
+
+                command = set_param(command, min_lat, "min_lat")
+                command = set_param(command, max_lat, "max_lat")
+                command = set_param(command, min_lon, "min_lon")
+                command = set_param(command, max_lon, "max_lon")
+
+                command = set_param(command, min_ds, "min_ds")
+                command = set_param(command, max_ds, "max_ds")
+                command = set_param(command, max_s, "max_s")
+
+                command = set_param(command, z_grnd, "z_grnd")
+                command = set_param(command, topo_file, "topo_file")
+                if topo_file is not None:
+                    if topo_bl_wind is not None:
+                        command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
+
+                print('\n' + command)
+                subprocess.call(command, shell=True)
+            else:
+                print("infraGA/GeoAc results already exist.  Skipping t0 = %03f..." % (time_vals[jj]))
+
+    plt.close()
+    
+    # Merge output files...
+    print('\n' + "Applying source-time delays and merging results...")
+    raypath_files = []
+    arrivals_files = []
+    for file in np.sort(os.listdir("temp/")):
+        if fnmatch.fnmatch(file, "t0_*raypaths.dat"):
+            raypath_files = raypath_files + [file]
+        elif fnmatch.fnmatch(file, "t0_*arrivals.dat"):
+            arrivals_files = arrivals_files + [file]
+
+    if write_rays:
+        print('\t' + "Merging ray path files...")
+        raypaths = np.loadtxt("temp/" + raypath_files[0])
+        raypaths[:, 5] = raypaths[:, 5] + float(raypath_files[0][3:11])
+        for file in raypath_files[1:]:
+            temp = np.loadtxt("temp/" + file)
+            temp[:, 5] = temp[:, 5] + float(file[3:11])
+            raypaths = np.vstack((raypaths, temp))
+        np.savetxt(output_id + ".raypaths.dat", raypaths)
+
+    print('\t' + "Merging arrivals files...")
+    # Remove files with no data (e.g., arrival files in which no rays reach the ground)
+    valid_arrivals = []
+    for file_name in arrivals_files:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            temp = np.atleast_2d(np.loadtxt("temp/" + file_name))
+            if temp.shape[1] > 0:
+                valid_arrivals = valid_arrivals + [file_name]
+
+    arrivals = np.atleast_2d(np.loadtxt("temp/" + valid_arrivals[0]))
+    for file in valid_arrivals[1:]:
+        temp = np.atleast_2d(np.loadtxt("temp/" + file))
+        temp[:, 5] = temp[:, 5] + float(file[3:11])
+        arrivals = np.vstack((arrivals, temp))
+    np.savetxt(output_id + ".arrivals.dat", arrivals, header=mach_cone_arrrival_header(atmo_file, trajectory, cone_resol, traj_step, max_rng))
+
+    if cleanup:
+        print('\n' + "Cleaning up...")
+        for file in glob("temp/t0_*raypaths.dat"):
+            os.remove(file)
+        for file in glob("temp/t0_*arrivals.dat"):
+            os.remove(file)
+
+

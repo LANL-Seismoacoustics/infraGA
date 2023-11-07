@@ -78,6 +78,7 @@ run_sph.add_command(run_infraga.run_sph_prop)
 run_sph.add_command(run_infraga.run_sph_eig)
 run_sph.add_command(run_infraga.run_sph_wvfrm)
 run_sph.add_command(run_infraga.run_sph_eig_wvfrm)
+run_sph.add_command(run_infraga.run_sph_supersonic)
 
 plot.add_command(plotting.plot_atmo)
 plot.add_command(plotting.plot_azimuthal)

@@ -1018,6 +1018,416 @@ void run_eig_search(char* inputs[], int count){
     MPI_Finalize();
 }
 
+
+
+void run_mach_cone(char* inputs[], int count){
+    int mpi_error, world_size, world_rank;
+    mpi_error = MPI_Init(&count, &inputs);
+    mpi_error = MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    mpi_error = MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    MPI_Status mpi_status;
+    
+    int int_buffer[1], break_check_int, mpi_break_check[world_size], mpi_k[world_size], ray_buffer_size = 6, results_buffer_size = 12;
+    double ray_buffer[ray_buffer_size], results_buffer[results_buffer_size];
+    
+    if (world_rank == 0){
+        cout << '\n';
+        cout << '\t' << "###########################################" << '\n';
+        cout << '\t' << "####     Running infraga-accel-sph     ####" << '\n';
+        cout << '\t' << "####       Mach Cone Source Model      ####" << '\n';
+        cout << '\t' << "###########################################" << '\n' << '\n';
+    }
+
+    double lat_src = 30.0, lon_src = 0.0, z_src = 40.0;
+    double src_M = 2.0, src_attack = 0.0, src_az = 0.0, cone_resol = 2.0;
+    double freq = 0.1;
+
+    int bounces=2, file_check;
+
+    bool write_atmo=false, write_rays=false, custom_output_id=false;
+
+    char* prof_format = "zTuvdp";
+    char* topo_file = "None";
+    char* output_id;
+    char input_check;
+    
+    topo::z0 = 0.0;
+    atmo::tweak_abs = 1.0;
+    geoac::calc_amp = true;
+    geoac::is_topo = false;
+    
+    for(int i = 3; i < count; i++){
+        if (strncmp(inputs[i], "prof_format=",12) == 0){        prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){        topo::z0 = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "topo_file=", 10) == 0){    topo_file = inputs[i] + 10; geoac::is_topo=true;}
+    }
+
+    if (geoac::is_topo){    file_check = set_region(inputs[2], topo_file, prof_format, false, world_rank);}
+    else {                  file_check = set_region(inputs[2], prof_format, false, world_rank);}
+    if (!file_check){
+        MPI_Finalize();
+        return;
+    }
+    
+    if (geoac::is_topo){
+        lat_src = (geoac::lat_max + geoac::lat_min) / 2.0 * (180.0 / Pi);
+        lon_src = (geoac::lon_max + geoac::lon_min) / 2.0 * (180.0 / Pi);
+    }
+    
+    for(int i = 3; i < count; i++){
+        if ((strncmp(inputs[i], "src_alt=", 8) == 0) || (strncmp(inputs[i], "alt_src=", 8) == 0)){          z_src = atof(inputs[i] + 8);}
+        else if ((strncmp(inputs[i], "src_lat=", 8) == 0) || (strncmp(inputs[i], "lat_src=", 8) == 0)){     lat_src = atof(inputs[i] + 8);}
+        else if ((strncmp(inputs[i], "src_lon=", 8) == 0) || (strncmp(inputs[i], "lon_src=", 8) == 0)){     lon_src = atof(inputs[i] + 8);}
+        
+        else if (strncmp(inputs[i], "src_attack=", 11) == 0){                                               src_attack = atof(inputs[i] + 11);}
+        else if (strncmp(inputs[i], "src_az=", 7) == 0){                                                    src_az = atof(inputs[i] + 7);}
+        else if (strncmp(inputs[i], "src_mach=", 9) == 0){                                                  src_M = atof(inputs[i] + 9);}
+        else if (strncmp(inputs[i], "cone_resol=", 11) == 0){                                               cone_resol = atof(inputs[i] + 11);}
+
+        else if (strncmp(inputs[i], "bounces=", 8) == 0){                                                   bounces = atoi(inputs[i] + 8);}
+        
+        else if (strncmp(inputs[i], "write_rays=", 11) == 0){                                               write_rays = string2bool(inputs[i] + 11);}
+        
+        else if (strncmp(inputs[i], "freq=", 5) == 0){                                                      freq = atof(inputs[i] + 5);}
+        else if (strncmp(inputs[i], "abs_coeff=", 10) == 0){                                                atmo::tweak_abs = max(0.0, atof(inputs[i] + 10));}
+        else if (strncmp(inputs[i], "calc_amp=", 9) == 0){                                                  geoac::calc_amp = string2bool(inputs[i] + 9);}
+        
+        else if ((strncmp(inputs[i], "max_alt=", 8) == 0) || (strncmp(inputs[i], "alt_max=", 8) == 0)){     geoac::alt_max = atof(inputs[i] + 8);   if (world_rank == 0){ cout << '\t' << "User selected altitude maximum = " << geoac::alt_max << '\n';}}
+        else if ((strncmp(inputs[i], "max_rng=", 8) == 0) || (strncmp(inputs[i], "rng_max=", 8) == 0)){     geoac::rng_max = atof(inputs[i] + 8);   if (world_rank == 0){ cout << '\t' << "User selected range maximum = " << geoac::rng_max << '\n';}}
+        else if ((strncmp(inputs[i], "max_time=", 9) == 0) || (strncmp(inputs[i], "time_max=", 9) == 0)){   geoac::time_max = atof(inputs[i] + 9);  if (world_rank == 0){ cout << '\t' << "User selected propagation time maximum = " << geoac::time_max << '\n';}}
+
+        else if ((strncmp(inputs[i], "min_lat=", 8) == 0) || (strncmp(inputs[i], "lat_min=", 8) == 0)){     geoac::lat_min = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected latitude minimum = " << geoac::lat_min * (180.0 / Pi) << '\n';}}
+        else if ((strncmp(inputs[i], "max_lat=", 8) == 0) || (strncmp(inputs[i], "lat_max=", 8) == 0)){     geoac::lat_max = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected latitude maximum = " << geoac::lat_max * (180.0 / Pi) << '\n';}}
+        else if ((strncmp(inputs[i], "min_lon=", 8) == 0) || (strncmp(inputs[i], "lon_min=", 8) == 0)){     geoac::lon_min = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected longitude minimum = " << geoac::lon_min * (180.0 / Pi) << '\n';}}
+        else if ((strncmp(inputs[i], "max_lon=", 8) == 0) || (strncmp(inputs[i], "lon_max=", 8) == 0)){     geoac::lon_max = atof(inputs[i] + 8) * (Pi / 180.0);   if (world_rank == 0){ cout << '\t' << "User selected longitude maximum = " << geoac::lon_max * (180.0 / Pi) << '\n';}}
+
+        else if ((strncmp(inputs[i], "min_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){       geoac::ds_min = atof(inputs[i] + 7);    if (world_rank == 0){cout << '\t' << "User selected ds minimum = " << geoac::ds_min << '\n';}}
+        else if ((strncmp(inputs[i], "max_ds=", 7) == 0) || (strncmp(inputs[i], "ds_max=", 7) == 0)){       geoac::ds_max = atof(inputs[i] + 7);    if (world_rank == 0){cout << '\t' << "User selected ds maximum = " << geoac::ds_max << '\n';}}
+        else if ((strncmp(inputs[i], "max_s=", 6) == 0) || (strncmp(inputs[i], "s_max=", 6) == 0)){         geoac::s_max = atof(inputs[i] + 6);     if (world_rank == 0){cout << '\t' << "User selected s maximum (path length between reflections) = " << geoac::s_max << '\n';}}
+
+        else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
+        else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
+        else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
+                                                                                                            output_id = inputs[i] + 10;}
+        else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
+                                                                                                                topo::z0 = atof(inputs[i] + 7);
+                                                                                                                topo::z_max = topo::z0;
+                                                                                                                topo::z_bndlyr = topo::z0 + 2.0;
+                                                                                                            } else {
+                                                                                                                cout << '\t' << "Note: cannot adjust ground elevation with topography." << '\n';
+                                                                                                            }}
+        else if (strncmp(inputs[i], "topo_file=", 10) == 0){                                                topo_file = inputs[i] + 10; geoac::is_topo=true;}
+        else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){                                             topo::use_BLw = string2bool(inputs[i] + 13);}
+        else{
+            if (world_size == 0){
+                cout << "***WARNING*** Unrecognized parameter entry: " << inputs[i] << '\n';
+            }
+            mpi_error = MPI_Barrier(MPI_COMM_WORLD);
+            MPI_Finalize();
+            return;
+        }
+    }
+
+    if(src_M < 1.0){
+        if(world_rank == 0){
+            cout << '\n' << "***WARNING*** Mach number must be greater than 1 for mach cone formation.  Skipping ray path calculations" << '\n' << '\n';
+        }
+        MPI_Finalize();
+        return;
+    }
+
+    mpi_error = MPI_Barrier(MPI_COMM_WORLD);
+    lat_src *= Pi / 180.0;
+    lon_src *= Pi / 180.0;
+    
+    // Use WGS84 to set the radius if using the spherical model
+    // and set the source height at topographical ground above sea level
+    z_src = max(z_src, topo::z(lat_src, lon_src) - globe::r0);
+    
+    geoac::configure();
+
+    if (world_rank == 0){
+        cout << '\n' << "Parameter summary:" << '\n';
+        cout << '\t' << "source location (lat, lon, alt): " << lat_src * (180.0 / Pi) << ", " << lon_src * (180.0 / Pi) << ", " << z_src << '\n';
+        cout << '\t' << "source mach number: " << src_M << '\n';
+        cout << '\t' << "source attack and azimuth angles: " << src_attack << ", " << src_az << '\n';
+        cout << '\t' << "cone resolution: " << cone_resol << '\n';
+        cout << '\t' << "bounces: " << bounces << '\n';
+        if(!geoac::is_topo){
+            cout << '\t' << "ground elevation: " << topo::z0 << '\n';
+        }
+        cout << '\t' << "frequency: " << freq << '\n';
+        cout << '\t' << "S&B atten coeff: " << atmo::tweak_abs << '\n';
+    
+        if (write_atmo){        cout << '\t' << "write_atmo: true" << '\n';}    else { cout << '\t' << "write_atmo: false" << '\n';}
+        if (write_rays){        cout << '\t' << "write_rays: true" << '\n';}    else { cout << '\t' << "write_rays: false" << '\n';}
+        if (geoac::calc_amp){   cout << '\t' << "calc_amp: true" << '\n';}      else { cout << '\t' << "calc_amp: false" << '\n';}
+        cout << '\t' << "threads: " << world_size << '\n' << '\n';
+    }
+    
+    // Extract the file name from the input and use it to distinguish the resulting output
+    char output_buffer [512];
+    if(!custom_output_id){
+        output_id = inputs[2];
+        for(int m = strlen(output_id); m >= 0; m--){
+            if(output_id[m] == '.'){
+                output_id[m] = '\0';
+                break;
+            }
+        }
+    }
+    
+    // Define variables used for analysis
+	double lambda_step, D, D_prev, travel_time_sum, attenuation, r_max, inclination, back_az;
+	int k, length = int(geoac::s_max / geoac::ds_min);
+	bool break_check;
+	ofstream results, raypath, caustics, topo_out;
+    
+    if(world_rank==0){
+        if(write_atmo){
+            geoac::write_prof("atmo.dat", lat_src, lon_src, 90.0 * Pi / 180.0);
+        }
+        
+        sprintf(output_buffer, "%s.arrivals.dat", output_id);
+        results.open(output_buffer);
+
+        results << "# infraga-accel-sph -prop summary:" << '\n';
+        results << "#" << '\t' << "profile: " << inputs[2] << '\n';
+        results << "#" << '\t' << "source location (lat, lon, alt): " << lat_src * (180.0 / Pi) << ", " << lon_src * (180.0 / Pi) << ", " << z_src << '\n';
+        results << "#" << '\t' << "source mach number: " << src_M << '\n';
+        results << "#" << '\t' << "attack and azimuth angles: " << src_attack << ", " << src_az << '\n';
+        results << "#" << '\t' << "cone resolution: " << cone_resol << '\n';
+        results << "#" << '\t' << "bounces: " << bounces << '\n';
+        if(!geoac::is_topo){
+            results << "#" << '\t' << "ground elevation: " << topo::z0 << '\n';
+        } else {
+            results << "#" << '\t' << "topo file:" << topo_file << '\n';
+        }      
+        results << "#" << '\t' << "frequency: " << freq << '\n';
+        results << "#" << '\t' << "S&B atten coeff: " << atmo::tweak_abs << '\n';
+        results << "#" << '\t' << "threads: " << world_size << '\n' << '\n';
+
+        results << "# incl [deg]";
+        results << '\t' << "az [deg]";
+        results << '\t' << "n_b";
+        results << '\t' << "lat_0 [deg]";
+        results << '\t' << "lon_0 [deg]";
+        results << '\t' << "time [s]";
+        results << '\t' << "cel [km/s]";
+        results << '\t' << "turning ht [km]";
+        results << '\t' << "inclination [deg]";
+        results << '\t' << "back azimuth [deg]";
+        results << '\t' << "trans. coeff. [dB]";
+        results << '\t' << "absorption [dB]";
+        results << '\t' << "src lat [deg]";
+        results << '\t' << "src lon [deg]";
+        results << '\t' << "src alt [km]";
+        results << '\n';
+    
+        if(write_rays){
+            sprintf(output_buffer, "%s.raypaths.dat", output_id);
+            raypath.open(output_buffer);
+        
+            raypath << "# lat [deg]";
+            raypath << '\t' << "lon [deg]";
+            raypath << '\t' << "z [km]";
+            raypath << '\t' << "trans. coeff. [dB]";
+            raypath << '\t' << "absorption [dB]";
+            raypath << '\t' << "time [s]";
+            raypath << '\n';
+        }
+    }
+
+    src_attack = src_attack * (Pi / 180.0);
+    src_az = src_az * (Pi / 180.0);
+    lambda_step = cone_resol * (Pi / 180.0);
+
+	double** solution;
+	geoac::build_solution(solution, length);
+    mpi_error = MPI_Barrier(MPI_COMM_WORLD);
+
+    for(double lambda = -Pi; lambda < Pi; lambda += lambda_step * world_size){
+        double lambda_rank = lambda + world_rank * lambda_step;
+
+        if(world_rank == 0){
+            cout << "Calculating ray paths: (" << lambda * (180.0 / Pi) << " - " << min(lambda + (world_size - 1) * lambda_step, Pi) * (180.0 / Pi);
+            cout << ") degrees cone angles." << '\n';
+        }
+
+        double cone_x = sqrt(1.0 - 1.0 / pow(src_M, 2)) * (cos(src_az) * sin(lambda_rank) + sin(src_attack) * sin(src_az) * cos(lambda_rank)) - (1.0 / src_M) * cos(src_attack) * sin(src_az);
+        double cone_y = sqrt(1.0 - 1.0 / pow(src_M, 2)) * (sin(src_az) * sin(lambda_rank) - sin(src_attack) * cos(src_az) * cos(lambda_rank)) + (1.0 / src_M) * cos(src_attack) * cos(src_az);
+        double cone_z = sqrt(1.0 - 1.0 / pow(src_M, 2)) * cos(src_attack) * cos(lambda_rank) + (1.0 / src_M) * sin(src_attack);
+
+        geoac::theta = asin(cone_z);
+        geoac::phi = atan2(cone_y, -cone_x);
+        geoac::set_initial(solution, z_src, lat_src, lon_src);
+
+        travel_time_sum = 0.0;
+        attenuation = 0.0;
+        r_max = 0.0;
+    
+        for(int j = 0; j < world_size; j++){
+            if(lambda + lambda_step * j > Pi){
+                mpi_break_check[j] = true;
+            } else {
+                mpi_break_check[j] = false;
+            }
+        }
+        mpi_error = MPI_Barrier(MPI_COMM_WORLD);
+        for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){
+            if(!mpi_break_check[world_rank]){
+                k = geoac::prop_rk4(solution, break_check, length);
+            } else {
+                break_check = true;
+            }
+            
+            mpi_error = MPI_Barrier(MPI_COMM_WORLD);
+            MPI_Allgather(&k, 1, MPI_INT, mpi_k, 1, MPI_INT, MPI_COMM_WORLD);
+
+            if(write_rays){
+                for (int j = 0; j < world_size; j++){
+                    if(!mpi_break_check[j]){
+                        for(int m = 1; m < mpi_k[j] ; m++){
+                            if(world_rank == j){
+                                geoac::travel_time(travel_time_sum, solution, m - 1, m);
+                                geoac::atten(attenuation, solution, m - 1, m, freq);
+                            }
+                    
+                            if(m == 1 || m % 15 == 0){
+                                if (world_rank == j){
+                                    ray_buffer[0] = solution[m][1] * (180.0 / Pi);
+                                    ray_buffer[1] = solution[m][2] * (180.0 / Pi);
+                                    ray_buffer[2] = solution[m][0] - globe::r0;
+                                    if(geoac::calc_amp){
+                                        ray_buffer[3] = 20.0 * log10(geoac::amp(solution, m));
+                                    } else{
+                                        ray_buffer[3] = 0.0;
+                                    }
+                                    ray_buffer[4] = -2.0 * attenuation;
+                                    ray_buffer[5] = travel_time_sum;
+                                }
+                        
+                                if(world_rank == j && j != 0){
+                                    mpi_error = MPI_Send(ray_buffer, ray_buffer_size, MPI_DOUBLE, 0, 101, MPI_COMM_WORLD);
+                                } else if (world_rank == 0 && j != 0){
+                                    mpi_error = MPI_Recv(ray_buffer, ray_buffer_size, MPI_DOUBLE, j, 101, MPI_COMM_WORLD, &mpi_status);
+                                }
+                        
+                                if(world_rank == 0){
+                                    raypath << ray_buffer[0];
+                                    for(int n = 1; n < ray_buffer_size; n++){
+                                        if(n != 0 && n != 1){
+                                            raypath << '\t' << ray_buffer[n];
+                                        } else{
+                                            raypath << '\t' << setprecision(8) << ray_buffer[n];
+                                        }                                
+                                    }
+                                    raypath << '\n';
+                                }
+                            }
+                        }
+                        mpi_error = MPI_Barrier(MPI_COMM_WORLD);
+                        if(world_rank == 0){
+                            raypath << '\n';
+                        }
+                    }
+                }
+                mpi_error = MPI_Barrier(MPI_COMM_WORLD);
+            } else {
+                travel_time_sum += geoac::travel_time(solution, k);
+                attenuation += geoac::atten(solution, k, freq);
+            }
+        
+            for(int m = 0; m < k ; m++){
+                r_max = max (r_max, solution[m][0] - globe::r0);
+            }
+
+            if(k < 2 || (travel_time_sum / 3600.0) > geoac::time_max){
+                break_check = true;
+            }
+
+            break_check_int = int(break_check);
+            MPI_Allgather(&break_check_int, 1, MPI_INT, mpi_break_check, 1, MPI_INT, MPI_COMM_WORLD);
+        
+            inclination = - asin(atmo::c(solution[k][0], solution[k][1], solution[k][2]) / atmo::c(globe::r0 + z_src, lat_src, lon_src) * solution[k][3]) * (180.0 / Pi);
+            back_az = 90.0 - atan2(-solution[k][4], -solution[k][5]) * (180.0 / Pi);
+            if(back_az < -180.0){
+                back_az +=360.0;
+            } else if(back_az >  180.0){
+                back_az -=360.0;
+            }
+
+            for (int j = 0; j < world_size; j++){
+                if(!mpi_break_check[j]){
+                    if(world_rank == j){
+                        results_buffer[0] = geoac::theta * (180.0 / Pi);
+                        results_buffer[1] = geoac::phi * (180.0 / Pi);
+                        results_buffer[2] = bnc_cnt;
+                        results_buffer[3] = solution[k][1] * (180.0 / Pi);
+                        results_buffer[4] = solution[k][2] * (180.0 / Pi);
+                        results_buffer[5] = travel_time_sum;
+                        results_buffer[6] = globe::gc_dist(solution[k][1], solution[k][2], lat_src, lon_src) / travel_time_sum;
+                        results_buffer[7] = r_max;
+                        results_buffer[8] = inclination;
+                        results_buffer[9] = back_az;
+                        if(geoac::calc_amp){
+                            results_buffer[10] = 20.0 * log10(geoac::amp(solution, k));
+                        } else{
+                            results_buffer[10] = 0.0;
+                        }
+                        results_buffer[11] = -2.0 * attenuation;
+                    }
+                
+                    if(world_rank == j && j!=0){
+                        mpi_error = MPI_Send(results_buffer, results_buffer_size, MPI_DOUBLE, 0, 101, MPI_COMM_WORLD);
+                    } else if (world_rank == 0 && j!=0){
+                        mpi_error = MPI_Recv(results_buffer, results_buffer_size, MPI_DOUBLE, j, 101, MPI_COMM_WORLD, &mpi_status);
+                    }
+            
+                    mpi_error = MPI_Barrier(MPI_COMM_WORLD);
+                    if(world_rank==0){
+                        results << results_buffer[0];
+                        for(int n = 1; n < results_buffer_size; n++){
+                            if (n != 3 && n != 4){
+                                results << '\t' << results_buffer[n];
+                            } else{
+                                results << '\t' << setprecision(8) << results_buffer[n];
+                            }
+                        }
+                        results << '\t' << lat_src * (180.0 / Pi);
+                        results << '\t' << lon_src * (180.0 / Pi);
+                        results << '\t' << z_src;
+                        results << '\n';
+                    }
+                }
+            }
+            mpi_error = MPI_Barrier(MPI_COMM_WORLD);
+            if(!mpi_break_check[world_rank]){
+                geoac::set_refl(solution,k);
+            }
+        }
+        mpi_error = MPI_Barrier(MPI_COMM_WORLD);
+        if(world_rank == 0 && write_rays){
+            raypath << '\n';
+        }
+        geoac::clear_solution(solution, k);        
+    }
+
+    if(world_rank==0){
+        if(write_rays){
+            raypath.close();
+        }
+        results.close();
+    }
+
+    geoac::delete_solution(solution, length);
+    clear_region();
+    
+    mpi_error = MPI_Finalize();
+}
+
+
+
 int main(int argc, char* argv[]){
     if (argc < 3){ usage();}
     else {
@@ -1025,6 +1435,7 @@ int main(int argc, char* argv[]){
         else if ((strncmp(argv[1], "-usage", 6) == 0) || (strncmp(argv[1], "-u", 2) == 0)){         usage();}
         else if ((strncmp(argv[1], "-prop", 5) == 0) || (strncmp(argv[1], "-p", 2) == 0)){          run_prop(argv, argc);}
         else if ((strncmp(argv[1], "-eig_search", 11) == 0) || (strncmp(argv[1], "-s", 2) == 0)){   run_eig_search(argv, argc);}
+        else if ((strncmp(argv[1], "-mach_cone", 10) == 0) || (strncmp(argv[1], "-m", 2) == 0)){    run_mach_cone(argv, argc);}
         else {                                                                                      cout << "Unrecognized option." << '\n';}
     }
     return 0;
