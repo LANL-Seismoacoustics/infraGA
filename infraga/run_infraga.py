@@ -2843,7 +2843,7 @@ def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons
 
     \b
     Examples:
-    \t infraga sph supersonic --atmo-file G2S_example.met --trajectory ballistic_traj.dat --traj-step 6 --cpu-cnt 12 --cleanup False
+    \t infraga sph supersonic --atmo-file G2S_example.met --trajectory trajectories/ballistic_traj.dat --traj-step 6 --cpu-cnt 12 --cleanup False --output-id ballistic
 
     '''
 
