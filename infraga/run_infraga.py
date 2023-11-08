@@ -8,22 +8,19 @@ Author: pblom@lanl.gov
 """
 
 import os 
-import sys
 import warnings
 import glob
 import fnmatch
-
+import shlex
 import click
 import subprocess
-import configparser as cnfg
 
+import configparser as cnfg
+import numpy as np
 import matplotlib.pyplot as plt 
 
-from scipy.interpolate import interp1d 
-
 from importlib.util import find_spec
-
-import numpy as np
+from scipy.interpolate import interp1d
 
 bin_path =  find_spec('infraga').submodule_search_locations[0][:-8] + "/bin/"
 
@@ -52,10 +49,12 @@ def define_param(user_config, section, param, cli_val, format='str'):
         # If not in CLI or user config, set to None and use default value in C++ implementation
         return None
 
+
 def set_param(command, param, param_label):
     if param is not None:
         command = command + " " + param_label + "=" + param
     return command 
+
 
 ########################
 #                      #
@@ -156,7 +155,6 @@ def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
     return result / 1e3
 
 
-
 ###################################
 ##                               ##
 ##   Python CLI for infraga-2d   ##
@@ -201,7 +199,6 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
     Examples:
     \t infraga 2d prop --atmo-file ToyAtmo.met
     \t infraga 2d prop --atmo-file ToyAtmo.met --config-file example.cnfg
-
     '''
 
     if config_file:
@@ -222,9 +219,7 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
 
     inclination = define_param(user_config, 'PROP', 'inclination', inclination)
     azimuth = define_param(user_config, 'PROP', 'azimuth', azimuth)
-
     bounces = define_param(user_config, 'PROP', 'bounces', bounces)
-
     src_alt = define_param(user_config, 'PROP', 'src_alt', src_alt)
 
     # Set general parameters
@@ -263,11 +258,8 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
 
     command = set_param(command, inclination, "inclination")
     command = set_param(command, azimuth, "azimuth")
-
     command = set_param(command, bounces, "bounces")
-
     command = set_param(command, src_alt, "src_alt")
-
 
     command = set_param(command, freq, "freq")
     command = set_param(command, abs_coeff, "abs_coeff")
@@ -298,12 +290,11 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
         if topo_bl_wind is not None:
             command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-    # print(command)
-    subprocess.call(command, shell=True)
+    click.echo(command)
+    subprocess.run(shlex.split(command), shell=False)
 
 
-
-@click.command('wnl-wvfrm', short_help="Run weakly non-linear waveform calculation")
+@click.command('wnl_wvfrm', short_help="Run weakly non-linear waveform calculation")
 @click.option("--config-file", help="Configuration file for simulation", default=None)
 @click.option("--atmo-file", help="Atmosphere file", default=None)
 
@@ -353,8 +344,8 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
 
     \b
     Examples:
-    \t infraga 2d wnl-wvfrm --atmo-file ToyAtmo.met --inclination 12.0 --azimuth -90.0 --wvfrm-p0 500.0
-    \t infraga 2d wnl-wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
+    \t infraga 2d wnl_wvfrm --atmo-file ToyAtmo.met --inclination 12.0 --azimuth -90.0 --wvfrm-p0 500.0
+    \t infraga 2d wnl_wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
     '''
 
     if config_file:
@@ -482,8 +473,8 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
         if topo_bl_wind is not None:
             command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-    # print(command)
-    subprocess.call(command, shell=True)
+    click.echo(command)
+    subprocess.run(shlex.split(command), shell=False)
 
 
 ###################################
@@ -690,8 +681,9 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, i
         if topo_bl_wind is not None:
             command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-    # print(command)
-    subprocess.call(command, shell=True)
+    click.echo(command)
+    subprocess.run(shlex.split(command), shell=False)
+
 
 
 @click.command('eigenray', short_help="Run eigenray search for specific source-receiver")
@@ -896,11 +888,12 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, in
         if topo_bl_wind is not None:
             command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-    # print(command)
-    subprocess.call(command, shell=True)
+    click.echo(command)
+    subprocess.run(shlex.split(command), shell=False)
 
 
-@click.command('wnl-wvfrm', short_help="Run weakly non-linear waveform calculation")
+
+@click.command('wnl_wvfrm', short_help="Run weakly non-linear waveform calculation")
 @click.option("--config-file", help="Configuration file for simulation", default=None)
 @click.option("--atmo-file", help="Atmosphere file", default=None)
 @click.option("--atmo-prefix", help="Atmosphere file prefix (range dependent)", default=None)
@@ -961,8 +954,8 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, inclinatio
 
     \b
     Examples:
-    \t infraga 3d wnl-wvfrm --atmo-file ToyAtmo.met --inclination 4.1314876 --azimuth -84.969455 --bounces 1 --wvfrm-p0 500.0
-    \t infraga 3d wnl-wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
+    \t infraga 3d wnl_wvfrm --atmo-file ToyAtmo.met --inclination 4.1314876 --azimuth -84.969455 --bounces 1 --wvfrm-p0 500.0
+    \t infraga 3d wnl_wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
     '''
 
     if config_file:
@@ -1111,8 +1104,9 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, inclinatio
         if topo_bl_wind is not None:
             command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-    # print(command)
-    subprocess.call(command, shell=True)
+    click.echo(command)
+    subprocess.run(shlex.split(command), shell=False)
+
 
 
 @click.command('eig_wvfrm', short_help="Run eigenray search and compute waveform contributions")
@@ -1326,12 +1320,12 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
             if "-eig_search" in line:
                 eig_results_check = True
         if not eig_results_check:
-            print("Arrivals file detected, but not from eigenray analysis.")
+            click.echo("Arrivals file detected, but not from eigenray analysis.")
 
     if eig_results_check:
-        print("Eigenray results found.  Skipping to waveform calculation...")
+        click.echo("Eigenray results found.  Skipping to waveform calculation...")
     else:
-        print("Running eigenray analysis...")
+        click.echo("Running eigenray analysis...")
         # Build run command
         if cpu_cnt < 2:
             command = bin_path + "infraga-3d"
@@ -1405,18 +1399,20 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
             if topo_bl_wind is not None:
                 command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-        # print(command)
-        subprocess.call(command, shell=True)
+        click.echo(command)
+        subprocess.run(shlex.split(command), shell=False)
+
 
 
     # Analyze eigenray results and compute waveform contributions...
-    print("Computing waveform...")
+    click.echo("Computing waveform...")
     results_id = eig_arrivals_file[:-13]
 
     eig_results = np.loadtxt(eig_arrivals_file)
     if len(eig_results) > 0:
         eig_results = np.atleast_2d(eig_results)
-        os.system("rm " + results_id + ".eigenray*")
+        for file_name in glob(results_id + ".eigenray*.dat"):
+            os.remove(file_name)
 
         mask = np.ones(len(eig_results), dtype=bool)
         for n, line in enumerate(eig_results):
@@ -1539,8 +1535,9 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
                 if topo_bl_wind is not None:
                     command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-            # print(command)
-            subprocess.call(command, shell=True)
+            click.echo(command)
+            subprocess.run(shlex.split(command), shell=False)
+
 
             temp = np.loadtxt(profile_id + ".wvfrm_out.dat")
             wvfrms += [interp1d(temp[:, 0], temp[:, 1], bounds_error=False, fill_value=0.0,  kind='cubic')]
@@ -1553,17 +1550,16 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
                 print(*line, file=file_out)
             print('\n', file=file_out)
 
-            command = "rm " + profile_id + ".wvfrm_out.dat"
-            command = command + " " + profile_id + ".raypaths.dat"
-            command = command + " " + profile_id + ".wvfrm_init.dat"
-            os.system(command)
+            os.remove(profile_id + ".wvfrm_init.dat")
+            os.remove(profile_id + ".wvfrm_out.dat")
+            os.remove(profile_id + ".raypaths.dat")
 
         file_out.close()
 
         # combine waveforms and write to file
-        print("Interpolating and merging waveforms...")
-        print('\t' + "Eigenrays written into " + profile_id + ".eigenrays.dat")
-        print('\t' + "Arrival waveform written into " + profile_id + ".wvfrms.dat")
+        click.echo("Interpolating and merging waveforms...")
+        click.echo('\t' + "Eigenrays written into " + profile_id + ".eigenrays.dat")
+        click.echo('\t' + "Arrival waveform written into " + profile_id + ".wvfrms.dat")
 
         t_vals = np.arange(t_lims[0], t_lims[1], dt)
         file_out = open(profile_id + ".wvfrms.dat", 'w')
@@ -1620,9 +1616,7 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
         print('\n' + "No waveforms to compute.")
     
     if not keep_eig_arrivals:
-        os.system("rm " + profile_id + ".arrivals.dat")
-
-
+        os.remove(profile_id + ".arrivals.dat")
 
 
 ####################################
@@ -1828,8 +1822,9 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
         if topo_bl_wind is not None:
             command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-    # print(command)
-    subprocess.call(command, shell=True)
+    click.echo(command)
+    subprocess.run(shlex.split(command), shell=False)
+
 
 
 
@@ -2035,11 +2030,12 @@ def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
         if topo_bl_wind is not None:
             command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-    # print(command)
-    subprocess.call(command, shell=True)
+    click.echo(command)
+    subprocess.run(shlex.split(command), shell=False)
 
 
-@click.command('wnl-wvfrm', short_help="Run weakly non-linear waveform calculation")
+
+@click.command('wnl_wvfrm', short_help="Run weakly non-linear waveform calculation")
 @click.option("--config-file", help="Configuration file for simulation", default=None)
 @click.option("--atmo-file", help="Atmosphere file", default=None)
 @click.option("--atmo-prefix", help="Atmosphere file prefix (range dependent)", default=None)
@@ -2101,8 +2097,8 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
 
     \b
     Examples:
-    \t infraga sph wnl-wvfrm --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --inclination 4.1314876 --azimuth -84.969455 --bounces 1 --wvfrm-yield 10e3
-    \t infraga sph wnl-wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
+    \t infraga sph wnl_wvfrm --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --inclination 4.1314876 --azimuth -84.969455 --bounces 1 --wvfrm-yield 10e3
+    \t infraga sph wnl_wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
     '''
 
     if config_file:
@@ -2251,8 +2247,9 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
         if topo_bl_wind is not None:
             command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-    # print(command)
-    subprocess.call(command, shell=True)
+    click.echo(command)
+    subprocess.run(shlex.split(command), shell=False)
+
 
 
 @click.command('eig_wvfrm', short_help="Run eigenray search and compute waveform contributions")
@@ -2470,12 +2467,12 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
             if "-eig_search" in line:
                 eig_results_check = True
         if not eig_results_check:
-            print("Arrivals file detected, but not from eigenray analysis.")
+            click.echo("Arrivals file detected, but not from eigenray analysis.")
 
     if eig_results_check:
-        print("Eigenray results found.  Skipping to waveform calculation...")
+        click.echo("Eigenray results found.  Skipping to waveform calculation...")
     else:
-        print("Running eigenray analysis...")
+        click.echo("Running eigenray analysis...")
 
         if cpu_cnt < 2:
             command = bin_path + "infraga-sph"
@@ -2549,18 +2546,18 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
             if topo_bl_wind is not None:
                 command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-        # print(command)
-        subprocess.call(command, shell=True)
-
+        click.echo(command)
+        subprocess.run(shlex.split(command), shell=False)
 
     # Analyze eigenray results and compute waveform contributions...
-    print("Computing waveform...")
+    click.echo("Computing waveform...")
     results_id = eig_arrivals_file[:-13]
 
     eig_results = np.loadtxt(eig_arrivals_file)
     if len(eig_results) > 0:
         eig_results = np.atleast_2d(eig_results)
-        # os.system("rm " + results_id + ".eigenray*")
+        # for file_name in glob(results_id + "eigenrays*"):
+        #    os.remove(file_name)
 
         mask = np.ones(len(eig_results), dtype=bool)
         for n, line in enumerate(eig_results):
@@ -2680,8 +2677,9 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
                 if topo_bl_wind is not None:
                     command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-            print(command)
-            subprocess.call(command, shell=True)
+            click.echo(command)
+            subprocess.run(shlex.split(command), shell=False)
+
 
             temp = np.loadtxt(profile_id + ".wvfrm_out.dat")
             wvfrms += [interp1d(temp[:, 0], temp[:, 1], bounds_error=False, fill_value=0.0,  kind='cubic')]
@@ -2702,9 +2700,9 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
         file_out.close()
 
         # combine waveforms and write to file
-        print("Interpolating and merging waveforms...")
-        print('\t' + "Eigenrays written into " + profile_id + ".eigenrays.dat")
-        print('\t' + "Arrival waveform written into " + profile_id + ".wvfrms.dat")
+        click.echo("Interpolating and merging waveforms...")
+        click.echo('\t' + "Eigenrays written into " + profile_id + ".eigenrays.dat")
+        click.echo('\t' + "Arrival waveform written into " + profile_id + ".wvfrms.dat")
 
         t_vals = np.arange(t_lims[0], t_lims[1], dt)
         file_out = open(profile_id + ".wvfrms.dat", 'w')
@@ -2758,12 +2756,12 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
             print('', file=file_out)
         file_out.close()
     else:
-        print('\n' + "No waveforms to compute.")
+        click.echo('\n' + "No waveforms to compute.")
     
     if not keep_eig_results:
-        os.system("rm " + profile_id + ".eigenray-*.dat")
-        os.system("rm " + profile_id + ".arrivals.dat")
-
+        os.remove(profile_id + ".arrivals.dat")
+        for file_name in glob(profile_id + ".eigenray-*.dat"):
+            os.remove(file_name)
 
 
 def mach_cone_arrrival_header(atmo_file, traj_file, cone_resol, traj_resol, max_rng, lat_bnds=None, lon_bnds=None):
@@ -2777,19 +2775,6 @@ def mach_cone_arrrival_header(atmo_file, traj_file, cone_resol, traj_resol, max_
         header_text = header_text + "    lat_bnds: (" + str(lat_bnds[0]) + ", " + str(lat_bnds[1]) + ')\n'
     if lon_bnds is not None:
         header_text = header_text + "    lon_bnds: (" + str(lon_bnds[0]) + ", " + str(lon_bnds[1]) + ')\n'
-
-    header_text = header_text + '\n\n' + "incl [deg]	az [deg]	n_b	lat_0 [deg]	lon_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]"
-    header_text = header_text + " src_lat [deg]   src_lon [deg]   src_alt [deg]"
-
-    return header_text
-
-def supersonic_header(atmo_file, traj_file, cone_resol, traj_resol, max_rng):
-    header_text = "# infraga sph supersonic summary:" + '\n'
-    header_text = header_text + "    profile: " + atmo_file + '\n'
-    header_text = header_text + "    trajectory: " + traj_file + '\n'
-    header_text = header_text + "    cone resolution: " + str(cone_resol) + '\n'
-    header_text = header_text + "    trajectory resolution: " + str(traj_resol) + '\n'
-    header_text = header_text + "    max_rng: " + str(max_rng) + '\n'
 
     header_text = header_text + '\n\n' + "incl [deg]	az [deg]	n_b	lat_0 [deg]	lon_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]"
     header_text = header_text + " src_lat [deg]   src_lon [deg]   src_alt [deg]"
@@ -2906,7 +2891,7 @@ def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons
 
     # Prep temporary directory to hold discrete trajectory point results
     if not os.path.isdir("temp"):
-        print("Creating 'temp' directory for individual source locations...")
+        click.echo("Creating 'temp' directory for individual source locations...")
         os.mkdir("temp")
 
     # read in atmospheric file and define sound speed
@@ -3038,15 +3023,15 @@ def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons
                     if topo_bl_wind is not None:
                         command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-                print('\n' + command)
-                subprocess.call(command, shell=True)
+                click.echo('\n' + command)
+                subprocess.run(shlex.split(command), shell=False)
             else:
-                print("infraGA/GeoAc results already exist.  Skipping t0 = %03f..." % (time_vals[jj]))
+                click.echo("infraGA/GeoAc results already exist.  Skipping t0 = %03f..." % (time_vals[jj]))
 
     plt.close()
     
     # Merge output files...
-    print('\n' + "Applying source-time delays and merging results...")
+    click.echo('\n' + "Applying source-time delays and merging results...")
     raypath_files = []
     arrivals_files = []
     for file in np.sort(os.listdir("temp/")):
@@ -3056,7 +3041,7 @@ def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons
             arrivals_files = arrivals_files + [file]
 
     if write_rays:
-        print('\t' + "Merging ray path files...")
+        click.echo('\t' + "Merging ray path files...")
         raypaths = np.loadtxt("temp/" + raypath_files[0])
         raypaths[:, 5] = raypaths[:, 5] + float(raypath_files[0][3:11])
         for file in raypath_files[1:]:
@@ -3065,7 +3050,7 @@ def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons
             raypaths = np.vstack((raypaths, temp))
         np.savetxt(output_id + ".raypaths.dat", raypaths)
 
-    print('\t' + "Merging arrivals files...")
+    click.echo('\t' + "Merging arrivals files...")
     # Remove files with no data (e.g., arrival files in which no rays reach the ground)
     valid_arrivals = []
     for file_name in arrivals_files:
@@ -3083,7 +3068,7 @@ def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons
     np.savetxt(output_id + ".arrivals.dat", arrivals, header=mach_cone_arrrival_header(atmo_file, trajectory, cone_resol, traj_step, max_rng))
 
     if cleanup:
-        print('\n' + "Cleaning up...")
+        click.echo('\n' + "Cleaning up...")
         for file in glob("temp/t0_*raypaths.dat"):
             os.remove(file)
         for file in glob("temp/t0_*arrivals.dat"):

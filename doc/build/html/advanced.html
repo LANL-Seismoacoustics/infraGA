@@ -326,6 +326,37 @@ Calculating ray path: 1.5441 degrees inclination, -90 degrees azimuth.
 </div></blockquote>
 <p>This visualization is notably more clear in showing what the terrain profile looks like along the path.</p>
 <p>It should be noted that in some cases cross winds and terrain interactions can lead to ray paths that deviate significantly from the initial azimuthal plane.  In such a case, the terrain profile projected below the first ray path may differ significantly from that below other ray paths and those ray paths may appear to reflect from regions above or below the projected terrain profile.  In such a case, a secondary simulation using a higher inclination initial ray path might be useful to investigate the terrain profile below others in the simulation (be sure to save the arrivals and ray path output before doing this as they will be overwritten in the repeated simulations).</p>
+<p><strong>Elevated Sources</strong></p>
+<p>The default inclination angle range used in ray tracing assumes a source at the ground surface and a slightly positive inclination minimum.  In the case of an elevated source, this results in a large portion of ray paths being left uncomputed.  Consider running a simulation with a source at an altitude of 20 kilometers:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --src-alt 20.0
+</pre></div>
+</div>
+</div></blockquote>
+<p>The resulting ray paths can be visualized to see how a large portion of energy is missing from the simulation output:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/elevated_source1.png"><img alt="_images/elevated_source1.png" class="align-center" src="_images/elevated_source1.png" style="width: 900px;" /></a>
+</div></blockquote>
+<p>The Jacobian computation that is required to solve the Transport equation and calculate the geometric spreading has a singularity for inclination angles of <span class="math notranslate nohighlight">\(\pm 90^o\)</span>; therefore, a minimum inclination angle of <span class="math notranslate nohighlight">\(89^o\)</span> should be used as the lower limit in computing ray paths for an elevated source:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --src-alt 20.0 --incl-min -89.0
+</pre></div>
+</div>
+</div></blockquote>
+<p>Visualizing this result shows the additional ray paths which are initially downward propagating and ensonify the region below the source.  Also, the initially upward and downward paths produce alternating ensonification in the stratospheric waveguide:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/elevated_source2.png"><img alt="_images/elevated_source2.png" class="align-center" src="_images/elevated_source2.png" style="width: 900px;" /></a>
+</div></blockquote>
+<p>Reducing the maximum propagation range to 400 km (adding <code class="code docutils literal notranslate"><span class="pre">--max-rng</span> <span class="pre">400</span></code> to the above simulation command) more clearly shows the ensonification below the source and the two sets of ray paths contained within the stratospheric waveguide.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/elevated_source3.png"><img alt="_images/elevated_source3.png" class="align-center" src="_images/elevated_source3.png" style="width: 700px;" /></a>
+</div></blockquote>
 </section>
 <section id="advanced-option-usage">
 <h2>Advanced Option Usage<a class="headerlink" href="#advanced-option-usage" title="Permalink to this heading">¶</a></h2>
@@ -567,10 +598,33 @@ Calculating ray path geometry and weakly non-linear waveform evolution...
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot eig_wvfrms --atmo-file ToyAtmo.met --y-axis-option trace-velocity --cmap-option amplitude
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/eig_wvfrm4.png"><img alt="_images/eig_wvfrm4.png" class="align-center" src="_images/eig_wvfrm4.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="_images/eig_wvfrm4.png"><img alt="_images/eig_wvfrm4.png" class="align-center" src="_images/eig_wvfrm4.png" style="width: 800px;" /></a>
 </div></blockquote>
-<p><strong>Supersonic Source Calculations</strong></p>
-<p>Info will be added pending publication of a related manuscript…</p>
+<p><strong>Supersonic Sources</strong></p>
+<p>The set of ray paths emitted by a supersonic source as defined by the geometry of the Mach cone can be computed as discussed in Blom et al. (2024).  The Mach cone ray paths are computed for a single source location by specifying a source location, orientation (attack and azimuth angles), and Mach number (velocity relative to the ambient sound speed).  Usage of this method for a single point source can be run using the below syntax:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga-sph -mach_cone G2S_example.met output_id=temp/t0_110.0 src_mach=2.63 src_attack=-13.12 src_az=90.45 cone_resol=1.0
+</pre></div>
+</div>
+</div></blockquote>
+<p>In practice, computation of the infrasonic signals produced by a supersonic source’s Mach cone requires computation of the above set of Mach cone rays at each point along a trajectory and then combination of all predicted paths with appropriate time delay.  The python interface for <em>infraGA/GeoAc</em> includes a method that will ingest atmospheric data as well as a trajectory file (containing time, latitude, longitude, and altitude).  The method computes the Mach number and source orientation information from the trajectory and steps through all points on the trajectory.  Running the prediction of rays for a supersonic source requires an atmospheric file (or range dependent grid) and a trajectory file:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph supersonic --atmo-file G2S_example.met --trajectory trajectories/ballistic_traj.dat --traj-step 5 --cpu-cnt 4 --cleanup False --output-id ballistic
+</pre></div>
+</div>
+</div></blockquote>
+<p>The <code class="code docutils literal notranslate"><span class="pre">--traj-step</span></code> allows one to skip through high resolution trajectory information (the step is that used in <em>numpy</em> indexing notation, <code class="code docutils literal notranslate"><span class="pre">traj_data[::k]</span></code>).  The <code class="code docutils literal notranslate"><span class="pre">--cleanup</span></code> flag can be used to keep the predicted ray path data for individual trajectory points.  In general, only arrival information is stored when running the method unless the <code class="code docutils literal notranslate"><span class="pre">--write-rays</span></code> option is turned on.  While ray paths are being computed, the trajectory information is displayed in a window with points showing where along the trajectory the current computations is located.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/supersonic_trajectory.png"><img alt="_images/supersonic_trajectory.png" class="align-center" src="_images/supersonic_trajectory.png" style="width: 800px;" /></a>
+</div></blockquote>
+<p>Once the computation is complete, the arrival information can be visualized as with other ray tracing simulations:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot map --arrivals ballistic.arrivals.dat
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ballistic_arrivals.png"><img alt="_images/ballistic_arrivals.png" class="align-center" src="_images/ballistic_arrivals.png" style="width: 600px;" /></a>
+</div></blockquote>
+<p>More information about simulating infrasound from supersonic sources can be found in Blom et al. (2024) and citations therein.</p>
 </section>
 </section>
 

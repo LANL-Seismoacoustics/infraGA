@@ -191,6 +191,53 @@ This visualization is notably more clear in showing what the terrain profile loo
 
 It should be noted that in some cases cross winds and terrain interactions can lead to ray paths that deviate significantly from the initial azimuthal plane.  In such a case, the terrain profile projected below the first ray path may differ significantly from that below other ray paths and those ray paths may appear to reflect from regions above or below the projected terrain profile.  In such a case, a secondary simulation using a higher inclination initial ray path might be useful to investigate the terrain profile below others in the simulation (be sure to save the arrivals and ray path output before doing this as they will be overwritten in the repeated simulations).
 
+
+**Elevated Sources**
+
+The default inclination angle range used in ray tracing assumes a source at the ground surface and a slightly positive inclination minimum.  In the case of an elevated source, this results in a large portion of ray paths being left uncomputed.  Consider running a simulation with a source at an altitude of 20 kilometers:
+
+
+  .. code-block:: none
+    
+    infraga sph prop --atmo-file ToyAtmo.met --src-alt 20.0
+
+
+The resulting ray paths can be visualized to see how a large portion of energy is missing from the simulation output:
+
+
+  .. code-block:: none
+    
+    infraga plot azimuthal --atmo-file ToyAtmo.met
+
+  .. image:: _static/_images/elevated_source1.png
+      :width: 900px
+      :align: center
+
+The Jacobian computation that is required to solve the Transport equation and calculate the geometric spreading has a singularity for inclination angles of :math:`\pm 90^o`; therefore, a minimum inclination angle of :math:`89^o` should be used as the lower limit in computing ray paths for an elevated source:
+
+  .. code-block:: none
+    
+    infraga sph prop --atmo-file ToyAtmo.met --src-alt 20.0 --incl-min -89.0
+
+Visualizing this result shows the additional ray paths which are initially downward propagating and ensonify the region below the source.  Also, the initially upward and downward paths produce alternating ensonification in the stratospheric waveguide:
+
+  .. code-block:: none
+    
+    infraga plot azimuthal --atmo-file ToyAtmo.met
+
+  .. image:: _static/_images/elevated_source2.png
+      :width: 900px
+      :align: center
+
+
+Reducing the maximum propagation range to 400 km (adding :code:`--max-rng 400` to the above simulation command) more clearly shows the ensonification below the source and the two sets of ray paths contained within the stratospheric waveguide.  
+
+
+  .. image:: _static/_images/elevated_source3.png
+      :width: 700px
+      :align: center
+
+
 *********************
 Advanced Option Usage
 *********************
@@ -463,10 +510,40 @@ Lastly, similar to the azimuthal and eigenray visualization methods, the lower p
 
 
   .. image:: _static/_images/eig_wvfrm4.png
-      :width: 600px
+      :width: 800px
       :align: center
 
 
-**Supersonic Source Calculations**
+**Supersonic Sources**
 
-Info will be added pending publication of a related manuscript...
+The set of ray paths emitted by a supersonic source as defined by the geometry of the Mach cone can be computed as discussed in Blom et al. (2024).  The Mach cone ray paths are computed for a single source location by specifying a source location, orientation (attack and azimuth angles), and Mach number (velocity relative to the ambient sound speed).  Usage of this method for a single point source can be run using the below syntax:
+
+  .. code-block:: none
+
+    infraga-sph -mach_cone G2S_example.met output_id=temp/t0_110.0 src_mach=2.63 src_attack=-13.12 src_az=90.45 cone_resol=1.0
+
+In practice, computation of the infrasonic signals produced by a supersonic source's Mach cone requires computation of the above set of Mach cone rays at each point along a trajectory and then combination of all predicted paths with appropriate time delay.  The python interface for *infraGA/GeoAc* includes a method that will ingest atmospheric data as well as a trajectory file (containing time, latitude, longitude, and altitude).  The method computes the Mach number and source orientation information from the trajectory and steps through all points on the trajectory.  Running the prediction of rays for a supersonic source requires an atmospheric file (or range dependent grid) and a trajectory file:
+
+  .. code-block:: none
+    
+    infraga sph supersonic --atmo-file G2S_example.met --trajectory trajectories/ballistic_traj.dat --traj-step 5 --cpu-cnt 4 --cleanup False --output-id ballistic
+
+The :code:`--traj-step` allows one to skip through high resolution trajectory information (the step is that used in *numpy* indexing notation, :code:`traj_data[::k]`).  The :code:`--cleanup` flag can be used to keep the predicted ray path data for individual trajectory points.  In general, only arrival information is stored when running the method unless the :code:`--write-rays` option is turned on.  While ray paths are being computed, the trajectory information is displayed in a window with points showing where along the trajectory the current computations is located.
+
+  .. image:: _static/_images/supersonic_trajectory.png
+    :width: 800px
+    :align: center 
+
+Once the computation is complete, the arrival information can be visualized as with other ray tracing simulations:
+
+
+  .. code-block:: none
+    
+    infraga plot map --arrivals ballistic.arrivals.dat
+
+
+  .. image:: _static/_images/ballistic_arrivals.png
+    :width: 600px
+    :align: center 
+
+More information about simulating infrasound from supersonic sources can be found in Blom et al. (2024) and citations therein.

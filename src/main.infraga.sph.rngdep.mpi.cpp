@@ -1018,7 +1018,7 @@ void run_mach_cone(char* inputs[], int count){
     double src_M = 2.0, src_attack = 0.0, src_az = 0.0, cone_resol = 2.0;
     double freq = 0.1;
 
-    int bounces = 2, file_check;
+    int bounces = 10, file_check;
 
     bool write_atmo = false, write_rays = false, custom_output_id=false;
 

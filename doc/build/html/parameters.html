@@ -700,7 +700,7 @@
 </section>
 <section id="spherical-atmosphere-layer-simulation-parameters">
 <h2>Spherical Atmosphere Layer Simulation Parameters<a class="headerlink" href="#spherical-atmosphere-layer-simulation-parameters" title="Permalink to this heading">¶</a></h2>
-<p>Ray path calculation in a spherical atmospheric layer geometry again utilizes sets of inclination and azimuthal angles and single values can be specified using ‘inclination’ or ‘azimuth’, respectively.  The location of the source (and receiver for eigenray analysis) is defined by the latitude and longitude on the globe.  In most other respects, the parameter set for the spherical geometry methods is identical to that of the 3D Cartesian.  Similar to the 3D Cartesian configuration file header, the Point Source Propagation parameters are defined in the <code class="code docutils literal notranslate"><span class="pre">[PROP]</span></code> section of configuration files, Eigenray Analysis parameters using the <code class="code docutils literal notranslate"><span class="pre">[EiGENRAY]</span></code> header, and the waveform parameters are defined using the <code class="code docutils literal notranslate"><span class="pre">[WAVEFORM]</span></code> header.</p>
+<p>Ray path calculation in a spherical atmospheric layer geometry again utilizes sets of inclination and azimuthal angles and single values can be specified using ‘inclination’ or ‘azimuth’, respectively.  The location of the source (and receiver for eigenray analysis) is defined by the latitude and longitude on the globe.  In most other respects, the parameter set for the spherical geometry methods is identical to that of the 3D Cartesian.  Similar to the 3D Cartesian configuration file header, the Point Source Propagation parameters are defined in the <code class="code docutils literal notranslate"><span class="pre">[PROP]</span></code> section of configuration files, Eigenray Analysis parameters using the <code class="code docutils literal notranslate"><span class="pre">[EiGENRAY]</span></code> header, and the waveform parameters are defined using the <code class="code docutils literal notranslate"><span class="pre">[WAVEFORM]</span></code> header.  The supersonic source parameters can be specified using <code class="code docutils literal notranslate"><span class="pre">[SUPERSONIC]</span></code> header.</p>
 <p><strong>Point Source Propagation</strong></p>
 <table class="docutils align-default">
 <tbody>
@@ -912,6 +912,76 @@
 <td><p><code class="code docutils literal notranslate"><span class="pre">--src-alt</span></code></p></td>
 <td><p>km</p></td>
 <td><p>0.0</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Supersonic Source Simulation</strong></p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Parameter</strong></p></td>
+<td><p><strong>Info</strong></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>C/C++ CLI</strong></p></td>
+<td><p><strong>Python CLI</strong></p></td>
+<td><p><strong>Units</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>-</strong></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--trajectory</span></code></p></td>
+<td><p>string</p></td>
+<td><p>Required from user</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>-</strong></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--traj_step</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_lat</span></code></p></td>
+<td><p><em>from trajectory</em></p></td>
+<td><p>degrees</p></td>
+<td><p>30.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_lon</span></code></p></td>
+<td><p><em>from trajectory</em></p></td>
+<td><p>degrees</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_alt</span></code></p></td>
+<td><p><em>from trajectory</em></p></td>
+<td><p>km</p></td>
+<td><p>40.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_attack</span></code></p></td>
+<td><p><em>from trajectory</em></p></td>
+<td><p>degrees</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">src_az</span></code></p></td>
+<td><p><em>from trajectory</em></p></td>
+<td><p>degrees</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">src_mach</span></code></p></td>
+<td><p><em>from trajectory</em></p></td>
+<td><p>scalar</p></td>
+<td><p>2.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">cone_resol</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--cone-resol</span></code></p></td>
+<td><p>degrees</p></td>
+<td><p>2.0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bounces</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--bounces</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>-</strong></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--cleanup</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>True</p></td>
 </tr>
 </tbody>
 </table>

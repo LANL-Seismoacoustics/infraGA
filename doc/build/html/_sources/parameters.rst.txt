@@ -264,7 +264,7 @@ Computation of ray paths in 3D (Cartesian) geometry requires both a set of incli
 Spherical Atmosphere Layer Simulation Parameters
 ************************************************
 
-Ray path calculation in a spherical atmospheric layer geometry again utilizes sets of inclination and azimuthal angles and single values can be specified using 'inclination' or 'azimuth', respectively.  The location of the source (and receiver for eigenray analysis) is defined by the latitude and longitude on the globe.  In most other respects, the parameter set for the spherical geometry methods is identical to that of the 3D Cartesian.  Similar to the 3D Cartesian configuration file header, the Point Source Propagation parameters are defined in the :code:`[PROP]` section of configuration files, Eigenray Analysis parameters using the :code:`[EiGENRAY]` header, and the waveform parameters are defined using the :code:`[WAVEFORM]` header.
+Ray path calculation in a spherical atmospheric layer geometry again utilizes sets of inclination and azimuthal angles and single values can be specified using 'inclination' or 'azimuth', respectively.  The location of the source (and receiver for eigenray analysis) is defined by the latitude and longitude on the globe.  In most other respects, the parameter set for the spherical geometry methods is identical to that of the 3D Cartesian.  Similar to the 3D Cartesian configuration file header, the Point Source Propagation parameters are defined in the :code:`[PROP]` section of configuration files, Eigenray Analysis parameters using the :code:`[EiGENRAY]` header, and the waveform parameters are defined using the :code:`[WAVEFORM]` header.  The supersonic source parameters can be specified using :code:`[SUPERSONIC]` header.
 
 **Point Source Propagation**
 
@@ -361,3 +361,35 @@ Ray path calculation in a spherical atmospheric layer geometry again utilizes se
 +--------------------+----------------------+------------+----------------------+
 | :code:`src_alt`    | :code:`--src-alt`    | km         | 0.0                  |
 +--------------------+----------------------+------------+----------------------+
+
+
+**Supersonic Source Simulation**
+
+
++--------------------+-------------------------+-----------+--------------------+
+| **Parameter**      | **Info**                |           |                    |
++--------------------+-------------------------+-----------+--------------------+
+| **C/C++ CLI**      | **Python CLI**          | **Units** | **Default Value**  |
++--------------------+-------------------------+-----------+--------------------+
+| **-**              | :code:`--trajectory`    | string    | Required from user |
++--------------------+-------------------------+-----------+--------------------+
+| **-**              | :code:`--traj_step`     | integer   | 1                  |
++--------------------+-------------------------+-----------+--------------------+
+| :code:`src_lat`    | *from trajectory*       | degrees   | 30.0               |
++--------------------+-------------------------+-----------+--------------------+
+| :code:`src_lon`    | *from trajectory*       | degrees   | 0.0                |
++--------------------+-------------------------+-----------+--------------------+
+| :code:`src_alt`    | *from trajectory*       | km        | 40.0               |
++--------------------+-------------------------+-----------+--------------------+
+| :code:`src_attack` | *from trajectory*       | degrees   | 0.0                |
++--------------------+-------------------------+-----------+--------------------+
+| :code:`src_az`     | *from trajectory*       | degrees   | 0.0                |
++--------------------+-------------------------+-----------+--------------------+
+| :code:`src_mach`   | *from trajectory*       | scalar    | 2.0                |
++--------------------+-------------------------+-----------+--------------------+
+| :code:`cone_resol` | :code:`--cone-resol`    | degrees   | 2.0                |
++--------------------+-------------------------+-----------+--------------------+
+| :code:`bounces`    | :code:`--bounces`       | integer   | 10                 |
++--------------------+-------------------------+-----------+--------------------+
+| **-**              | :code:`--cleanup`       | bool      | True               |
++--------------------+-------------------------+-----------+--------------------+
