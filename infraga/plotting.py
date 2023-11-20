@@ -897,6 +897,9 @@ def plot_animation(arrivals, ray_paths, plot_option, output_id, rcvrs_file, src_
     \t infraga plot animation --arrivals ToyAtmo.arrivals.dat --plot-option turning-height
     '''
 
+
+    plt.rcParams.update({'font.size': 8})
+
     # Open arrivals file and check for source location
     arrival_data = open(arrivals, 'r')
 
@@ -939,7 +942,7 @@ def plot_animation(arrivals, ray_paths, plot_option, output_id, rcvrs_file, src_
     for j in range(frame_cnt):
         t_ref = j * t_resol
 
-        fig = plt.figure(figsize=(11, 4))
+        fig = plt.figure(figsize=(8.5, 3))
 
         ax1 = fig.add_subplot(1, 2, 1, projection='3d')
         ax1.set_xlabel("Longitude [deg]")
@@ -950,13 +953,17 @@ def plot_animation(arrivals, ray_paths, plot_option, output_id, rcvrs_file, src_
         ax1.set_ylim(lat_min, lat_max)
         ax1.set_zlim(0.0, alt_max)
 
+        ax1.xaxis.set_major_locator(plt.MaxNLocator(4))
+        ax1.yaxis.set_major_locator(plt.MaxNLocator(4))
+
+        if trajectory is not None:
+            ax1.plot(trajectory_info[:, 2], trajectory_info[:, 1], trajectory_info[:, 3], '0.75', linewidth=0.5)
+
         time_mask = np.logical_and(t_ref - t_resol < ray_path_data[:, 5], ray_path_data[:, 5] < t_ref + t_resol)
         combo_mask = np.logical_and(time_mask, ray_path_data[:, 2] < alt_max)
-        ax1.plot(ray_path_data[:, 1][combo_mask], ray_path_data[:, 0][combo_mask], ray_path_data[:, 2][combo_mask], 'ok', markersize=0.1, edgecolor='none')
-        if trajectory is not None:
-            ax1.plot(trajectory_info[:, 2], trajectory_info[:, 1], trajectory_info[:, 3], '-k', linewidth=0.5)
+        ax1.plot(ray_path_data[:, 1][combo_mask], ray_path_data[:, 0][combo_mask], ray_path_data[:, 2][combo_mask], ',k')
 
-        ax1.view_init(elev=10, azim=45.0 + (float(j) / frame_cnt) * 360.0)
+        ax1.view_init(elev=10, azim=-135.0 + (float(j) / frame_cnt) * 360.0)
 
         ax2 = fig.add_subplot(1, 2, 2, projection=map_proj)
 
@@ -989,13 +996,13 @@ def plot_animation(arrivals, ray_paths, plot_option, output_id, rcvrs_file, src_
         if plot_option == "turning-height":
             print('\t' + "Generating map with turning height info at " + str(np.round(t_ref, 2)) + " seconds....")
             combo_mask = np.logical_and(time_mask, arrivals_data[:, 7] > 80.0)
-            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size * 1.5, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 12.0, arrivals_data[:, 7] < 80.0))
-            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size * 1.5, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 1.8, arrivals_data[:, 7] < 12.0))
-            sc = ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:, 7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+            sc = ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:, 7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size * 1.5, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
 
             divider = make_axes_locatable(ax2)
             ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
@@ -1009,13 +1016,13 @@ def plot_animation(arrivals, ray_paths, plot_option, output_id, rcvrs_file, src_
             else:
                 tloss = arrivals_data[:, 10]
             combo_mask = np.logical_and(time_mask, arrivals_data[:, 7] > 80.0)
-            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 1.5, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 12.0, arrivals_data[:, 7] < 80.0))
-            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 1.5, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 1.8, arrivals_data[:, 7] < 12.0))
-            sc = ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
+            sc = ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 1.5, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
 
             divider = make_axes_locatable(ax2)
             ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
@@ -1025,13 +1032,13 @@ def plot_animation(arrivals, ray_paths, plot_option, output_id, rcvrs_file, src_
         elif plot_option == "celerity":
             print('\t' + "Generating map with celerity info at " + str(np.round(t_ref, 2)) + " seconds...")
             combo_mask = np.logical_and(time_mask, arrivals_data[:, 7] > 80.0)
-            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 1.5, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 12.0, arrivals_data[:, 7] < 80.0))
-            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 1.5, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
 
             combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 1.8, arrivals_data[:, 7] < 12.0))
-            sc = ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+            sc = ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 1.5, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
 
             divider = make_axes_locatable(ax2)
             ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
@@ -1050,4 +1057,4 @@ def plot_animation(arrivals, ray_paths, plot_option, output_id, rcvrs_file, src_
         plt.savefig(output_id + "_" + "{:04d}".format(j) + ".png", dpi=250)
         plt.close(fig)
 
-    click.echo("If you have FFMPEG, you can build the animation via:" + '\n' + "ffmpeg -f image2 -r 32 -pattern_type glob -i '" + output_id + "*.png' -f avi -vcodec mjpeg -q:v 5.0 -video_size 1240x480 animation.avi")
+    click.echo("If you have FFMPEG, you can build the animation via:" + '\n' + "ffmpeg -f image2 -r 32 -pattern_type glob -i '" + output_id + "*.png' -f avi -vcodec mjpeg -q:v 5.0 animation.avi")
