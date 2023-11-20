@@ -873,3 +873,181 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
     plt.savefig(figure_out, dpi=250)
     plt.show()
 
+
+@click.command('animation', short_help="Visualize frames for an animation")
+@click.option("--arrivals", help="Arrivals file from an infraga-sph simulation", default=None)
+@click.option("--ray-paths", help="Ray path file from an infraga-sph simulation", default=None)
+@click.option("--plot-option", help="Parameter to visualize for arrivals ('amplitude', 'turning-height', 'celerity', or 'none')", default='amplitude')
+@click.option("--output-id", help="Name of output figure", default="frame")
+@click.option("--rcvrs-file", help="File containing receiver locations (optional)", default=None)
+@click.option("--src-loc", help="Source location (if not in header)", default=None)
+@click.option("--trajectory", help="Trajectory file ", default=None)
+@click.option("--t-resol", help="Temporal resolution of animation", default=10.0)
+@click.option("--t-max", help="End time for the animation", default=None, type=float)
+@click.option("--alt-max", help="Maximum altitude for ray plot", default=None, type=float)
+@click.option("--include-absorption", help="Include Sutherland & Bass losses", default=True)
+@click.option("--offline-maps-dir", help="Use directory for offline cartopy maps", default=None)
+@click.option("--show-map", help="Turn on/off map details", default=True)
+def plot_animation(arrivals, ray_paths, plot_option, output_id, rcvrs_file, src_loc, trajectory, t_resol, t_max, alt_max, include_absorption, offline_maps_dir, show_map):
+    '''
+    Visualize arrivals or ray paths computed using infraga spherical methods on a Cartopy map
+
+    \b
+    Examples:
+    \t infraga plot animation --arrivals ToyAtmo.arrivals.dat --plot-option turning-height
+    '''
+
+    # Open arrivals file and check for source location
+    arrival_data = open(arrivals, 'r')
+
+    src_loc = None
+    for line in arrival_data: 
+        if "source location" in line: 
+            src_loc = [float(val) for val in line[35:-1].split(", ")[:2]] 
+            break
+
+    if trajectory is not None:
+        trajectory_info = np.loadtxt(trajectory)
+
+    # load data and extract lat/lon info for the map
+    click.echo("Loading arrivals data from " + arrivals)
+    arrivals_data = np.loadtxt(arrivals)
+
+    click.echo("Loading ray path data from " + ray_paths)
+    ray_path_data = np.loadtxt(ray_paths)
+
+    lats = arrivals_data[:, 3]
+    lons = arrivals_data[:, 4]
+
+    if src_loc is not None:
+        lat_min, lat_max = np.floor(min(min(lats), src_loc[0])), np.ceil(max(max(lats), src_loc[0]))
+        lon_min, lon_max = np.floor(min(min(lons), src_loc[1])), np.ceil(max(max(lons), src_loc[1]))
+    else:
+        lat_min, lat_max = np.floor(min(lats)), np.ceil(max(lats))
+        lon_min, lon_max = np.floor(min(lons)), np.ceil(max(lons))
+
+    if offline_maps_dir is not None:
+        use_offline_maps(offline_maps_dir)
+
+    if alt_max is None:
+        alt_max = np.ceil(np.max(ray_path_data[:, 2]) / 10.0) * 10.0
+
+    if t_max is None:
+        t_max = np.max(arrivals_data[:, 5])
+
+    frame_cnt = int(t_max / t_resol)
+    for j in range(frame_cnt):
+        t_ref = j * t_resol
+
+        fig = plt.figure(figsize=(11, 4))
+
+        ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+        ax1.set_xlabel("Longitude [deg]")
+        ax1.set_ylabel("Latitude [deg]")
+        ax1.set_zlabel("Altitude [km]")
+
+        ax1.set_xlim(lon_min, lon_max)
+        ax1.set_ylim(lat_min, lat_max)
+        ax1.set_zlim(0.0, alt_max)
+
+        time_mask = np.logical_and(t_ref - t_resol < ray_path_data[:, 5], ray_path_data[:, 5] < t_ref + t_resol)
+        combo_mask = np.logical_and(time_mask, ray_path_data[:, 2] < alt_max)
+        ax1.plot(ray_path_data[:, 1][combo_mask], ray_path_data[:, 0][combo_mask], ray_path_data[:, 2][combo_mask], 'ok', markersize=0.1, edgecolor='none')
+        if trajectory is not None:
+            ax1.plot(trajectory_info[:, 2], trajectory_info[:, 1], trajectory_info[:, 3], '-k', linewidth=0.5)
+
+        ax1.view_init(elev=10, azim=45.0 + (float(j) / frame_cnt) * 360.0)
+
+        ax2 = fig.add_subplot(1, 2, 2, projection=map_proj)
+
+        ax2.set_xlim(lon_min, lon_max)
+        ax2.set_ylim(lat_min, lat_max)
+
+        gl = ax2.gridlines(crs=map_proj, draw_labels=True, linewidth=0.5, color='gray', alpha=0.5, linestyle='--')
+        gl.top_labels = False
+        gl.right_labels = False
+
+        lat_tick, lon_tick = int((lat_max - lat_min) / 5), int((lon_max - lon_min) / 5)
+        gl.xlocator = mticker.FixedLocator(np.arange(lon_min - np.ceil(lon_tick / 2), lon_max + lon_tick, lon_tick))
+        gl.ylocator = mticker.FixedLocator(np.arange(lat_min - np.ceil(lat_tick / 2), lat_max + lat_tick, lat_tick))
+        gl.xformatter = LONGITUDE_FORMATTER
+        gl.yformatter = LATITUDE_FORMATTER
+
+        # Add features (coast lines, borders)
+        if show_map:
+            ax2.add_feature(cartopy.feature.COASTLINE, linewidth=0.5)
+            ax2.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
+            if (lon_max - lon_min) < 30.0:
+                ax2.add_feature(cartopy.feature.STATES, linewidth=0.5)
+                ax2.add_feature(cartopy.feature.RIVERS, edgecolor='dodgerblue', alpha=0.3)
+                ax2.add_feature(cartopy.feature.LAKES, facecolor='dodgerblue', edgecolor='dodgerblue', alpha=0.3)
+
+        ax2.scatter(arrivals_data[:, 4], arrivals_data[:, 3], marker="o", c = '0.75', s=marker_size / 10.0)
+
+        time_mask = np.logical_and(t_ref - t_resol * 2.0 < arrivals_data[:, 5], arrivals_data[:, 5] < t_ref + t_resol * 2.0)
+
+        if plot_option == "turning-height":
+            print('\t' + "Generating map with turning height info at " + str(np.round(t_ref, 2)) + " seconds....")
+            combo_mask = np.logical_and(time_mask, arrivals_data[:, 7] > 80.0)
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 12.0, arrivals_data[:, 7] < 80.0))
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 1.8, arrivals_data[:, 7] < 12.0))
+            sc = ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:, 7][combo_mask], transform=map_proj, cmap=cm.jet_r, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=0.0, vmax=130.0)
+
+            divider = make_axes_locatable(ax2)
+            ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
+            fig.add_axes(ax_cb)
+            cbar = plt.colorbar(sc, cax=ax_cb)
+            cbar.set_label('Turning Height [km]')
+        elif plot_option == "amplitude":
+            print('\t' + "Generating map with amplitude info at " + str(np.round(t_ref, 2)) + " seconds...")
+            if include_absorption:
+                tloss = arrivals_data[:, 10] + arrivals_data[:, 11]
+            else:
+                tloss = arrivals_data[:, 10]
+            combo_mask = np.logical_and(time_mask, arrivals_data[:, 7] > 80.0)
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
+
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 12.0, arrivals_data[:, 7] < 80.0))
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
+
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 1.8, arrivals_data[:, 7] < 12.0))
+            sc = ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=tloss[combo_mask], transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=-100.0, vmax=-10.0)
+
+            divider = make_axes_locatable(ax2)
+            ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
+            fig.add_axes(ax_cb)
+            cbar = plt.colorbar(sc, cax=ax_cb)
+            cbar.set_label('Amplitude (power rel. 1 km) [dB]')
+        elif plot_option == "celerity":
+            print('\t' + "Generating map with celerity info at " + str(np.round(t_ref, 2)) + " seconds...")
+            combo_mask = np.logical_and(time_mask, arrivals_data[:, 7] > 80.0)
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 12.0, arrivals_data[:, 7] < 80.0))
+            ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+
+            combo_mask = np.logical_and(time_mask, np.logical_and(arrivals_data[:,7] > 1.8, arrivals_data[:, 7] < 12.0))
+            sc = ax2.scatter(arrivals_data[:,4][combo_mask], arrivals_data[:,3][combo_mask], c=arrivals_data[:,6][combo_mask] * 1e3, transform=map_proj, cmap=cm.jet, marker="o", s=marker_size * 2.0, alpha=0.5, edgecolor='none', vmin=220.0, vmax=340.0)
+
+            divider = make_axes_locatable(ax2)
+            ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
+            fig.add_axes(ax_cb)
+            cbar = plt.colorbar(sc, cax=ax_cb)
+            cbar.set_label('Celerity [m/s]')
+
+        if rcvrs_file:
+            try:
+                rcvr_locs = np.loadtxt(rcvrs_file)
+                ax2.plot(rcvr_locs[:, 1], rcvr_locs[:, 0], 'k^', markersize=3.0, transform=map_proj)
+            except:
+                print('\t\t' + "Invalid receivers file.  Omitting from plot.")
+
+        plt.tight_layout()
+        plt.savefig(output_id + "_" + "{:04d}".format(j) + ".png", dpi=250)
+        plt.close(fig)
+
+    click.echo("If you have FFMPEG, you can build the animation via:" + '\n' + "ffmpeg -f image2 -r 32 -pattern_type glob -i '" + output_id + "*.png' -f avi -vcodec mjpeg -q:v 5.0 -video_size 1240x480 animation.avi")

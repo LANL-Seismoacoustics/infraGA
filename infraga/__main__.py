@@ -85,6 +85,7 @@ plot.add_command(plotting.plot_azimuthal)
 plot.add_command(plotting.plot_eigenrays)
 plot.add_command(plotting.plot_eig_wvfrm)
 plot.add_command(plotting.plot_map)
+plot.add_command(plotting.plot_animation)
     
 utils.add_command(infraga_utils.build_g2s_grid)
 utils.add_command(infraga_utils.extract_ecmwf)
