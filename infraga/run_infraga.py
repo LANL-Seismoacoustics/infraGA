@@ -2994,9 +2994,9 @@ def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons
                 command = set_param(command, cone_resol, "cone_resol")
                 command = set_param(command, bounces, "bounces")
                 
-                command = set_param(command, lat_vals[jj], "src_lat")
-                command = set_param(command, lon_vals[jj], "src_lon")
-                command = set_param(command, alt_vals[jj], "src_alt")
+                command = set_param(command, str(lat_vals[jj]), "src_lat")
+                command = set_param(command, str(lon_vals[jj]), "src_lon")
+                command = set_param(command, str(alt_vals[jj]), "src_alt")
 
                 if write_rays is not None:
                     command = set_param(command, str(write_rays), "write_rays")

@@ -942,7 +942,7 @@ def plot_animation(arrivals, ray_paths, plot_option, output_id, rcvrs_file, src_
     for j in range(frame_cnt):
         t_ref = j * t_resol
 
-        fig = plt.figure(figsize=(8.5, 3))
+        fig = plt.figure(figsize=(11, 3.75))
 
         ax1 = fig.add_subplot(1, 2, 1, projection='3d')
         ax1.set_xlabel("Longitude [deg]")
@@ -1053,8 +1053,10 @@ def plot_animation(arrivals, ray_paths, plot_option, output_id, rcvrs_file, src_
             except:
                 print('\t\t' + "Invalid receivers file.  Omitting from plot.")
 
+        ax2.annotate(str(t_ref) + " sec", xy=(0.02, 0.95), xycoords='axes fraction', horizontalalignment='left')
+
         plt.tight_layout()
         plt.savefig(output_id + "_" + "{:04d}".format(j) + ".png", dpi=250)
         plt.close(fig)
 
-    click.echo("If you have FFMPEG, you can build the animation via:" + '\n' + "ffmpeg -f image2 -r 32 -pattern_type glob -i '" + output_id + "*.png' -f avi -vcodec mjpeg -q:v 5.0 animation.avi")
+    click.echo("If you have FFMPEG, you can build the animation via:" + '\n' + "ffmpeg -f image2 -r 24 -pattern_type glob -i '" + output_id + "*.png' -f avi -vcodec mjpeg -q:v 5.0 animation.avi")
