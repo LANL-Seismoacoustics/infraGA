@@ -2859,18 +2859,18 @@ def mach_cone_arrrival_header(atmo_file, traj_file, cone_resol, traj_resol, max_
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 @click.option("--cpu-cnt", help="Number of CPUs to use in analysis", default=None)
-@click.option("--cleanup", help="Flag to clean up individual trajectory step results", default=False)
+@click.option("--local-temp-dir", help="Local temporary directory for results", default=None)
 def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, trajectory, cone_resol, traj_step,
                         bounces, freq, abs_coeff, z_grnd, write_atmo, write_rays, prof_format, output_id, max_alt, 
                         max_rng, min_lat, max_lat, min_lon, max_lon, min_ds, max_ds, max_s, topo_file, topo_bl_wind, 
-                        cpu_cnt, cleanup):
+                        cpu_cnt, local_temp_dir):
     
     '''
     Run spherical atmospheric layer eigenray analysis to identify propagation paths connecting a specific source-receiver geometr yand then compute weakly-nonlinear waveform predictions for each eigenray
 
     \b
     Examples:
-    \t infraga sph supersonic --atmo-file G2S_example.met --trajectory trajectories/ballistic_traj.dat --traj-step 6 --cpu-cnt 12 --cleanup False --output-id ballistic
+    \t infraga sph supersonic --atmo-file G2S_example.met --trajectory trajectories/ballistic_traj.dat --traj-step 6 --cpu-cnt 12 --output-id ballistic --local-temp-dir ballistic_temp
 
     '''
 
@@ -2890,7 +2890,7 @@ def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons
     cone_resol = define_param(user_config, 'SUPERSONIC', 'cone_resol', cone_resol)
     traj_step = define_param(user_config, 'SUPERSONIC', 'traj_step', traj_step)
     bounces = define_param(user_config, 'SUPERSONIC', 'bounces', bounces)
-    cleanup = define_param(user_config, 'SUPERSONIC', 'cleanup', cleanup)
+    local_temp_dir = define_param(user_config, 'SUPERSONIC', 'local_temp_dir', local_temp_dir)
    
     # Set general parameters
     freq = define_param(user_config, 'GENERAL', 'freq', freq)
@@ -2930,194 +2930,192 @@ def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons
             output_id = atmo_file[:-4]
         else:
             output_id = atmo_prefix
+        
+    with tempfile.TemporaryDirectory(prefix='infraga_') as tmpdirname:
+        if local_temp_dir is not None:
+            click.echo("Writing individual Mach cone source results into " + local_temp_dir)
+            if not os.path.isdir(local_temp_dir):
+                os.mkdir(local_temp_dir)
+            tmpdirname = local_temp_dir
+        else:
+            click.echo('Created temp directory:', tmpdirname)
 
-    # Prep temporary directory to hold discrete trajectory point results
-    if not os.path.isdir("temp"):
-        click.echo("Creating 'temp' directory for individual source locations...")
-        os.mkdir("temp")
+        # read in atmospheric file and define sound speed
+        if atmo_file is not None:
+            g2s = np.loadtxt(atmo_file)
+        else:
+            g2s = np.loadtxt(atmo_prefix + "0.met")
 
-    # read in atmospheric file and define sound speed
-    if atmo_file is not None:
-        g2s = np.loadtxt(atmo_file)
-    else:
-        g2s = np.loadtxt(atmo_prefix + "0.met")
+        sndspd = interp1d(g2s[:, 0], np.sqrt(0.14 * g2s[:, 5] / g2s[:, 4]) * 1.0e-3) 
 
-    sndspd = interp1d(g2s[:, 0], np.sqrt(0.14 * g2s[:, 5] / g2s[:, 4]) * 1.0e-3) 
+        # read in trajectory and interpolate
+        traj = np.loadtxt(trajectory)
+        time_vals = traj[:, 0]
+        lat_vals = traj[:, 1]
+        lon_vals = traj[:, 2]
+        alt_vals = traj[:, 3]
 
-    # read in trajectory and interpolate
-    traj = np.loadtxt(trajectory)
-    time_vals = traj[:, 0]
-    lat_vals = traj[:, 1]
-    lon_vals = traj[:, 2]
-    alt_vals = traj[:, 3]
+        # compute the mach number, attack angle, and azimuth angle
+        dz_dt = np.gradient(alt_vals) / np.gradient(time_vals)
+        dlat_dt = np.gradient(np.radians(lat_vals)) / np.gradient(time_vals)
+        dlon_dt = np.gradient(np.radians(lon_vals)) / np.gradient(time_vals)
 
-    # compute the mach number, attack angle, and azimuth angle
-    dz_dt = np.gradient(alt_vals) / np.gradient(time_vals)
-    dlat_dt = np.gradient(np.radians(lat_vals)) / np.gradient(time_vals)
-    dlon_dt = np.gradient(np.radians(lon_vals)) / np.gradient(time_vals)
+        r0 = 6370.0
+        dx_dt = (r0 + alt_vals) * dlat_dt
+        dy_dt = (r0 + alt_vals) * np.cos(np.radians(lat_vals)) * dlon_dt
+        ds_dt = np.sqrt(dx_dt**2 + dy_dt**2 + dz_dt**2)
 
-    r0 = 6370.0
-    dx_dt = (r0 + alt_vals) * dlat_dt
-    dy_dt = (r0 + alt_vals) * np.cos(np.radians(lat_vals)) * dlon_dt
-    ds_dt = np.sqrt(dx_dt**2 + dy_dt**2 + dz_dt**2)
+        mach = ds_dt / sndspd(alt_vals)
+        attack = np.degrees(np.arcsin(dz_dt / ds_dt))
+        azimuth = np.degrees(np.arctan2(np.cos(np.radians(dlat_dt)) * np.radians(dlon_dt), np.radians(dlat_dt)))
 
-    mach = ds_dt / sndspd(alt_vals)
-    attack = np.degrees(np.arcsin(dz_dt / ds_dt))
-    azimuth = np.degrees(np.arctan2(np.cos(np.radians(dlat_dt)) * np.radians(dlon_dt), np.radians(dlat_dt)))
+        # Plot trajectory info and step through mach cone source instances
+        _, ax = plt.subplots(3, 2, figsize=(15, 6), sharex=True)
 
-    # Plot trajectory info and step through mach cone source instances
-    _, ax = plt.subplots(3, 2, figsize=(15, 6), sharex=True)
+        for n in range(2):
+            ax[2][n].set_xlabel("Time [s]")
 
-    for n in range(2):
-        ax[2][n].set_xlabel("Time [s]")
+        ax[0][0].set_ylabel("Altitude [km]")
+        ax[1][0].set_ylabel("Latitude [km]")
+        ax[2][0].set_ylabel("Longitude [km]")
 
-    ax[0][0].set_ylabel("Altitude [km]")
-    ax[1][0].set_ylabel("Latitude [km]")
-    ax[2][0].set_ylabel("Longitude [km]")
+        ax[0][1].set_ylabel("Mach [-]")
+        ax[1][1].set_ylabel("Attack [deg]")
+        ax[2][1].set_ylabel("Azimuth [deg]")
 
-    ax[0][1].set_ylabel("Mach [-]")
-    ax[1][1].set_ylabel("Attack [deg]")
-    ax[2][1].set_ylabel("Azimuth [deg]")
+        ax[1][1].set_ylim([-90, 90])
+        ax[2][1].set_ylim([-180.0, 180.0])
 
-    ax[1][1].set_ylim([-90, 90])
-    ax[2][1].set_ylim([-180.0, 180.0])
+        ax[0][0].plot(time_vals, alt_vals, '-k', linewidth=4)
+        ax[1][0].plot(time_vals, lat_vals, '-k', linewidth=4)
+        ax[2][0].plot(time_vals, lon_vals, '-k', linewidth=4)
 
-    ax[0][0].plot(time_vals, alt_vals, '-k', linewidth=4)
-    ax[1][0].plot(time_vals, lat_vals, '-k', linewidth=4)
-    ax[2][0].plot(time_vals, lon_vals, '-k', linewidth=4)
+        ax[0][1].plot(time_vals, mach, '--k', linewidth=2)
+        ax[1][1].plot(time_vals, attack, '--k', linewidth=2)
+        ax[2][1].plot(time_vals, azimuth, '--k', linewidth=2)
 
-    ax[0][1].plot(time_vals, mach, '--k', linewidth=2)
-    ax[1][1].plot(time_vals, attack, '--k', linewidth=2)
-    ax[2][1].plot(time_vals, azimuth, '--k', linewidth=2)
+        ax[0][1].plot(time_vals[mach > 1], mach[mach > 1], '-k', linewidth=4)
+        ax[1][1].plot(time_vals[mach > 1], attack[mach > 1], '-k', linewidth=4)
+        ax[2][1].plot(time_vals[mach > 1], azimuth[mach > 1], '-k', linewidth=4)
 
-    ax[0][1].plot(time_vals[mach > 1], mach[mach > 1], '-k', linewidth=4)
-    ax[1][1].plot(time_vals[mach > 1], attack[mach > 1], '-k', linewidth=4)
-    ax[2][1].plot(time_vals[mach > 1], azimuth[mach > 1], '-k', linewidth=4)
+        plt.show(block=False)
 
-    plt.show(block=False)
+        # cycle through trajectory and 
+        for jj in range(0, len(time_vals), traj_step):
+            ax[0][0].plot([time_vals[jj]], [alt_vals[jj]], 'or', markersize=3)
+            ax[1][0].plot([time_vals[jj]], [lat_vals[jj]], 'or', markersize=3)
+            ax[2][0].plot([time_vals[jj]], [lon_vals[jj]], 'or', markersize=3)
 
-    # cycle through trajectory and 
-    for jj in range(0, len(time_vals), traj_step):
-        ax[0][0].plot([time_vals[jj]], [alt_vals[jj]], 'or', markersize=3)
-        ax[1][0].plot([time_vals[jj]], [lat_vals[jj]], 'or', markersize=3)
-        ax[2][0].plot([time_vals[jj]], [lon_vals[jj]], 'or', markersize=3)
+            ax[0][1].plot([time_vals[jj]], [mach[jj]],  'or', markersize=3)
+            ax[1][1].plot([time_vals[jj]], [attack[jj]],  'or', markersize=3)
+            ax[2][1].plot([time_vals[jj]], [azimuth[jj]],  'or', markersize=3)
 
-        ax[0][1].plot([time_vals[jj]], [mach[jj]],  'or', markersize=3)
-        ax[1][1].plot([time_vals[jj]], [attack[jj]],  'or', markersize=3)
-        ax[2][1].plot([time_vals[jj]], [azimuth[jj]],  'or', markersize=3)
+            plt.pause(0.001)
 
-        plt.pause(0.001)
+            if mach[jj] > 1.0:
+                if not os.path.isfile(tmpdirname +"/t0_" + "%03f" % (time_vals[jj]) + ".arrivals.dat"):
 
-        if mach[jj] > 1.0:
-            if not os.path.isfile("temp/t0_" + "%03f" % (time_vals[jj]) + ".arrivals.dat"):
+                    # Build run command
+                    if cpu_cnt < 2:
+                        command = bin_path + "infraga-sph"
+                    else:
+                        command = "mpirun -np " + str(cpu_cnt) + " " + bin_path + "infraga-accel-sph"
 
-                # Build run command
-                if cpu_cnt < 2:
-                    command = bin_path + "infraga-sph"
+                    if atmo_prefix is not None:
+                        command = command + "-rngdep"
+
+                    if atmo_file is not None:
+                        command = command + " -mach_cone " + atmo_file
+                    elif atmo_prefix is not None and grid_lats is not None and grid_lons is not None:
+                        command = command + " -mach_cone " + atmo_prefix + " " + grid_lats + " " + grid_lons
+                    else:
+                        click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-lats and --grid-lons)")
+                        return 0              
+
+                    command = command + " output_id=" + tmpdirname + "/t0_" + "%03f" % (time_vals[jj])
+
+                    command = set_param(command, str(mach[jj]), "src_mach")
+                    command = set_param(command, str(attack[jj]), "src_attack")
+                    command = set_param(command, str(azimuth[jj]), "src_az")
+                    command = set_param(command, cone_resol, "cone_resol")
+                    command = set_param(command, bounces, "bounces")
+                    
+                    command = set_param(command, str(lat_vals[jj]), "src_lat")
+                    command = set_param(command, str(lon_vals[jj]), "src_lon")
+                    command = set_param(command, str(alt_vals[jj]), "src_alt")
+
+                    if write_rays is not None:
+                        command = set_param(command, str(write_rays), "write_rays")
+
+                    command = set_param(command, freq, "freq")
+                    command = set_param(command, abs_coeff, "abs_coeff")
+
+                    if write_atmo is not None:
+                        command = set_param(command, str(write_atmo), "write_atmo")
+
+                    command = set_param(command, prof_format, "prof_format")
+
+                    command = set_param(command, max_alt, "max_alt")
+                    command = set_param(command, max_rng, "max_rng")
+
+                    command = set_param(command, min_lat, "min_lat")
+                    command = set_param(command, max_lat, "max_lat")
+                    command = set_param(command, min_lon, "min_lon")
+                    command = set_param(command, max_lon, "max_lon")
+
+                    command = set_param(command, min_ds, "min_ds")
+                    command = set_param(command, max_ds, "max_ds")
+                    command = set_param(command, max_s, "max_s")
+
+                    command = set_param(command, z_grnd, "z_grnd")
+                    command = set_param(command, topo_file, "topo_file")
+                    if topo_file is not None:
+                        if topo_bl_wind is not None:
+                            command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
+
+                    click.echo('\n' + command)
+                    subprocess.run(shlex.split(command), shell=False)
                 else:
-                    command = "mpirun -np " + str(cpu_cnt) + " " + bin_path + "infraga-accel-sph"
+                    click.echo("infraGA/GeoAc results already exist.  Skipping t0 = %03f..." % (time_vals[jj]))
 
-                if atmo_prefix is not None:
-                    command = command + "-rngdep"
+        plt.close()
+        
+        # Merge output files...
+        click.echo('\n' + "Applying source-time delays and merging results...")
+        raypath_files = []
+        arrivals_files = []
+        for file in np.sort(os.listdir(tmpdirname)):
+            if fnmatch.fnmatch(file, "t0_*.raypaths.dat"):
+                raypath_files = raypath_files + [file]
+            elif fnmatch.fnmatch(file, "t0_*.arrivals.dat"):
+                arrivals_files = arrivals_files + [file]
 
-                if atmo_file is not None:
-                    command = command + " -mach_cone " + atmo_file
-                elif atmo_prefix is not None and grid_lats is not None and grid_lons is not None:
-                    command = command + " -mach_cone " + atmo_prefix + " " + grid_lats + " " + grid_lons
-                else:
-                    click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-lats and --grid-lons)")
-                    return 0              
+        if write_rays:
+            click.echo('\t' + "Merging ray path files...")
+            raypaths = np.loadtxt(tmpdirname + "/" + raypath_files[0])
+            raypaths[:, 5] = raypaths[:, 5] + float(raypath_files[0][3:11])
+            for file in raypath_files[1:]:
+                temp = np.loadtxt(tmpdirname + "/" + file)
+                temp[:, 5] = temp[:, 5] + float(file[3:11])
+                raypaths = np.vstack((raypaths, temp))
+            np.savetxt(output_id + ".raypaths.dat", raypaths)
 
-                command = command + " output_id=temp/t0_" + "%03f" % (time_vals[jj])
+        click.echo('\t' + "Merging arrivals files...")
+        # Remove files with no data (e.g., arrival files in which no rays reach the ground)
+        valid_arrivals = []
+        for file_name in arrivals_files:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                temp = np.atleast_2d(np.loadtxt(tmpdirname + "/" + file_name))
+                if temp.shape[1] > 0:
+                    valid_arrivals = valid_arrivals + [file_name]
 
-                command = set_param(command, str(mach[jj]), "src_mach")
-                command = set_param(command, str(attack[jj]), "src_attack")
-                command = set_param(command, str(azimuth[jj]), "src_az")
-                command = set_param(command, cone_resol, "cone_resol")
-                command = set_param(command, bounces, "bounces")
-                
-                command = set_param(command, str(lat_vals[jj]), "src_lat")
-                command = set_param(command, str(lon_vals[jj]), "src_lon")
-                command = set_param(command, str(alt_vals[jj]), "src_alt")
-
-                if write_rays is not None:
-                    command = set_param(command, str(write_rays), "write_rays")
-
-                command = set_param(command, freq, "freq")
-                command = set_param(command, abs_coeff, "abs_coeff")
-
-                if write_atmo is not None:
-                    command = set_param(command, str(write_atmo), "write_atmo")
-
-                command = set_param(command, prof_format, "prof_format")
-
-                command = set_param(command, max_alt, "max_alt")
-                command = set_param(command, max_rng, "max_rng")
-
-                command = set_param(command, min_lat, "min_lat")
-                command = set_param(command, max_lat, "max_lat")
-                command = set_param(command, min_lon, "min_lon")
-                command = set_param(command, max_lon, "max_lon")
-
-                command = set_param(command, min_ds, "min_ds")
-                command = set_param(command, max_ds, "max_ds")
-                command = set_param(command, max_s, "max_s")
-
-                command = set_param(command, z_grnd, "z_grnd")
-                command = set_param(command, topo_file, "topo_file")
-                if topo_file is not None:
-                    if topo_bl_wind is not None:
-                        command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
-
-                click.echo('\n' + command)
-                subprocess.run(shlex.split(command), shell=False)
-            else:
-                click.echo("infraGA/GeoAc results already exist.  Skipping t0 = %03f..." % (time_vals[jj]))
-
-    plt.close()
-    
-    # Merge output files...
-    click.echo('\n' + "Applying source-time delays and merging results...")
-    raypath_files = []
-    arrivals_files = []
-    for file in np.sort(os.listdir("temp/")):
-        if fnmatch.fnmatch(file, "t0_*raypaths.dat"):
-            raypath_files = raypath_files + [file]
-        elif fnmatch.fnmatch(file, "t0_*arrivals.dat"):
-            arrivals_files = arrivals_files + [file]
-
-    if write_rays:
-        click.echo('\t' + "Merging ray path files...")
-        raypaths = np.loadtxt("temp/" + raypath_files[0])
-        raypaths[:, 5] = raypaths[:, 5] + float(raypath_files[0][3:11])
-        for file in raypath_files[1:]:
-            temp = np.loadtxt("temp/" + file)
+        arrivals = np.atleast_2d(np.loadtxt(tmpdirname + "/" + valid_arrivals[0]))
+        for file in valid_arrivals[1:]:
+            temp = np.atleast_2d(np.loadtxt(tmpdirname + "/" + file))
             temp[:, 5] = temp[:, 5] + float(file[3:11])
-            raypaths = np.vstack((raypaths, temp))
-        np.savetxt(output_id + ".raypaths.dat", raypaths)
+            arrivals = np.vstack((arrivals, temp))
+        np.savetxt(output_id + ".arrivals.dat", arrivals, header=mach_cone_arrrival_header(atmo_file, trajectory, cone_resol, traj_step, max_rng))
 
-    click.echo('\t' + "Merging arrivals files...")
-    # Remove files with no data (e.g., arrival files in which no rays reach the ground)
-    valid_arrivals = []
-    for file_name in arrivals_files:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            temp = np.atleast_2d(np.loadtxt("temp/" + file_name))
-            if temp.shape[1] > 0:
-                valid_arrivals = valid_arrivals + [file_name]
-
-    arrivals = np.atleast_2d(np.loadtxt("temp/" + valid_arrivals[0]))
-    for file in valid_arrivals[1:]:
-        temp = np.atleast_2d(np.loadtxt("temp/" + file))
-        temp[:, 5] = temp[:, 5] + float(file[3:11])
-        arrivals = np.vstack((arrivals, temp))
-    np.savetxt(output_id + ".arrivals.dat", arrivals, header=mach_cone_arrrival_header(atmo_file, trajectory, cone_resol, traj_step, max_rng))
-
-    if cleanup:
-        click.echo('\n' + "Cleaning up...")
-        for file in glob("temp/t0_*raypaths.dat"):
-            os.remove(file)
-        for file in glob("temp/t0_*arrivals.dat"):
-            os.remove(file)
 
 
