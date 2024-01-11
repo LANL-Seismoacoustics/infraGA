@@ -701,6 +701,9 @@ void run_back_proj(char* inputs[], int count){
     projection << '\t' << "LON^{(az)} [-]";
     projection << '\t' << "Z^{(az)} [km/deg]";
     projection << '\t' << "T^{(az)} [s/deg]";
+    projection << '\t' << "c_{g,lat} [m/s]";
+    projection << '\t' << "c_{g,lon} [m/s]";
+    projection << '\t' << "c_{g,r} [m/s]";
     projection << '\n';
     
     double** solution;
@@ -727,13 +730,22 @@ void run_back_proj(char* inputs[], int count){
                 
                 projection << '\t' << setprecision(8) << solution[m][7];
                 projection << '\t' << setprecision(8) << solution[m][8];
-                projection << '\t' << solution[m][6]*  (Pi / 180.0);
+                projection << '\t' << solution[m][6] * (Pi / 180.0);
                 projection << '\t' << travel_time_var_incl * (Pi / 180.0);
 
                 projection << '\t' << setprecision(8) << solution[m][13];
                 projection << '\t' << setprecision(8) << solution[m][14];
                 projection << '\t' << solution[m][12] * (Pi / 180.0);
                 projection << '\t' << travel_time_var_az  * (Pi / 180.0);
+
+                double nu[3] = {solution[m][3], solution[m][4], solution[m][5]};
+                double nu_mag = sqrt(pow(nu[0], 2) + pow(nu[1], 2) + pow(nu[2], 2));
+
+                double c_val = atmo::c(solution[m][0], solution[m][1], solution[m][2]);
+
+                projection << '\t' << c_val * nu[1] / nu_mag + atmo::u(solution[m][0], solution[m][1], solution[m][2]);
+                projection << '\t' << c_val * nu[2] / nu_mag + atmo::v(solution[m][0], solution[m][1], solution[m][2]);
+                projection << '\t' << c_val * nu[0] / nu_mag + atmo::w(solution[m][0], solution[m][1], solution[m][2]);
 
                 projection << '\n';
             }

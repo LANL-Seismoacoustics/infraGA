@@ -246,6 +246,9 @@ void run_prop(char* inputs[], int count){
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
         else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){                                            reverse_winds = string2bool(inputs[i] + 14);}
 
+        else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
+                                                                                                            output_id = inputs[i] + 10;}
+
         else if (strncmp(inputs[i], "z_grnd=", 7) == 0){                                                    if(!geoac::is_topo){
                                                                                                                 topo::z0 = atof(inputs[i] + 7);
                                                                                                                 topo::z_max = topo::z0;
@@ -365,7 +368,6 @@ void run_prop(char* inputs[], int count){
 	double** solution;
 	geoac::build_solution(solution, length);
     mpi_error = MPI_Barrier(MPI_COMM_WORLD);
-
     
     for(double phi = phi_min;       phi <= phi_max;     phi += phi_step){
         geoac::phi = Pi / 2.0 - phi * (Pi / 180.0);
