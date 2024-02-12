@@ -1,75 +1,37 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Atmospheric Data &mdash; infraGA/GeoAc  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  
-  
-  
-
-  
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Quickstart" href="quickstart.html" />
     <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="index.html" class="icon icon-home"> infraGA/GeoAc
-          
-
-          
-            
             <img src="_static/LANL Logo White.png" class="logo" alt="Logo"/>
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -77,17 +39,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="userguide.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authorship.html">Authorship &amp; References</a></li>
@@ -105,74 +57,40 @@
 <li class="toctree-l1"><a class="reference internal" href="physics.html">Propagation Physics</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">infraGA/GeoAc</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
-      <li>Atmospheric Data</li>
-    
-    
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Atmospheric Data</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/atmospheres.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <section id="atmospheric-data">
-<span id="atmospheres"></span><h1>Atmospheric Data<a class="headerlink" href="#atmospheric-data" title="Permalink to this heading">¶</a></h1>
+<span id="atmospheres"></span><h1>Atmospheric Data<a class="headerlink" href="#atmospheric-data" title="Permalink to this heading"></a></h1>
 <p>InfraGA/GeoAc requires atmospheric information to specify the acoustic sound speed, ambient winds, and atmospheric density in order to compute propagation information.  A climatological model (‘examples/ToyAtmo.met’) is included with the git repo for some basic simulations and tests as well as a sample Ground-to-Space (G2S) atmospheric specification.  The climatological model is based on the polynomial fit to the US Standard atmosphere with Gaussian wind structures in the lower- and middle atmosphere as well as idealized atmospheric tidal winds in the meso- and thermosphere (see Lingevitch et al., 1999 and Blom &amp; Waxler, 2021).</p>
 <p>The format of atmospheric data can be defined using <code class="code docutils literal notranslate"><span class="pre">prof_format</span></code> when using C/C++ binaries or Python configuration files and with <code class="code docutils literal notranslate"><span class="pre">--prof-format</span></code> in the Python command line interface.  The default atmospheric file format contains columns describing altitude (km), temperature (Kelvin), zonal (east/west) winds (m/s), meridional (north/south) winds (m/s), density (g/cm <span class="math notranslate nohighlight">\(^3\)</span>), and pressure (mbar).  The zonal and meridional winds are typically denoted as ‘u’ and ‘v’, so that this format is defined as <code class="code docutils literal notranslate"><span class="pre">zTuvdp</span></code>.  From this ingested atmospheric data, acoustic sound speed is computed using the adiabatic assumption, <span class="math notranslate nohighlight">\(p \propto \rho^\gamma \, \rightarrow \, c^2 = \frac{\partial p}{\partial \rho} = \gamma \frac{p}{\rho}\)</span> where <span class="math notranslate nohighlight">\(p\)</span> is pressure, <span class="math notranslate nohighlight">\(\rho\)</span> is density, and <span class="math notranslate nohighlight">\(\gamma\)</span> is the specific heat ratio for the atmosphere (1.4 for dry air).</p>
 <p>Two other profile formats are accepted in the current implementation of infraGA/GeoAc: <code class="code docutils literal notranslate"><span class="pre">zuvwTdp</span></code> and <code class="code docutils literal notranslate"><span class="pre">zcuvd</span></code>.  The first of these also includes a vertical wind component and was used in earlier output options of G2S.  The later defines the sound speed directly and doesn’t include temperature or pressure.  The units on these alternate formats are the same as the <code class="code docutils literal notranslate"><span class="pre">zTuvdp</span></code> and summarized below in the table for easy reference.</p>
 <table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 75%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><strong>Profile Format</strong></p></td>
 <td><p><strong>Fields/Units</strong></p></td>
@@ -189,14 +107,14 @@
 </tbody>
 </table>
 <section id="climatological-model">
-<h2>Climatological Model<a class="headerlink" href="#climatological-model" title="Permalink to this heading">¶</a></h2>
+<h2>Climatological Model<a class="headerlink" href="#climatological-model" title="Permalink to this heading"></a></h2>
 <p>A climatological model is included for some general analysis and leveraged for a number of the <a class="reference internal" href="quickstart.html#quickstart"><span class="std std-ref">Quickstart</span></a> examples.  This file is located in ‘examples/ToyAtmo.met’ and includes the polynomial fit introduced by Lingevitch et al. (1999) with Gaussian wind structures corresponding to an eastward jet stream near the tropopause, westward stratospheric wind jet (typical of summer atmospheric structure in the northern hemisphere), and sinusoidal atmospheric tides.  Detailed specifications for these winds are summarized in Blom &amp; Waxler (2021).  The below figure shows the atmospheric structure and waveguide refraction heights using the <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">atmo</span></code> functionality discussed as discussed during the <a class="reference internal" href="quickstart.html#quickstart"><span class="std std-ref">Quickstart</span></a>.</p>
 <blockquote>
 <div><a class="reference internal image-reference" href="_images/atmo_plot.png"><img alt="_images/atmo_plot.png" class="align-center" src="_images/atmo_plot.png" style="width: 1000px;" /></a>
 </div></blockquote>
 </section>
 <section id="atmospheric-data-resources">
-<h2>Atmospheric Data Resources<a class="headerlink" href="#atmospheric-data-resources" title="Permalink to this heading">¶</a></h2>
+<h2>Atmospheric Data Resources<a class="headerlink" href="#atmospheric-data-resources" title="Permalink to this heading"></a></h2>
 <p>The Ground-to-Space (G2S) methodologies (Drob et al., 2003) interpolate and merge numerical weather prediction data with climatological models for the meso- and thermosphere to produce atmospheric structure information that extends from the ground surface to above 100 km altitude.  Currently, a server hosting G2S atmospheric data is run by infrasound experts at the
 <a class="reference external" href="https://g2s.ncpa.olemiss.edu/">University of Mississippi’s National Center for Physical Acoustics</a>.  Through this web interface, one can request atmospheric data files for single locations, along great-circle paths, or on latitude/longitude grids.  The interface for the server is relatively straightforward to navigate and requested atmospheric data is shared via a download link sent to the requester’s email.</p>
 <blockquote>
@@ -235,51 +153,33 @@
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="quickstart.html" class="btn btn-neutral float-right" title="Quickstart" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quickstart.html" class="btn btn-neutral float-right" title="Quickstart" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2014, P.Blom
-
-    </p>
+    <p>&#169; Copyright 2014, P.Blom.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

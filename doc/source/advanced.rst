@@ -522,13 +522,13 @@ The set of ray paths emitted by a supersonic source as defined by the geometry o
 
     infraga-sph -mach_cone G2S_example.met output_id=temp/t0_110.0 src_mach=2.63 src_attack=-13.12 src_az=90.45 cone_resol=1.0
 
-In practice, computation of the infrasonic signals produced by a supersonic source's Mach cone requires computation of the above set of Mach cone rays at each point along a trajectory and then combination of all predicted paths with appropriate time delay.  The python interface for *infraGA/GeoAc* includes a method that will ingest atmospheric data as well as a trajectory file (containing time, latitude, longitude, and altitude).  The method computes the Mach number and source orientation information from the trajectory and steps through all points on the trajectory.  Running the prediction of rays for a supersonic source requires an atmospheric file (or range dependent grid) and a trajectory file:
+In practice, computation of the infrasonic signals produced by a supersonic source's Mach cone requires computation of the above set of Mach cone rays at each point along a trajectory and then combination of all predicted paths with appropriate time delay.  The python interface for *infraGA/GeoAc* includes a method that will ingest atmospheric data as well as a trajectory file (containing time, latitude, longitude, and altitude).  The method computes the Mach number and source orientation information from the trajectory and steps through all points on the trajectory.  Running the prediction of rays for a supersonic source requires an atmospheric file (or range dependent grid) and a trajectory file containing [time:lat:lon:alt]:
 
   .. code-block:: none
     
-    infraga sph supersonic --atmo-file G2S_example.met --trajectory trajectories/ballistic_traj.dat --traj-step 5 --cpu-cnt 4 --cleanup False --output-id ballistic
+    infraga sph supersonic --atmo-file G2S_example.met --trajectory trajectories/ballistic_traj.dat --traj-step 6 --cpu-cnt 12 --output-id ballistic --local-temp-dir ballistic_temp
 
-The :code:`--traj-step` allows one to skip through high resolution trajectory information (the step is that used in *numpy* indexing notation, :code:`traj_data[::k]`).  The :code:`--cleanup` flag can be used to keep the predicted ray path data for individual trajectory points.  In general, only arrival information is stored when running the method unless the :code:`--write-rays` option is turned on.  While ray paths are being computed, the trajectory information is displayed in a window with points showing where along the trajectory the current computations is located.
+The :code:`--traj-step` allows one to skip through high resolution trajectory information (the step is that used in *numpy* indexing notation, :code:`traj_data[::k]`).  The :code:`--local-temp-dir` path can be used to keep the predicted ray path data for individual trajectory points.  If a local temporary data directory is not specified, one is created via the :code:`tempfile` package and removed when the simulation is compelted. By default, only arrival information is stored when running the method unless the :code:`--write-rays` option is turned on.  While ray paths are being computed, the trajectory information is displayed in a window with points showing where along the trajectory the current computations is located:
 
   .. image:: _static/_images/supersonic_trajectory.png
     :width: 800px
@@ -536,11 +536,9 @@ The :code:`--traj-step` allows one to skip through high resolution trajectory in
 
 Once the computation is complete, the arrival information can be visualized as with other ray tracing simulations:
 
-
   .. code-block:: none
     
     infraga plot map --arrivals ballistic.arrivals.dat
-
 
   .. image:: _static/_images/ballistic_arrivals.png
     :width: 600px
