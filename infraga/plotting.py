@@ -728,7 +728,6 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
 
         # load data and extract lat/lon info for the map
         arrivals = np.loadtxt(arrivals)
-        print(arrivals.shape)
 
         lats = arrivals[:, 3]
         lons = arrivals[:, 4]
