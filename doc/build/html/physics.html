@@ -56,6 +56,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#eigenray-methods">Eigenray Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#terrain-interactions">Terrain Interactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#weakly-non-linear-waveform-evolution">Weakly Non-Linear Waveform Evolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mapping-mach-cone-geometry-into-rays">Mapping Mach Cone Geometry into Rays</a></li>
 </ul>
 </li>
 </ul>
@@ -284,6 +285,34 @@ u \left( s, \tau \right) &amp; = \frac{p \left( s, \tau \right)}{p_\text{ref}} \
 \right., \quad \quad x = \frac{t}{t_0}.\end{split}\]</div>
 </div></blockquote>
 <p>for peak overpressure, <span class="math notranslate nohighlight">\(p_0\)</span>, positive phase duration, <span class="math notranslate nohighlight">\(t_0\)</span>, and shaping parameter, <span class="math notranslate nohighlight">\(\alpha\)</span>.  This waveform was introduced by Waxler &amp; Assink (2018) an improved source model for waveform simulations as it avoids the symmetry and narrow-banded limitations of a Gaussian enveloped sinusoid.  Interestingly, when the shaping parameter, <span class="math notranslate nohighlight">\(\alpha\)</span>, approaches zero, the impulse becomes the Friedlander (1946) blastwave.</p>
+</section>
+<section id="mapping-mach-cone-geometry-into-rays">
+<h2>Mapping Mach Cone Geometry into Rays<a class="headerlink" href="#mapping-mach-cone-geometry-into-rays" title="Permalink to this heading"></a></h2>
+<p>A supersonic object traveling at velocity, <span class="math notranslate nohighlight">\(v\)</span>, is defined to have a Mach number, <span class="math notranslate nohighlight">\(M = \frac{v}{c}\)</span>, where <span class="math notranslate nohighlight">\(c\)</span> is the ambient sound speed.  The angle of the emitted Mach cone relative to the velocity vector is defined from this ratio and the outward propagating acoustic wave can be defined by a wavefront with normal vector perpendicular to the cone surface.  That is,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\sin \vartheta_M = \frac{1}{M} = \frac{c}{v}, \quad \quad \vartheta_\text{ray} \left( M \right) = 90^\circ - \vartheta_M.\]</div>
+</div></blockquote>
+<p>An example geometry of a supersonic source, Mach cone, and ray path vectors is shown below.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/Mach_cone.png"><img alt="_images/Mach_cone.png" class="align-center" src="_images/Mach_cone.png" style="width: 350px;" /></a>
+</div></blockquote>
+<p>For a source traveling in the <span class="math notranslate nohighlight">\(\hat{e}_y\)</span> direction, the set of initial ray path conditions is defined by the Mach number and some axial angle, <span class="math notranslate nohighlight">\(\lambda\)</span>,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\hat{n}_0 \left( M, \lambda \right) = \sqrt{ 1 - \frac{1}{M^2}} \sin \lambda \hat{e}_x + \frac{1}{M} \hat{e}_y + \sqrt{ 1 - \frac{1}{M^2}} \cos \lambda \hat{e}_z.\]</div>
+</div></blockquote>
+<p>Generalizing this geometry requires considering the attack and azimuth angles of the source velocity vector,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\hat{n} \left( \alpha, \beta, M, \lambda \right) = \boldsymbol{R}_z \left( \beta \right) \boldsymbol{R}_x \left( \alpha \right) \, \hat{n}_0 \left( M, \lambda \right)\]</div>
+</div></blockquote>
+<p>where,</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}\boldsymbol{R}_x \left( \alpha \right) =  \begin{pmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; \cos \alpha &amp; -\sin \alpha \\ 0 &amp; \sin \alpha &amp; \cos \alpha \end{pmatrix}, \quad \quad
+\boldsymbol{R}_z \left( \beta \right) =  \begin{pmatrix} \cos \beta &amp; -\sin \beta &amp; 0 \\  \sin \beta &amp; \cos \beta &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\end{split}\]</div>
+</div></blockquote>
 </section>
 </section>
 

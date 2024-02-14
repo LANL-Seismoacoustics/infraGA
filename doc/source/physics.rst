@@ -293,3 +293,34 @@ The blastwave/impulse source available in the software has the form,
 
 for peak overpressure, :math:`p_0`, positive phase duration, :math:`t_0`, and shaping parameter, :math:`\alpha`.  This waveform was introduced by Waxler & Assink (2018) an improved source model for waveform simulations as it avoids the symmetry and narrow-banded limitations of a Gaussian enveloped sinusoid.  Interestingly, when the shaping parameter, :math:`\alpha`, approaches zero, the impulse becomes the Friedlander (1946) blastwave.
 
+------------------------------------
+Mapping Mach Cone Geometry into Rays
+------------------------------------
+
+A supersonic object traveling at velocity, :math:`v`, is defined to have a Mach number, :math:`M = \frac{v}{c}`, where :math:`c`` is the ambient sound speed.  The angle of the emitted Mach cone relative to the velocity vector is defined from this ratio and the outward propagating acoustic wave can be defined by a wavefront with normal vector perpendicular to the cone surface.  That is,
+
+  .. math::
+     \sin \vartheta_M = \frac{1}{M} = \frac{c}{v}, \quad \quad \vartheta_\text{ray} \left( M \right) = 90^\circ - \vartheta_M.
+
+An example geometry of a supersonic source, Mach cone, and ray path vectors is shown below.
+
+  .. image:: _static/_images/Mach_cone.png
+      :width: 350px
+      :align: center
+
+
+For a source traveling in the :math:`\hat{e}_y` direction, the set of initial ray path conditions is defined by the Mach number and some axial angle, :math:`\lambda`,
+
+  .. math::
+     \hat{n}_0 \left( M, \lambda \right) = \sqrt{ 1 - \frac{1}{M^2}} \sin \lambda \hat{e}_x + \frac{1}{M} \hat{e}_y + \sqrt{ 1 - \frac{1}{M^2}} \cos \lambda \hat{e}_z.
+
+Generalizing this geometry requires considering the attack and azimuth angles of the source velocity vector,
+
+  .. math::
+      \hat{n} \left( \alpha, \beta, M, \lambda \right) = \boldsymbol{R}_z \left( \beta \right) \boldsymbol{R}_x \left( \alpha \right) \, \hat{n}_0 \left( M, \lambda \right)
+
+where,
+
+  .. math::
+    \boldsymbol{R}_x \left( \alpha \right) =  \begin{pmatrix} 1 & 0 & 0 \\ 0 & \cos \alpha & -\sin \alpha \\ 0 & \sin \alpha & \cos \alpha \end{pmatrix}, \quad \quad
+    \boldsymbol{R}_z \left( \beta \right) =  \begin{pmatrix} \cos \beta & -\sin \beta & 0 \\  \sin \beta & \cos \beta & 0 \\ 0 & 0 & 1 \end{pmatrix}
