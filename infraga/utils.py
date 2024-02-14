@@ -117,7 +117,6 @@ def build_g2s_grid(g2s_path, output_path, src_info=None, celerity_est=0.29):
             else:
                 temp_datetime = dt_vals[0].astype(object)
 
-
             datetime_info = "{:04d}".format(temp_datetime.year)
             datetime_info = datetime_info + "{:02d}".format(temp_datetime.month)
             datetime_info = datetime_info + "{:02d}".format(temp_datetime.day)
@@ -391,7 +390,6 @@ def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, outp
 
     '''
 
-
     if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
         if option == "single":
             extract_single(ecmwf_file, lat1, lon1, output_path)
@@ -416,7 +414,6 @@ def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, outp
             print("Download failed.")
             print("Try manual download: " + download_url)
             print("Place file in /path/to/infraGA/infraga/ (here .py files are located)")
-
 
 
 ################################

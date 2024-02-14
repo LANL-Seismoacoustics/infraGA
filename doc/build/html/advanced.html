@@ -1,75 +1,37 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Advanced Usage &mdash; infraGA/GeoAc  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  
-  
-  
-
-  
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Visualization" href="plotting.html" />
     <link rel="prev" title="Quickstart" href="quickstart.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="index.html" class="icon icon-home"> infraGA/GeoAc
-          
-
-          
-            
             <img src="_static/LANL Logo White.png" class="logo" alt="Logo"/>
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -77,17 +39,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="userguide.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authorship.html">Authorship &amp; References</a></li>
@@ -105,73 +57,35 @@
 <li class="toctree-l1"><a class="reference internal" href="physics.html">Propagation Physics</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">infraGA/GeoAc</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
-      <li>Advanced Usage</li>
-    
-    
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Advanced Usage</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/advanced.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <section id="advanced-usage">
-<span id="advanced"></span><h1>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Permalink to this heading">¶</a></h1>
+<span id="advanced"></span><h1>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Permalink to this heading"></a></h1>
 <p>In addition to the <code class="code docutils literal notranslate"><span class="pre">prop</span></code> option that simulate propagation from a point source through a specified atmospheric structure.  Additional parameter settings are available to include range dependence and realistic terrain interactions and additional simulation options include methods to compute eigenray paths connecting specific source-receiver geometries as well as compute the weakly non-linear (weak shock limit) waveform evolution along individual ray paths.</p>
 <section id="advanced-parameter-settings">
-<h2>Advanced Parameter Settings<a class="headerlink" href="#advanced-parameter-settings" title="Permalink to this heading">¶</a></h2>
+<h2>Advanced Parameter Settings<a class="headerlink" href="#advanced-parameter-settings" title="Permalink to this heading"></a></h2>
 <p><strong>Range Dependent Analysis</strong></p>
 <p>Using the <code class="code docutils literal notranslate"><span class="pre">--atmo-file</span></code> parameter defines a single atmospheric specification to use for a stratified atmospheric model.  In cases where propagation extends more than a few hundred kilometers, horizontal variations in the atmospheric structure can become significant.  Range dependent atmospheric structure can be used in infraGA/GeoAc via specification of an atmospheric file prefix as well as horizontal grid nodes.  An example 4x4 grid is provided in the examples/profs directory that includes 16 atmospheric files (example0.met, example1.met, example2.met, etc.) along with example_lat.dat and example_lon.dat that contain the latitude and longitude of the grid nodes.</p>
 <blockquote>
@@ -326,9 +240,40 @@ Calculating ray path: 1.5441 degrees inclination, -90 degrees azimuth.
 </div></blockquote>
 <p>This visualization is notably more clear in showing what the terrain profile looks like along the path.</p>
 <p>It should be noted that in some cases cross winds and terrain interactions can lead to ray paths that deviate significantly from the initial azimuthal plane.  In such a case, the terrain profile projected below the first ray path may differ significantly from that below other ray paths and those ray paths may appear to reflect from regions above or below the projected terrain profile.  In such a case, a secondary simulation using a higher inclination initial ray path might be useful to investigate the terrain profile below others in the simulation (be sure to save the arrivals and ray path output before doing this as they will be overwritten in the repeated simulations).</p>
+<p><strong>Elevated Sources</strong></p>
+<p>The default inclination angle range used in ray tracing assumes a source at the ground surface and a slightly positive inclination minimum.  In the case of an elevated source, this results in a large portion of ray paths being left uncomputed.  Consider running a simulation with a source at an altitude of 20 kilometers:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --src-alt 20.0
+</pre></div>
+</div>
+</div></blockquote>
+<p>The resulting ray paths can be visualized to see how a large portion of energy is missing from the simulation output:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/elevated_source1.png"><img alt="_images/elevated_source1.png" class="align-center" src="_images/elevated_source1.png" style="width: 900px;" /></a>
+</div></blockquote>
+<p>The Jacobian computation that is required to solve the Transport equation and calculate the geometric spreading has a singularity for inclination angles of <span class="math notranslate nohighlight">\(\pm 90^o\)</span>; therefore, a minimum inclination angle of <span class="math notranslate nohighlight">\(89^o\)</span> should be used as the lower limit in computing ray paths for an elevated source:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph prop --atmo-file ToyAtmo.met --src-alt 20.0 --incl-min -89.0
+</pre></div>
+</div>
+</div></blockquote>
+<p>Visualizing this result shows the additional ray paths which are initially downward propagating and ensonify the region below the source.  Also, the initially upward and downward paths produce alternating ensonification in the stratospheric waveguide:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/elevated_source2.png"><img alt="_images/elevated_source2.png" class="align-center" src="_images/elevated_source2.png" style="width: 900px;" /></a>
+</div></blockquote>
+<p>Reducing the maximum propagation range to 400 km (adding <code class="code docutils literal notranslate"><span class="pre">--max-rng</span> <span class="pre">400</span></code> to the above simulation command) more clearly shows the ensonification below the source and the two sets of ray paths contained within the stratospheric waveguide.</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/elevated_source3.png"><img alt="_images/elevated_source3.png" class="align-center" src="_images/elevated_source3.png" style="width: 700px;" /></a>
+</div></blockquote>
 </section>
 <section id="advanced-option-usage">
-<h2>Advanced Option Usage<a class="headerlink" href="#advanced-option-usage" title="Permalink to this heading">¶</a></h2>
+<h2>Advanced Option Usage<a class="headerlink" href="#advanced-option-usage" title="Permalink to this heading"></a></h2>
 <p><strong>Eigenray Analysis</strong></p>
 <p>In some scenarios, those specific propagation paths connecting known source and receiver locations are of interest.  Such propagation paths are termed ‘eigenrays’ and can be difficult to compute when considering propagation paths in 3 dimensions including cross winds.  The auxiliary parameters that are utilized by infraGA/GeoAc for computation of the geometric spreading losses can also be leveraged for computation of launch angle changes that shift an arrival closer to a desired location.  A Levenberg-Marquardt (LM) algorithm has been implemented that uses the auxiliary parameters for such a search (more detail in the <a class="reference internal" href="physics.html#physics"><span class="std std-ref">Propagation Physics</span></a> discussion and in Blom &amp; Waxler (2017)).  The eigenray methods in infraGA/GeoAc are accessed using the <code class="code docutils literal notranslate"><span class="pre">eigenray</span></code> flag instead of <code class="code docutils literal notranslate"><span class="pre">prop</span></code> and have a number of common parameters.  In addition to specifying a source location, the receiver location is also needed.  The following command runs an eigenray search for a source at (30, -100) to a receiver to the west-south-west at (30.25, -104.25).</p>
 <blockquote>
@@ -567,60 +512,65 @@ Calculating ray path geometry and weakly non-linear waveform evolution...
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot eig_wvfrms --atmo-file ToyAtmo.met --y-axis-option trace-velocity --cmap-option amplitude
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/eig_wvfrm4.png"><img alt="_images/eig_wvfrm4.png" class="align-center" src="_images/eig_wvfrm4.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="_images/eig_wvfrm4.png"><img alt="_images/eig_wvfrm4.png" class="align-center" src="_images/eig_wvfrm4.png" style="width: 800px;" /></a>
 </div></blockquote>
-<p><strong>Supersonic Source Calculations</strong></p>
-<p>Info will be added pending publication of a related manuscript…</p>
+<p><strong>Supersonic Sources</strong></p>
+<p>The set of ray paths emitted by a supersonic source as defined by the geometry of the Mach cone can be computed as discussed in Blom et al. (2024).  The Mach cone ray paths are computed for a single source location by specifying a source location, orientation (attack and azimuth angles), and Mach number (velocity relative to the ambient sound speed).  Usage of this method for a single point source can be run using the below syntax:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga-sph -mach_cone G2S_example.met output_id=temp/t0_110.0 src_mach=2.63 src_attack=-13.12 src_az=90.45 cone_resol=1.0
+</pre></div>
+</div>
+</div></blockquote>
+<p>In practice, computation of the infrasonic signals produced by a supersonic source’s Mach cone requires computation of the above set of Mach cone rays at each point along a trajectory and then combination of all predicted paths with appropriate time delay.  The python interface for <em>infraGA/GeoAc</em> includes a method that will ingest atmospheric data as well as a trajectory file (containing time, latitude, longitude, and altitude).  The method computes the Mach number and source orientation information from the trajectory and steps through all points on the trajectory.  Running the prediction of rays for a supersonic source requires an atmospheric file (or range dependent grid) and a trajectory file containing [time:lat:lon:alt]:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph supersonic --atmo-file G2S_example.met --trajectory trajectories/ballistic_traj.dat --traj-step 6 --cpu-cnt 12 --output-id ballistic --local-temp-dir ballistic_temp
+</pre></div>
+</div>
+</div></blockquote>
+<p>The <code class="code docutils literal notranslate"><span class="pre">--traj-step</span></code> allows one to skip through high resolution trajectory information (the step is that used in <em>numpy</em> indexing notation, <code class="code docutils literal notranslate"><span class="pre">traj_data[::k]</span></code>).  The <code class="code docutils literal notranslate"><span class="pre">--local-temp-dir</span></code> path can be used to keep the predicted ray path data for individual trajectory points.  If a local temporary data directory is not specified, one is created via the <code class="code docutils literal notranslate"><span class="pre">tempfile</span></code> package and removed when the simulation is compelted. By default, only arrival information is stored when running the method unless the <code class="code docutils literal notranslate"><span class="pre">--write-rays</span></code> option is turned on.  While ray paths are being computed, the trajectory information is displayed in a window with points showing where along the trajectory the current computations is located:</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/supersonic_trajectory.png"><img alt="_images/supersonic_trajectory.png" class="align-center" src="_images/supersonic_trajectory.png" style="width: 800px;" /></a>
+</div></blockquote>
+<p>Once the computation is complete, the arrival information can be visualized as with other ray tracing simulations:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot map --arrivals ballistic.arrivals.dat
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ballistic_arrivals.png"><img alt="_images/ballistic_arrivals.png" class="align-center" src="_images/ballistic_arrivals.png" style="width: 600px;" /></a>
+</div></blockquote>
+<p>More information about simulating infrasound from supersonic sources can be found in Blom et al. (2024) and citations therein.</p>
 </section>
 </section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="plotting.html" class="btn btn-neutral float-right" title="Visualization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="plotting.html" class="btn btn-neutral float-right" title="Visualization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2014, P.Blom
-
-    </p>
+    <p>&#169; Copyright 2014, P.Blom.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
