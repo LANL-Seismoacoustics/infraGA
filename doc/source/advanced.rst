@@ -522,7 +522,7 @@ The set of ray paths emitted by a supersonic source as defined by the geometry o
 
     infraga-sph -mach_cone G2S_example.met output_id=temp/t0_110.0 src_mach=2.63 src_attack=-13.12 src_az=90.45 cone_resol=1.0
 
-In practice, computation of the infrasonic signals produced by a supersonic source's Mach cone requires computation of the above set of Mach cone rays at each point along a trajectory and then combination of all predicted paths with appropriate time delay.  The python interface for *infraGA/GeoAc* includes a method that will ingest atmospheric data as well as a trajectory file (containing time, latitude, longitude, and altitude).  The method computes the Mach number and source orientation information from the trajectory and steps through all points on the trajectory.  Running the prediction of rays for a supersonic source requires an atmospheric file (or range dependent grid) and a trajectory file containing [time:lat:lon:alt]:
+In practice, computation of the infrasonic signals produced by a supersonic source's Mach cone requires computation of the above set of Mach cone rays at each point along a trajectory and then combination of all predicted paths with appropriate time delay.  The python interface for *infraGA/GeoAc* includes a method that will ingest atmospheric data as well as a trajectory file (containing time, latitude, longitude, and altitude).  The method computes the Mach number and source orientation information from the trajectory and steps through all points on the trajectory.  Running the prediction of rays for a supersonic source requires an atmospheric file (or range dependent grid) and a trajectory file containing [time : lat : lon : alt]:
 
   .. code-block:: none
     

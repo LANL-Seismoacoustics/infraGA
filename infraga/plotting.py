@@ -862,7 +862,7 @@ def plot_map(arrivals, ray_paths, plot_option, figure_out, rcvrs_file, title, st
 
     if rcvrs_file:
         try:
-            rcvr_locs = np.loadtxt(rcvrs_file)
+            rcvr_locs = np.atleast_2d(np.loadtxt(rcvrs_file))
             ax.plot(rcvr_locs[:, 1], rcvr_locs[:, 0], 'k^', markersize=3.0, transform=map_proj)
         except:
             print('\t\t' + "Invalid receivers file.  Omitting from plot.")
