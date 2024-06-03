@@ -15,7 +15,7 @@ dependencies:
   - scipy
   - ipython
   - pip
-  - wget
+  - python-wget
 
   - pip:
     - -e .
