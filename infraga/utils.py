@@ -555,6 +555,92 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852, show_fig=True):
         plt.show()
     
 
+def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=1.852, show_fig=True):
+    """
+        Extract topography information along a series of lines
+            defined by great circle paths from a source location 
+            (latitude, longitude) along all azimuths
+            to a maximum specified range into file_out.
+
+        Parameters
+        ----------
+        src_loc : iterable
+            Iterable containing the latitude and longitude
+                of the source (one end of the line)
+        azimuth : float
+            Azimuthal direction (relative to north) along
+                which to extract the topography
+        rng_max : float
+            Distance from the source to draw the line
+                and extract topography
+        file_out : str
+            Destination for the topography information
+        resol : float
+            Spatial resolution of the ETOPO1 file.  1 arc
+                minute = 1.852 km, this can modified to
+                increase the resolution
+
+    """
+    print('Defining N-by-2D planar topography lines from source at ' + str(src_loc[0]) + ', ' + str(src_loc[1]) + ' using azimuth resolution of ' + str(az_resol) + ' out to a range of ' + str(rng_max))
+
+    # project lat/lon at end of line and determine grid corners
+    # note: src_loc is (lat, lon), Geod returns (lon, lat) so indices reverse
+    N_lim = sph_proj.fwd(src_loc[1], src_loc[0], 0.0, rng_max * 1.0e3, radians=False)
+    E_lim = sph_proj.fwd(src_loc[1], src_loc[0], 90.0, rng_max * 1.0e3, radians=False)
+    S_lim = sph_proj.fwd(src_loc[1], src_loc[0], 180.0, rng_max * 1.0e3, radians=False)
+    W_lim = sph_proj.fwd(src_loc[1], src_loc[0], 270.0, rng_max * 1.0e3, radians=False)
+
+    ll_corner = S_lim[1] - 0.5, W_lim[0] - 0.5
+    ur_corner = N_lim[1] + 0.5, E_lim[0] + 0.5 
+
+    elev_interp = interp_etopo(ll_corner, ur_corner)
+
+    N = int(rng_max / resol)
+    rng_vals, elev_vals = np.empty(N), np.empty(N)
+
+    if show_fig:
+        plt.figure(figsize=(10, 3))
+        plt.show(block=False)
+
+
+    for az_val in np.arange(0, 360.0 - az_resol / 2.0, az_resol):
+        print("Extracting terrain along line at " + str(az_val) + " degrees...")
+        end_pnt = sph_proj.fwd(src_loc[1], src_loc[0], az_val, rng_max * 1.0e3, radians=False)
+        line_pnts = sph_proj.npts(src_loc[1], src_loc[0], end_pnt[0], end_pnt[1], N, radians=False)
+        
+        output = open(output_path + "_" + "%06.2f" % az_val + "deg.line.dat", 'w')
+        print("# 'infraga utils extract-terrain --geom Nx2d' summary:", file=output)
+        print("# lat: " + str(src_loc[0]), file=output)
+        print("# lon: " + str(src_loc[1]), file=output)
+        print("# azimuth: " + str(az_val), file=output)
+        print("# range: " + str(rng_max), file=output)
+        print("# The following lines are formatted input for ncpaprop epape", file=output)
+        print('#% r, km', file=output)
+        print('#% z, km', file=output)
+
+        print(0.0, '\t', elev_interp(src_loc[0], src_loc[1])[0], file=output)
+        for n in range(N):
+            print(sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0, file=output, end='\t')
+            print(elev_interp(line_pnts[n][0], line_pnts[n][1])[0], file=output)
+        output.close()
+
+        if show_fig:
+            # interpolate at 4x resolution to plot
+            N = int(rng_max / resol * 4)
+            line_pnts = sph_proj.npts(src_loc[1], src_loc[0], end_pnt[0], end_pnt[1], N, radians=False)
+            rng_vals, elev_vals = np.empty(N), np.empty(N)
+
+            for n in range(N):
+                rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
+                elev_vals[n] = elev_interp(line_pnts[n][0], line_pnts[n][1])[0]
+        
+            plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.25')
+            plt.xlabel("Range [km]")
+            plt.ylabel("Elevation [km]")
+            plt.title("Az = " + str(az_val))
+            plt.pause(0.01)
+            plt.clf()
+
 def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852, show_fig=True):
     """
         Extract topography information across a region defined
@@ -727,7 +813,7 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
 
 
 @click.command('extract-terrain', short_help="Extract a line or grid of terrain information")
-@click.option("--geom", help="Geometry option ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')", prompt="Enter terrain option  ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")
+@click.option("--geom", help="Geometry option ('line', 'pnt2pnt', 'Nx2d', 'xy-grid' or 'latlon-grid')", prompt="Enter terrain option  ('line', 'pnt2pnt', 'Nx2d', 'xy-grid' or 'latlon-grid')")
 @click.option("--lat1", help="Latitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=30.0)
 @click.option("--lon1", help="Longitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=-110.0)
 @click.option("--lat2", help="Latitude of second point (end point for 'pnt2pnt', upper-right corner for grids)", default=30.0)
@@ -739,8 +825,9 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
 @click.option("--output-file", help="Output file", prompt="Specify output file: ")
 @click.option("--show-terrain", help="Visualize terrain results", default=True)
 @click.option("--rcvr-file", help="File containing stations to plot on map", default=None)
+@click.option("--nx2d-resol", help="Azimuth resolution for Nx2d geom", default=3.0)
 @click.option("--offline-maps-dir", help="Use directory for offline cartopy maps", default=None)
-def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file, show_terrain, rcvr_file, offline_maps_dir):
+def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file, show_terrain, rcvr_file, nx2d_resol, offline_maps_dir):
     '''
     Extract lines or grids of terrain information from an ETOPO1 file
 
@@ -767,6 +854,8 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
             pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_terrain)
         elif geom == "pnt2pnt":
             pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
+        elif geom == "Nx2d":
+            pull_Nx2d((lat1, lon1), range, output_file, az_resol=nx2d_resol, show_fig=show_terrain)
         elif geom == "xy-grid":
             pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
         elif geom == "latlon-grid":
@@ -787,6 +876,8 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
                 pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_terrain)
             elif geom == "pnt2pnt":
                 pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
+            elif geom == "Nx2d":
+                pull_Nx2d((lat1, lon1), range, output_file, az_resol=nx2d_resol, show_fig=show_terrain)
             elif geom == "xy-grid":
                 pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
             elif geom == "latlon-grid":
