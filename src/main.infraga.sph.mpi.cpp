@@ -260,7 +260,7 @@ void run_prop(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){                                             topo::use_BLw = string2bool(inputs[i] + 13);}
         else if (strncmp(inputs[i], "write_topo=", 11) == 0){                                               write_topo = string2bool(inputs[i] + 11);}
         else{
-            if (world_size == 0){
+            if (world_rank == 0){
                 cout << "***WARNING*** Unrecognized parameter entry: " << inputs[i] << '\n';
             }
             mpi_error = MPI_Barrier(MPI_COMM_WORLD);
@@ -1121,7 +1121,7 @@ void run_mach_cone(char* inputs[], int count){
         else if (strncmp(inputs[i], "topo_file=", 10) == 0){                                                topo_file = inputs[i] + 10; geoac::is_topo=true;}
         else if (strncmp(inputs[i], "topo_use_BLw=", 13) == 0){                                             topo::use_BLw = string2bool(inputs[i] + 13);}
         else{
-            if (world_size == 0){
+            if (world_rank == 0){
                 cout << "***WARNING*** Unrecognized parameter entry: " << inputs[i] << '\n';
             }
             mpi_error = MPI_Barrier(MPI_COMM_WORLD);

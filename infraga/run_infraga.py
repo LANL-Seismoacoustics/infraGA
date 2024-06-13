@@ -87,7 +87,7 @@ def kg_op(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
             Peak overpressure [Pa]    
     """
     
-    fd = (p_amb / 101.325)**(1.0 / 3.0) * (T_amb / 288.15)**(1.0 / 3.0)
+    fd = (p_amb / 101.325)**(1.0 / 3.0) * (288.15 / T_amb)**(1.0 / 3.0)
     
     if exp_type=="chemical":
         sc_rng = fd / W**(1.0 / 3.0) * r * 1000.0
@@ -132,7 +132,7 @@ def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
             Positive phase duration [s]
     """
 
-    fd = (p_amb / 101.325)**(1.0 / 3.0) * (T_amb / 288.15)**(1.0 / 3.0)
+    fd = (p_amb / 101.325)**(1.0 / 3.0) * (288.15 / T_amb)**(1.0 / 3.0)
     
     if exp_type=="chemical":
         sc_rng = fd / W**(1.0 / 3.0) * r * 1000.0

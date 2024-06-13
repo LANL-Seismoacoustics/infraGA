@@ -254,7 +254,7 @@ void run_prop(char* inputs[], int count){
         else if (strncmp(inputs[i], "write_topo=", 11) == 0){                                               write_topo = string2bool(inputs[i] + 11);}
 
         else{
-            if (world_size == 0){
+            if (world_rank == 0){
                 cout << "***WARNING*** Unrecognized parameter entry: " << inputs[i] << '\n';
             }
             mpi_error = MPI_Barrier(MPI_COMM_WORLD);

@@ -50,7 +50,8 @@ def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
 @click.option("--atmo-file", help="Atmospheric atmo_file file")
 @click.option("--max-alt", help="Maximum altitude for analysis (default: 120 km)", default=None, type=float)
 @click.option("--format", help="Atmospheric atmo_file format (default: 'zTuvdp')", default='zTuvdp')
-def plot_atmo(atmo_file, max_alt, format):
+@click.option("--grnd-elev", help="Ground surface elevantion [km]", default=None)
+def plot_atmo(atmo_file, max_alt, format, grnd_elev):
     '''
     Visualize the sound speed, wind fields, and effective sound speed ratio ducting information for an atmospheric atmo_file
 
@@ -69,10 +70,13 @@ def plot_atmo(atmo_file, max_alt, format):
     c = np.sqrt(0.14 * atmo[:, format.find('p')] / atmo[:, format.find('d')])
 
     grnd_ht = z[0]
-    for line in open(atmo_file, 'r'):
-        if "Ground Height" in line:
-            grnd_ht = float(line[18:])
-            break
+    if grnd_elev is not None:
+        grnd_ht = float(grnd_elev)
+    else:
+        for line in open(atmo_file, 'r'):
+            if "Ground Height" in line:
+                grnd_ht = float(line[18:])
+                break
 
     if max_alt is None:
         max_alt = z[-1]
