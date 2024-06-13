@@ -15,10 +15,11 @@ namespace topo{
     extern double z0;               // Difference between ground level and sea level (z = 0 in G2S file)
     extern double z_max;            // Maximum topographical altitude
     extern double z_bndlyr;         // Altitude of boundary layer (above this the topography is neglected)
-    
+
     extern double bndlyr_param;     // Parameter controlling boundary layer thickness
     extern double vert_wind_grad;   // Boundary layer wind gradient for topography inclusion
     extern bool use_BLw;            // Control to use boundary layer vertical winds
+
     
     void set_bndlyr();      // Define the topography maximum and boundary layer height
     
@@ -42,7 +43,9 @@ namespace topo{
 namespace atmo{
     extern double   gam;
     extern double   R;
-    
+
+    extern double   z_reflect;                  // Altitude to impose partial reflection
+
     double rho(double, double, double);         // Atmospheric density
     
     double c(double, double, double);           // Adiabatic sound speed and derivatives

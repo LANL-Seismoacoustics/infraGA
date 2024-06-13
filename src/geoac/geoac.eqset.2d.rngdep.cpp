@@ -11,7 +11,7 @@
 #include "geoac.params.h"
 #include "geoac.eqset.h"
 #include "../atmo/atmo_state.h"
-#include "../atmo/atmo_io.2d.h"
+#include "../atmo/atmo_io.2d-rngdep.h"
 #include "../util/interpolation.h"
 #include "../util/waveforms.h"
 
@@ -31,14 +31,14 @@ void geoac::set_system(){
 //-----------------------------------------------------------//
 namespace geoac {
     struct src_refs{
-        double z0;          // Altitude of the source
-        double c_eff0;      // Effective sound speed at the source
-        double c_eff;       // Effective sound speed
-        double dc_eff;      // First order derivatives of c_eff
-        double ddc_eff;     // Second order derivatives of c_eff
+        double z0;              // Altitude of the source
+        double c_eff0;          // Effective sound speed at the source
+        double c_eff;           // Effective sound speed
+        double dc_eff[2];       // First order derivatives of c_eff
+        double ddc_eff[2][2];   // Second order derivatives of c_eff
     };
 
-    struct src_refs refs = {0.0, 0.0, 0.0, 0.0, 0.0};
+    struct src_refs refs = {0.0, 0.0, 0.0, {0.0, 0.0}, {{0.0, 0.0}, {0.0, 0.0}}};
 }
 //----------------------------------------------------------------------//
 //-------Fill in solution[0][n] with the appropriate initial values-----//
@@ -133,9 +133,6 @@ void geoac::set_refl(double** & solution, int k_end){
 	delete [] prev;
 }
 
-void geoac::partial_refl(double** & solution, int k_end){
-
-
 //-----------------------------------------------------------------------------------//
 //-------Vary the solver step size, currently uses smaller steps near the ground-----//
 //-----------------------------------------------------------------------------------//
@@ -151,7 +148,7 @@ double geoac::set_ds(double* current_values){
 //-------Update the source functions-----//
 //---------------------------------------//
 void geoac::update_refs(double ray_length, double* current_values){
-    double z_eval = interp::in_interval(current_values[1], atmo::c_spline.x_vals[0], atmo::c_spline.x_vals[atmo::c_spline.length - 1]);
+    double z_eval = interp::in_interval(current_values[1], atmo::c_spline.x_vals[0], atmo::c_spline.x_vals[atmo::c_spline.length_x - 1]);
     double c, dc, ddc, u, du, ddu, v, dv, ddv;
 
     if(calc_amp){
@@ -179,8 +176,8 @@ double geoac::eval_src_eq(double ray_length, double* current_values, int eq_n){
 	double result;
 
 	double nu_r = current_values[2],    nu_z = current_values[3];
-    double c0 = refs.c_eff0, c = refs.c_eff;
-    double dc_dr = 0.0,      dc_dz = refs.dc_eff;
+    double c0 = refs.c_eff0,            c = refs.c_eff;
+    double dc_dr = refs.dc_eff[0],      dc_dz = refs.dc_eff[1];
 
     double R, Z, mu_r, mu_z;
     double ddc_ddr, ddc_ddz, ddc_drdz;
@@ -229,8 +226,7 @@ double geoac::eval_eikonal(double ** solution, int k){
 }
 
 //--------------------------------------------------------------------------//
-//-------Check if ray left propagation region, returned to the ground,------//
-//----------------or reached the partial reflection altitude----------------//
+//-------Check if ray has left propagation region or returned to ground-----//
 //--------------------------------------------------------------------------//
 bool geoac::break_check(double ** & solution, int k){
     if((solution[k][0] > rng_max) || (solution[k][1] > alt_max)){
@@ -244,13 +240,6 @@ bool geoac::ground_check(double ** solution, int k){
         if(solution[k][1] < topo::z(solution[k][0])){
             return true;
         }
-    }
-    return false;
-}
-
-bool geoac::reflect_check(double ** solution, int k){
-    if(solution[k][1] > atmo::z_reflect){
-        return true;
     }
     return false;
 }
