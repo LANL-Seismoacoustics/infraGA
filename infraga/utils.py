@@ -604,7 +604,6 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=1.852, show_fig
 
 
     for az_val in np.arange(0, 360.0 - az_resol / 2.0, az_resol):
-        print("Extracting terrain along line at " + str(az_val) + " degrees...")
         end_pnt = sph_proj.fwd(src_loc[1], src_loc[0], az_val, rng_max * 1.0e3, radians=False)
         line_pnts = sph_proj.npts(src_loc[1], src_loc[0], end_pnt[0], end_pnt[1], N, radians=False)
         
@@ -835,6 +834,7 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
     Examples:
     \t infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth -90.0 --range 750.0 --output-file line_topo.dat
     \t infraga utils extract-terrain --geom pnt2pnt --lat1 40.0 --lon1 -102.5 --lat2 40.0 --lon2 -110.0 --output-file line_topo.dat
+    \t infraga utils extract-terrain --geom nx2d --lat1 40.0 --lon1 -102.5 --range 500.0 --nx2d-resol 3.0 --output-file nx2d_test
     \t infraga utils extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
     \t infraga utils extract-terrain --geom latlon-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
 
@@ -854,14 +854,14 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
             pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_terrain)
         elif geom == "pnt2pnt":
             pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
-        elif geom == "Nx2d":
+        elif geom == "nx2d":
             pull_Nx2d((lat1, lon1), range, output_file, az_resol=nx2d_resol, show_fig=show_terrain)
         elif geom == "xy-grid":
             pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
         elif geom == "latlon-grid":
             pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain, src_loc=(ref_lat, ref_lon), rcvr_file=rcvr_file)
         else:
-            print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")        
+            print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'nx2d', 'xy-grid' or 'latlon-grid')")        
     else:
         print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
         download_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
@@ -876,14 +876,14 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
                 pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_terrain)
             elif geom == "pnt2pnt":
                 pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
-            elif geom == "Nx2d":
+            elif geom == "nx2d":
                 pull_Nx2d((lat1, lon1), range, output_file, az_resol=nx2d_resol, show_fig=show_terrain)
             elif geom == "xy-grid":
                 pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
             elif geom == "latlon-grid":
                 pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain, src_loc=(ref_lat, ref_lon), rcvr_file=rcvr_file)  
             else:
-                print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')")        
+                print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'nx2d', 'xy-grid' or 'latlon-grid')")        
         except:
             print("Download failed.")
             print("Try manual download: " + download_url)
