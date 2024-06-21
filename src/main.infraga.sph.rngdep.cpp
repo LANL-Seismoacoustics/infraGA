@@ -943,8 +943,24 @@ void run_eig_search(char* inputs[], int count){
     
     for(int n_bnc = bnc_min; n_bnc <= bnc_max; n_bnc++){
         cout << "Searching for " << n_bnc << " bounce eigenrays." << '\n';
-        
-        theta_start = theta_min;
+
+        double dzgdx, dzgdy, theta_grnd;
+        if (src[0] - (topo::z(src[1], src[2]) - globe::r0) < 0.01){
+            if (geoac::is_topo){
+                theta_grnd = 0.0;
+                for(double phi_val = 0.0; phi_val < 360.0; phi_val += 3.0){
+                    dzgdx = 1.0 / (globe::r0 * cos(src[1])) * topo::dz(src[1], src[2], 1);
+                    dzgdy = 1.0 / globe::r0 * topo::dz(src[1], src[2], 0);
+                    theta_grnd = max(theta_grnd, atan(dzgdx * sin(phi_val * Pi / 180.0) + dzgdy * cos(phi_val * Pi / 180.0)) * (180.0 / Pi) + 0.1);
+                }
+            } else {
+                theta_grnd = 0.1 * (Pi / 180.0);
+            }
+        } else {
+            theta_grnd=-89.9 * (Pi / 180.0);
+        }
+
+        theta_start = max(theta_min, theta_grnd);
         while(theta_start < theta_max){
             estimate_success = geoac::est_eigenray(src, rcvr, theta_start, theta_max, theta_est, phi_est, theta_next, n_bnc, az_err_lim);
             if(estimate_success) geoac::find_eigenray(src, rcvr, theta_est, phi_est, freq, n_bnc, iterations, output_id);
