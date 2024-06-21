@@ -1407,8 +1407,6 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
             if reverse_winds is not None:
                 command = set_param(command, str(reverse_winds), "reverse_winds")
                 
-            command = set_param(command, output_id, "output_id")
-
             command = set_param(command, max_alt, "max_alt")
             command = set_param(command, max_rng, "max_rng")
 
@@ -2576,8 +2574,6 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
             if reverse_winds is not None:
                 command = set_param(command, str(reverse_winds), "reverse_winds")
                 
-            command = set_param(command, output_id, "output_id")
-
             command = set_param(command, max_alt, "max_alt")
             command = set_param(command, max_rng, "max_rng")
 
