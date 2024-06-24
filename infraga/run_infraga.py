@@ -1434,8 +1434,6 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
         click.echo('\n' + "Loading eigenray results from " + eig_arrivals_file)
         eig_results = np.loadtxt(eig_arrivals_file)
 
-
-        click.echo('\n' + "Computing waveforms...")
         if len(eig_results) > 0:
             eig_results = np.atleast_2d(eig_results)
 
@@ -1452,27 +1450,7 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
             eig_results = eig_results[mask]
 
             # Create waveform interpolations
-            file_out = open(output_id + ".eigenrays.dat", 'w')
-            print("# 'infraga 3d eig_wvfrm' eigenray results", '\n#', file=file_out)
-            if atmo_prefix is not None:
-                print("# 	profile: " + atmo_prefix, file=file_out)
-            else:
-                print("# 	profile: " + atmo_file, file=file_out)
-            print("#    source location: " + str(src_x_out) + ", " + str(src_y_out) + ", " + str(src_alt_out), file=file_out)
-            print("#    receiver location: " + str(rcvr_x_out) + ", " + str(rcvr_y_out) + ", 0.0", file=file_out)
-            print("#    inclination range: " + str(incl_min_out) + ", " + str(incl_max_out), file=file_out)
-            print("#    inclination step max:", incl_step_max_out, file=file_out)
-            print("# 	bounces: " + str(bnc_min_out) + ", " + str(bnc_max_out), file=file_out)
-            if topo_file is not None:
-                print("# 	terrain file: " + str(topo_file), file=file_out)        
-            else:
-                print("# 	ground elevation: " + str(z_grnd_out), file=file_out)
-            print("# 	damping:", damping_out, file=file_out)
-            print("# 	range max:", max_rng_out, '\n#', file=file_out)
-            print("# x [km]	y [km]	z [km]	trans. coeff. [dB]	absorption [dB]	time [s]", file=file_out)
-
-            wvfrms = []
-            t_lims = [np.inf, 0.0]
+            command_list = []
             for n, line in enumerate(eig_results):
                 command = bin_path + "infraga-3d"
                 
@@ -1559,18 +1537,48 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
                     if topo_bl_wind is not None:
                         command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-                command = command + " output_id=" + temp_path
+                command = command + " output_id=" + temp_path + "-" + str(n)
+                command = command + " > /dev/null"
+                
+                command_list = command_list + [command]
+                
+            click.echo('\n' + "Computing waveforms...")
+            for j in range(0, len(command_list), cpu_cnt):              
+                procs_list = [subprocess.Popen(cmd, shell=True) for cmd in command_list[j:j + cpu_cnt]]
+                for proc in procs_list:
+                    proc.communicate()
+                    proc.wait()
 
-                click.echo(command)
-                subprocess.run(shlex.split(command), shell=False)
+            file_out = open(output_id + ".eigenrays.dat", 'w')
+            print("# 'infraga 3d eig_wvfrm' eigenray results", '\n#', file=file_out)
+            if atmo_prefix is not None:
+                print("# 	profile: " + atmo_prefix, file=file_out)
+            else:
+                print("# 	profile: " + atmo_file, file=file_out)
+            print("#    source location: " + str(src_x_out) + ", " + str(src_y_out) + ", " + str(src_alt_out), file=file_out)
+            print("#    receiver location: " + str(rcvr_x_out) + ", " + str(rcvr_y_out) + ", 0.0", file=file_out)
+            print("#    inclination range: " + str(incl_min_out) + ", " + str(incl_max_out), file=file_out)
+            print("#    inclination step max:", incl_step_max_out, file=file_out)
+            print("# 	bounces: " + str(bnc_min_out) + ", " + str(bnc_max_out), file=file_out)
+            if topo_file is not None:
+                print("# 	terrain file: " + str(topo_file), file=file_out)        
+            else:
+                print("# 	ground elevation: " + str(z_grnd_out), file=file_out)
+            print("# 	damping:", damping_out, file=file_out)
+            print("# 	range max:", max_rng_out, '\n#', file=file_out)
+            print("# x [km]	y [km]	z [km]	trans. coeff. [dB]	absorption [dB]	time [s]", file=file_out)
 
-                temp = np.loadtxt(temp_path + ".wvfrm_out.dat")
+            wvfrms = []
+            t_lims = [np.inf, 0.0]
+            for n, line in enumerate(eig_results):
+
+                temp = np.loadtxt(temp_path + "-" + str(n) + ".wvfrm_out.dat")
                 wvfrms += [interp1d(temp[:, 0], temp[:, 1], bounds_error=False, fill_value=0.0,  kind='cubic')]
                 t_lims[0] = min(t_lims[0], temp[0][0])
                 t_lims[1] = max(t_lims[1], temp[-1][0])
                 dt = abs(temp[1][0] - temp[0][0])
 
-                temp = np.loadtxt(temp_path + ".raypaths.dat")
+                temp = np.loadtxt(temp_path + "-" + str(n) + ".raypaths.dat")
                 for line in temp:
                     print(*line, file=file_out)
                 print('\n', file=file_out)
@@ -2602,7 +2610,6 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
         click.echo('\n' + "Loading eigenray results from " + eig_arrivals_file)
         eig_results = np.loadtxt(eig_arrivals_file)
 
-        click.echo('\n' + "Computing waveforms...")
         if len(eig_results) > 0:
             eig_results = np.atleast_2d(eig_results)
 
@@ -2619,27 +2626,7 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
             eig_results = eig_results[mask]
 
             # Create waveform interpolations
-            file_out = open(output_id + ".eigenrays.dat", 'w')
-            print("# 'infraga sph eig_wvfrm' eigenray results", '\n#', file=file_out)
-            if atmo_prefix is not None:
-                print("# 	profile: " + atmo_prefix, file=file_out)
-            else:
-                print("# 	profile: " + atmo_file, file=file_out)
-            print("# 	source location (lat, lon, alt): " + str(src_lat_out) + ", " + str(src_lon_out) + ", " + str(src_alt_out) , file=file_out)
-            print("# 	receiver location (lat, lon, alt): " + str(rcvr_lat_out) + ", " + str(rcvr_lon_out) + ", 0.0", file=file_out)
-            print("# 	inclination range: " + str(incl_min_out) + ", " + str(incl_max_out), file=file_out)
-            print("#    inclination step max:", incl_step_max_out, file=file_out)
-            print("# 	bounces: " + str(bnc_min_out) + ", " + str(bnc_max_out), file=file_out)
-            if topo_file is not None:
-                print("# 	terrain file: " + str(topo_file), file=file_out)        
-            else:
-                print("# 	ground elevation: " + str(z_grnd_out), file=file_out)
-            print("# 	damping:", damping_out, file=file_out)
-            print("# 	range max:", max_rng_out, '\n#', file=file_out)
-            print("# lat [deg]	lon [deg]	z [km]	trans. coeff. [dB]	absorption [dB]	time [s]", file=file_out)
-
-            wvfrms = []
-            t_lims = [np.inf, 0.0]
+            command_list = []
             for n, line in enumerate(eig_results):
                 # Build waveform simulation command
                 command = bin_path + "infraga-sph"
@@ -2724,18 +2711,48 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
                     if topo_bl_wind is not None:
                         command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
 
-                command = command + " output_id=" + temp_path
+                command = command + " output_id=" + temp_path + "-" + str(n)
+                command = command + " > /dev/null"
 
-                click.echo(command)
-                subprocess.run(shlex.split(command), shell=False)
+                command_list = command_list + [command]
 
-                temp = np.loadtxt(temp_path + ".wvfrm_out.dat")
+            click.echo('\n' + "Computing waveforms...")
+            for j in range(0, len(command_list), cpu_cnt):              
+                procs_list = [subprocess.Popen(cmd, shell=True) for cmd in command_list[j:j + cpu_cnt]]
+                for proc in procs_list:
+                    proc.communicate()
+                    proc.wait()
+
+            file_out = open(output_id + ".eigenrays.dat", 'w')
+            print("# 'infraga sph eig_wvfrm' eigenray results", '\n#', file=file_out)
+            if atmo_prefix is not None:
+                print("# 	profile: " + atmo_prefix, file=file_out)
+            else:
+                print("# 	profile: " + atmo_file, file=file_out)
+            print("# 	source location (lat, lon, alt): " + str(src_lat_out) + ", " + str(src_lon_out) + ", " + str(src_alt_out) , file=file_out)
+            print("# 	receiver location (lat, lon, alt): " + str(rcvr_lat_out) + ", " + str(rcvr_lon_out) + ", 0.0", file=file_out)
+            print("# 	inclination range: " + str(incl_min_out) + ", " + str(incl_max_out), file=file_out)
+            print("#    inclination step max:", incl_step_max_out, file=file_out)
+            print("# 	bounces: " + str(bnc_min_out) + ", " + str(bnc_max_out), file=file_out)
+            if topo_file is not None:
+                print("# 	terrain file: " + str(topo_file), file=file_out)        
+            else:
+                print("# 	ground elevation: " + str(z_grnd_out), file=file_out)
+            print("# 	damping:", damping_out, file=file_out)
+            print("# 	range max:", max_rng_out, '\n#', file=file_out)
+            print("# lat [deg]	lon [deg]	z [km]	trans. coeff. [dB]	absorption [dB]	time [s]", file=file_out)
+            
+            wvfrms = []
+            t_lims = [np.inf, 0.0]
+            for n, line in enumerate(eig_results):
+
+                temp = np.loadtxt(temp_path + "-" + str(n) + ".wvfrm_out.dat")
                 wvfrms += [interp1d(temp[:, 0], temp[:, 1], bounds_error=False, fill_value=0.0,  kind='cubic')]
                 t_lims[0] = min(t_lims[0], temp[0][0])
                 t_lims[1] = max(t_lims[1], temp[-1][0])
                 dt = abs(temp[1][0] - temp[0][0])
 
-                temp = np.loadtxt(temp_path + ".raypaths.dat")
+                temp = np.loadtxt(temp_path + "-" + str(n) + ".raypaths.dat")
                 for line in temp:
                     print(*line, file=file_out)
                 print('\n', file=file_out)
@@ -2799,7 +2816,6 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
         if keep_eig_results and not os.path.isfile(output_id + ".arrivals.dat"):
             click.echo('\t' + "Copying eigenray results into " + output_id + ".arrivals.dat")
             os.system("cp " + eig_arrivals_file + " " + output_id + ".arrivals.dat")
-
 
 
 def mach_cone_arrrival_header(atmo_file, traj_file, cone_resol, traj_resol, max_rng, lat_bnds=None, lon_bnds=None):
