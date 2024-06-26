@@ -14,6 +14,7 @@ Author: pblom@lanl.gov
 """
 
 import os 
+import re 
 import click
 import sys
 import fnmatch
@@ -75,7 +76,7 @@ def plot_atmo(atmo_file, max_alt, format, grnd_elev):
     else:
         for line in open(atmo_file, 'r'):
             if "Ground Height" in line:
-                grnd_ht = float(line[18:])
+                grnd_ht = float(re.findall("\d+\.\d+",line)[0])
                 break
 
     if max_alt is None:
