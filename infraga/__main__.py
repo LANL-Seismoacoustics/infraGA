@@ -68,6 +68,7 @@ main.add_command(utils)
 
 run_2d.add_command(run_infraga.run_2d_prop)
 run_2d.add_command(run_infraga.run_2d_wvfrm)
+run_2d.add_command(run_infraga.run_2d_refl_eigs)
 
 run_3d.add_command(run_infraga.run_3d_prop)
 run_3d.add_command(run_infraga.run_3d_eig)
