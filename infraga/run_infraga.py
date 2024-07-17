@@ -187,12 +187,13 @@ def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
 @click.option("--min-ds", help="Minimum step size (near-ground) in RK4 solver", default=None)
 @click.option("--max-ds", help="Maximum step size in RK4 solver", default=None)
 @click.option("--max-s", help="Maximum ray length between bounces", default=None)
+@click.option("--refl-alt", help="Partial reflection altitude", default=None)
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclination, azimuth, bounces, src_alt,
                 freq, abs_coeff, z_grnd, write_atmo, prof_format, reverse_winds, output_id, calc_amp, max_alt,
-                max_rng, min_ds, max_ds, max_s, topo_file, topo_bl_wind):
+                max_rng, min_ds, max_ds, max_s, refl_alt, topo_file, topo_bl_wind):
     '''
     Run 2D geometry ray tracing analysis for a point source using the effective sound speed approximation
 
@@ -240,6 +241,7 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
     min_ds = define_param(user_config, 'GENERAL', 'min_ds', min_ds)
     max_ds = define_param(user_config, 'GENERAL', 'max_ds', max_ds)
     max_s = define_param(user_config, 'GENERAL', 'max_s', max_s)
+    refl_alt = define_param(user_config, 'GENERAL', 'refl_alt', refl_alt)
 
     z_grnd = define_param(user_config, 'GENERAL', 'z_grnd', z_grnd)
     topo_file = define_param(user_config, 'GENERAL', 'topo_file', topo_file)
@@ -284,6 +286,8 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
     command = set_param(command, min_ds, "min_ds")
     command = set_param(command, max_ds, "max_ds")
     command = set_param(command, max_s, "max_s")
+
+    command = set_param(command, refl_alt, "refl_alt")
 
     command = set_param(command, z_grnd, "z_grnd")
     command = set_param(command, topo_file, "topo_file")
@@ -333,13 +337,14 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
 @click.option("--min-ds", help="Minimum step size (near-ground) in RK4 solver", default=None)
 @click.option("--max-ds", help="Maximum step size in RK4 solver", default=None)
 @click.option("--max-s", help="Maximum ray length between bounces", default=None)
+@click.option("--refl-alt", help="Partial reflection altitude", default=None)
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt, write_ray, wvfrm_file, wvfrm_opt,
                 wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step, wvfrm_yield, wvfrm_ds, wvfrm_len, 
                 freq, abs_coeff, z_grnd, write_atmo, prof_format, reverse_winds, output_id, max_alt, max_rng, 
-                min_ds, max_ds, max_s, topo_file, topo_bl_wind):
+                min_ds, max_ds, max_s, refl_alt, topo_file, topo_bl_wind):
     '''
     Run weakly non-linear waveform analysis along a 2D ray path using the effective sound speed approximation.
 
@@ -396,6 +401,7 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
     min_ds = define_param(user_config, 'GENERAL', 'min_ds', min_ds)
     max_ds = define_param(user_config, 'GENERAL', 'max_ds', max_ds)
     max_s = define_param(user_config, 'GENERAL', 'max_s', max_s)
+    refl_alt = define_param(user_config, 'GENERAL', 'refl_alt', refl_alt)
 
     z_grnd = define_param(user_config, 'GENERAL', 'z_grnd', z_grnd)
     topo_file = define_param(user_config, 'GENERAL', 'topo_file', topo_file)
@@ -468,6 +474,8 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
     command = set_param(command, max_ds, "max_ds")
     command = set_param(command, max_s, "max_s")
 
+    command = set_param(command, refl_alt, "refl_alt")
+
     command = set_param(command, z_grnd, "z_grnd")
     command = set_param(command, topo_file, "topo_file")
     if topo_file is not None:
@@ -524,6 +532,8 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
 @click.option("--min-ds", help="Minimum step size (near-ground) in RK4 solver", default=None)
 @click.option("--max-ds", help="Maximum step size in RK4 solver", default=None)
 @click.option("--max-s", help="Maximum ray length between bounces", default=None)
+@click.option("--refl-alt", help="Partial reflection altitude", default=None)
+
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)

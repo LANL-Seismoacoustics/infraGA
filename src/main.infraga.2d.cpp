@@ -185,7 +185,7 @@ void run_prop(char* inputs[], int count){
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
         else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){                                            reverse_winds = string2bool(inputs[i] + 14);}
-        else if (strncmp(inputs[i], "refl_alt=", 9) == 0){                                                  atmo::z_reflect = atof(inputs[i] + 9);}
+        else if ((strncmp(inputs[i], "refl_alt=", 9) == 0) || (strncmp(inputs[i], "alt_refl=", 9) == 0)){   atmo::z_reflect = atof(inputs[i] + 9);}
 
         else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
                                                                                                             output_id = inputs[i] + 10;}
@@ -257,6 +257,9 @@ void run_prop(char* inputs[], int count){
         results << "#" << '\t' << "ground elevation: " << topo::z0 << '\n';
     } else {
         results << "#" << '\t' << "topo file:" << topo_file << '\n';
+    }
+    if (atmo::z_reflect < geoac::alt_max){
+        results << '#' << '\t' << "reflection altitude: " << atmo::z_reflect << '\n';
     }
     results << "#" << '\t' << "frequency: " << freq << '\n';
     results << "#" << '\t' << "S&B atten coeff: " << atmo::tweak_abs << '\n' << '\n';
@@ -477,6 +480,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 15;}
         else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){                                            reverse_winds = string2bool(inputs[i] + 14);}
+        else if ((strncmp(inputs[i], "refl_alt=", 9) == 0) || (strncmp(inputs[i], "alt_refl=", 9) == 0)){   atmo::z_reflect = atof(inputs[i] + 9);}
 
         else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
                                                                                                             output_id = inputs[i] + 10;}
@@ -509,6 +513,9 @@ void run_wnl_wvfrm(char* inputs[], int count){
     }
     cout << '\t' << "frequency: " << freq << '\n';
     cout << '\t' << "S&B atten coeff: " << atmo::tweak_abs << '\n';
+    if (atmo::z_reflect < geoac::alt_max){
+        cout << '\t' << "reflection altitude: " << atmo::z_reflect << '\n';
+    }
     if (strncmp(wvfrm_file, "none", 4) != 0){
         cout << '\t' << "waveform source file: " << wvfrm_file << '\n';
     } else {
@@ -612,6 +619,10 @@ void run_wnl_wvfrm(char* inputs[], int count){
         }
 
         if(break_check) break;
+
+        if(solution[k - 1][1] > topo::z_bndlyr){
+            bnc_cnt -= 1;
+        }
         geoac::set_refl(solution,k);
     }
 
@@ -643,7 +654,9 @@ void run_wnl_wvfrm(char* inputs[], int count){
         wvfrm_out << "#" << '\t' << "topo file:" << topo_file << '\n';
     }
 
-    wvfrm_out << "#" << '\t' << "ground evevation: " << topo::z0 << '\n';
+    if (atmo::z_reflect < geoac::alt_max){
+        wvfrm_out << '#' << '\t' << "reflection altitude: " << atmo::z_reflect << '\n';
+    }
     wvfrm_out << "#" << '\t' << "S&B atten coeff: " << atmo::tweak_abs << '\n';
     if (strncmp(wvfrm_file, "none", 4) != 0){
         wvfrm_out << "#" << '\t' << "waveform source file: " << wvfrm_file << '\n';
