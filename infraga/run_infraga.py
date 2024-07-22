@@ -491,8 +491,8 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
 @click.option("--atmo-file", help="Atmosphere file", default=None)
 
 @click.option("--refl-alt-min", help="Lower partial reflection altitude [km]", default=25.0)
-@click.option("--refl-alt-max", help="Upper partial reflection altitude [km]", default=60.0)
-@click.option("--refl-alt-step", help="Partial reflection resolution [km]", default=1.0)
+@click.option("--refl-alt-max", help="Upper partial reflection altitude [km]", default=40.0)
+@click.option("--refl-alt-step", help="Partial reflection resolution [km]", default=0.5)
 
 @click.option("--rcvr-rng", help="Receiver range [km]", default=100.0)
 @click.option("--rcvr-az", help="REceiver azimuth (clockwise rel. N)", default=90.0)
@@ -613,6 +613,7 @@ def run_2d_refl_eigs(config_file, atmo_file, refl_alt_min, refl_alt_max, refl_al
             else:
                 return param
             
+        src_alt_out = set_header_val(src_alt, 0.0)
         incl_min_out = set_header_val(incl_min, 0.5)
         incl_max_out = set_header_val(incl_max, 45.0)
         incl_step_out = set_header_val(incl_step, 0.5)
@@ -631,6 +632,7 @@ def run_2d_refl_eigs(config_file, atmo_file, refl_alt_min, refl_alt_max, refl_al
         
         print("# 'infraga 2d refl_eigs' eigenray paths", '\n#', file=eigenrays_out)
         print("# 	profile: " + atmo_file, file=eigenrays_out)
+        print("# 	source location: 0.0, " + str(src_alt_out), file=eigenrays_out)
         print("# 	receiver range [km], azimuth [deg]: " + str(rcvr_rng) + ", " + str(rcvr_az), file=eigenrays_out)
         print("# 	inclination range: " + str(incl_min_out) + ", " + str(incl_max_out) + ", " + str(incl_step_out), file=eigenrays_out)
         if topo_file is not None:
@@ -641,6 +643,7 @@ def run_2d_refl_eigs(config_file, atmo_file, refl_alt_min, refl_alt_max, refl_al
 
         print("# 'infraga 2d refl_eigs' waveform results", '\n#', file=wvfrms_out)
         print("# 	profile: " + atmo_file, file=wvfrms_out)
+        print("# 	source location: 0.0, " + str(src_alt_out), file=wvfrms_out)
         print("# 	receiver range [km], azimuth [deg]: " + str(rcvr_rng) + ", " + str(rcvr_az), file=wvfrms_out)
         print("# 	inclination range: " + str(incl_min_out) + ", " + str(incl_max_out) + ", " + str(incl_step_out), file=wvfrms_out)
         if topo_file is not None:
@@ -735,12 +738,12 @@ def run_2d_refl_eigs(config_file, atmo_file, refl_alt_min, refl_alt_max, refl_al
                 incl_est = arr_incl[bnc_mask][k] + (arr_incl[bnc_mask][k + 1] - arr_incl[bnc_mask][k - 1]) / (arr_rng[bnc_mask][k + 1] - arr_rng[bnc_mask][k - 1]) * (rcvr_rng - arr_rng[bnc_mask][k])
 
                 # Write arrival into file
-                print("# " + str(incl_est), file=wvfrms_out, end='\t')
-                print(rcvr_az, file=wvfrms_out, end='\t')
-                print(bn, file=wvfrms_out, end='\t')
-                print(rcvr_rng, file=wvfrms_out, end='\t')
+                print("# " + str(incl_est), file=wvfrms_out, end=' ')
+                print(rcvr_az, file=wvfrms_out, end=' ')
+                print(bn, file=wvfrms_out, end=' ')
+                print(rcvr_rng, file=wvfrms_out, end=' ')
                 for N in range(4, 11):
-                    print(arr_info[:, N][bnc_mask][k] + ( arr_info[:, N][bnc_mask][k + 1] -  arr_info[:, N][bnc_mask][k - 1]) / (arr_rng[bnc_mask][k + 1] - arr_rng[bnc_mask][k - 1]) * (rcvr_rng - arr_rng[bnc_mask][k]), file=wvfrms_out, end='\t')
+                    print(arr_info[:, N][bnc_mask][k] + ( arr_info[:, N][bnc_mask][k + 1] -  arr_info[:, N][bnc_mask][k - 1]) / (arr_rng[bnc_mask][k + 1] - arr_rng[bnc_mask][k - 1]) * (rcvr_rng - arr_rng[bnc_mask][k]), file=wvfrms_out, end=' ')
                 print('',file=wvfrms_out)
 
                 command = bin_path + "infraga-2d -wnl_wvfrm " + atmo_file
@@ -3163,7 +3166,7 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
             print("# Eigenray arrivals:", file=file_out)
             print("# incl [deg]	az [deg]	n_b	lat_0 [deg]	lon_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]	absorption [dB]", file=file_out)
             for line in eig_results:
-                print("#", *line, file=file_out) 
+                print("#", *line, file=file_out)
 
             print('\n#', "t [s]" + '\t' + "p1 [Pa]", '\t' + "p2 [Pa] ...", file=file_out)
             for n in range(len(t_vals)):
