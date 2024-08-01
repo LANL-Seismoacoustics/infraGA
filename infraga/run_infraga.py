@@ -731,101 +731,106 @@ def run_2d_refl_eigs(config_file, atmo_file, refl_alt_min, refl_alt_max, refl_al
             arr_rng = arr_info[:, 3]
 
             for bn in range(max(arr_bncs)):
-                print('\tEstimating intercept with ' + str(bn) + " bounces...")
+                print('\tEstimating intercept with ' + str(bn) + " bounces...", end='')
                 bnc_mask = arr_bncs == bn
-                
-                k = np.argmin(abs(arr_rng[bnc_mask] - rcvr_rng))
-                incl_est = arr_incl[bnc_mask][k] + (arr_incl[bnc_mask][k + 1] - arr_incl[bnc_mask][k - 1]) / (arr_rng[bnc_mask][k + 1] - arr_rng[bnc_mask][k - 1]) * (rcvr_rng - arr_rng[bnc_mask][k])
 
-                # Write arrival into file
-                print("# " + str(incl_est), file=wvfrms_out, end=' ')
-                print(rcvr_az, file=wvfrms_out, end=' ')
-                print(bn, file=wvfrms_out, end=' ')
-                print(rcvr_rng, file=wvfrms_out, end=' ')
-                for N in range(4, 11):
-                    print(arr_info[:, N][bnc_mask][k] + ( arr_info[:, N][bnc_mask][k + 1] -  arr_info[:, N][bnc_mask][k - 1]) / (arr_rng[bnc_mask][k + 1] - arr_rng[bnc_mask][k - 1]) * (rcvr_rng - arr_rng[bnc_mask][k]), file=wvfrms_out, end=' ')
-                print('',file=wvfrms_out)
+                if np.logical_and(np.min(arr_rng[bnc_mask]) <= rcvr_rng, rcvr_rng <= np.max(arr_rng[bnc_mask])):
+                    click.echo('computing waveform...')
+                    
+                    k = np.argmin(abs(arr_rng[bnc_mask] - rcvr_rng))
+                    incl_est = arr_incl[bnc_mask][k] + (arr_incl[bnc_mask][k + 1] - arr_incl[bnc_mask][k - 1]) / (arr_rng[bnc_mask][k + 1] - arr_rng[bnc_mask][k - 1]) * (rcvr_rng - arr_rng[bnc_mask][k])
 
-                command = bin_path + "infraga-2d -wnl_wvfrm " + atmo_file
-                command = set_param(command, str(incl_est), "inclination")
-                command = set_param(command, str(rcvr_az), "azimuth")
-                command = set_param(command, str(bn), "bounces")
+                    # Write arrival into file
+                    print("# " + str(incl_est), file=wvfrms_out, end=' ')
+                    print(rcvr_az, file=wvfrms_out, end=' ')
+                    print(bn, file=wvfrms_out, end=' ')
+                    print(rcvr_rng, file=wvfrms_out, end=' ')
+                    for N in range(4, 11):
+                        print(arr_info[:, N][bnc_mask][k] + ( arr_info[:, N][bnc_mask][k + 1] -  arr_info[:, N][bnc_mask][k - 1]) / (arr_rng[bnc_mask][k + 1] - arr_rng[bnc_mask][k - 1]) * (rcvr_rng - arr_rng[bnc_mask][k]), file=wvfrms_out, end=' ')
+                    print('',file=wvfrms_out)
 
-                command = set_param(command, src_alt, "src_alt")
+                    command = bin_path + "infraga-2d -wnl_wvfrm " + atmo_file
+                    command = set_param(command, str(incl_est), "inclination")
+                    command = set_param(command, str(rcvr_az), "azimuth")
+                    command = set_param(command, str(bn), "bounces")
 
-                command = set_param(command, wvfrm_file, "wvfrm_file")
-                if wvfrm_yield is not None:
-                    # use atmosphere to define ambient pressure (1 mbar = 0.1 kPa)
-                    atmo = np.loadtxt(atmo_file)
+                    command = set_param(command, src_alt, "src_alt")
 
-                    if src_alt is not None:
-                        src_ht = float(src_alt)
-                    elif z_grnd is not None:
-                        src_ht = float(z_grnd)
+                    command = set_param(command, wvfrm_file, "wvfrm_file")
+                    if wvfrm_yield is not None:
+                        # use atmosphere to define ambient pressure (1 mbar = 0.1 kPa)
+                        atmo = np.loadtxt(atmo_file)
+
+                        if src_alt is not None:
+                            src_ht = float(src_alt)
+                        elif z_grnd is not None:
+                            src_ht = float(z_grnd)
+                        else:
+                            src_ht = 0.0
+
+                        p_ambient = atmo[np.argmin(abs(atmo[:, 0] - src_ht)), 5] * 0.1
+                        T_ambient = atmo[np.argmin(abs(atmo[:, 0] - src_ht)), 1]
+
+                        wvfrm_opt = 'impulse'
+                        wvfrm_ref = str(0.035 * float(wvfrm_yield)**(1.0 / 3.0))
+                        wvfrm_p0 = str(kg_op(float(wvfrm_yield), float(wvfrm_ref), p_amb=p_ambient, T_amb=T_ambient))
+                        wvfrm_t0 = str(kg_ppd(float(wvfrm_yield), float(wvfrm_ref), p_amb=p_ambient, T_amb=T_ambient))
+                        wvfrm_alpha = '0.01'
+
+                    command = set_param(command, wvfrm_opt, "wvfrm_opt")
+                    command = set_param(command, wvfrm_p0, "wvfrm_p0")
+                    command = set_param(command, wvfrm_t0, "wvfrm_t0")
+                    command = set_param(command, wvfrm_alpha, "wvfrm_alpha")
+                    command = set_param(command, wvfrm_ref, "wvfrm_ref")
+                    command = set_param(command, wvfrm_out_step, "wvfrm_out_step")
+
+                    command = set_param(command, wvfrm_ds, "wvfrm_ds")
+                    command = set_param(command, wvfrm_len, "wvfrm_len")
+
+                    command = set_param(command, freq, "freq")
+                    command = set_param(command, abs_coeff, "abs_coeff")
+
+                    command = set_param(command, "True", "write_ray")
+
+                    command = set_param(command, prof_format, "prof_format")
+                    if reverse_winds is not None:
+                        command = set_param(command, str(reverse_winds), "reverse_winds")
+
+                    command = set_param(command, max_alt, "max_alt")
+                    command = set_param(command, max_rng, "max_rng")
+
+                    command = set_param(command, min_ds, "min_ds")
+                    command = set_param(command, max_ds, "max_ds")
+                    command = set_param(command, max_s, "max_s")
+
+                    command = set_param(command, str(refl_alt), "refl_alt")
+
+                    command = set_param(command, z_grnd, "z_grnd")
+                    command = set_param(command, topo_file, "topo_file")
+                    if topo_file is not None:
+                        if topo_bl_wind is not None:
+                            command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
+
+                    command = command + " output_id=" + tmpdirname + "/temp_" + str(refl_alt) + "km-" + str(bn)
+
+                    if verbose:
+                        click.echo(command)
+                        subprocess.run(shlex.split(command), shell=False)
                     else:
-                        src_ht = 0.0
+                        subprocess.run(shlex.split(command), shell=False, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
 
-                    p_ambient = atmo[np.argmin(abs(atmo[:, 0] - src_ht)), 5] * 0.1
-                    T_ambient = atmo[np.argmin(abs(atmo[:, 0] - src_ht)), 1]
+                    temp = np.loadtxt(tmpdirname + "/temp_" + str(refl_alt) + "km-" + str(bn) + ".wvfrm_out.dat")
+                    wvfrms += [interp1d(temp[:, 0], temp[:, 1], bounds_error=False, fill_value=0.0,  kind='cubic')]
+                    t_lims[0] = min(t_lims[0], temp[0][0])
+                    t_lims[1] = max(t_lims[1], temp[-1][0])
+                    dt = abs(temp[1][0] - temp[0][0])
 
-                    wvfrm_opt = 'impulse'
-                    wvfrm_ref = str(0.035 * float(wvfrm_yield)**(1.0 / 3.0))
-                    wvfrm_p0 = str(kg_op(float(wvfrm_yield), float(wvfrm_ref), p_amb=p_ambient, T_amb=T_ambient))
-                    wvfrm_t0 = str(kg_ppd(float(wvfrm_yield), float(wvfrm_ref), p_amb=p_ambient, T_amb=T_ambient))
-                    wvfrm_alpha = '0.01'
-
-                command = set_param(command, wvfrm_opt, "wvfrm_opt")
-                command = set_param(command, wvfrm_p0, "wvfrm_p0")
-                command = set_param(command, wvfrm_t0, "wvfrm_t0")
-                command = set_param(command, wvfrm_alpha, "wvfrm_alpha")
-                command = set_param(command, wvfrm_ref, "wvfrm_ref")
-                command = set_param(command, wvfrm_out_step, "wvfrm_out_step")
-
-                command = set_param(command, wvfrm_ds, "wvfrm_ds")
-                command = set_param(command, wvfrm_len, "wvfrm_len")
-
-                command = set_param(command, freq, "freq")
-                command = set_param(command, abs_coeff, "abs_coeff")
-
-                command = set_param(command, "True", "write_ray")
-
-                command = set_param(command, prof_format, "prof_format")
-                if reverse_winds is not None:
-                    command = set_param(command, str(reverse_winds), "reverse_winds")
-
-                command = set_param(command, max_alt, "max_alt")
-                command = set_param(command, max_rng, "max_rng")
-
-                command = set_param(command, min_ds, "min_ds")
-                command = set_param(command, max_ds, "max_ds")
-                command = set_param(command, max_s, "max_s")
-
-                command = set_param(command, str(refl_alt), "refl_alt")
-
-                command = set_param(command, z_grnd, "z_grnd")
-                command = set_param(command, topo_file, "topo_file")
-                if topo_file is not None:
-                    if topo_bl_wind is not None:
-                        command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
-
-                command = command + " output_id=" + tmpdirname + "/temp_" + str(refl_alt) + "km-" + str(bn)
-
-                if verbose:
-                    click.echo(command)
-                    subprocess.run(shlex.split(command), shell=False)
+                    temp = np.loadtxt(tmpdirname + "/temp_" + str(refl_alt) + "km-" + str(bn) + ".raypaths.dat")
+                    for line in temp:
+                        print(*line, file=eigenrays_out)
+                    print('\n', file=eigenrays_out)
                 else:
-                    subprocess.run(shlex.split(command), shell=False, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
-
-                temp = np.loadtxt(tmpdirname + "/temp_" + str(refl_alt) + "km-" + str(bn) + ".wvfrm_out.dat")
-                wvfrms += [interp1d(temp[:, 0], temp[:, 1], bounds_error=False, fill_value=0.0,  kind='cubic')]
-                t_lims[0] = min(t_lims[0], temp[0][0])
-                t_lims[1] = max(t_lims[1], temp[-1][0])
-                dt = abs(temp[1][0] - temp[0][0])
-
-                temp = np.loadtxt(tmpdirname + "/temp_" + str(refl_alt) + "km-" + str(bn) + ".raypaths.dat")
-                for line in temp:
-                    print(*line, file=eigenrays_out)
-                print('\n', file=eigenrays_out)
+                    click.echo('no arrival at receiver range...')
                 
         click.echo('\nInterpolating and merging waveforms...')
         print('\n#', "t [s]" + '\t' + "p1 [Pa]", '\t' + "p2 [Pa] ...", file=wvfrms_out)
