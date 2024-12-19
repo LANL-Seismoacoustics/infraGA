@@ -450,6 +450,10 @@ bool geoac::ground_check(double ** solution, int k){
     return false;
 }
 
+bool geoac::reflect_check(double ** solution, int k){
+    return false;
+}
+
 //----------------------------------------------------------------------------------//
 //-------Calculate the travel time from source to location or between locations-----//
 //----------------------------------------------------------------------------------//
