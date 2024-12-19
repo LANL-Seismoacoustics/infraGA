@@ -62,8 +62,14 @@ int geoac::prop_rk4(double ** & solution, bool & check, int length){
         if(break_check(solution, k + 1)){
 			check = true;
 			break;
+
 		}
 		if(ground_check(solution, k + 1)){
+			check = false;
+			break;
+		}
+		
+		if(reflect_check(solution, k + 1)){
 			check = false;
 			break;
 		}

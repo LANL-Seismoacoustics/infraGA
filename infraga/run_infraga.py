@@ -187,12 +187,13 @@ def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
 @click.option("--min-ds", help="Minimum step size (near-ground) in RK4 solver", default=None)
 @click.option("--max-ds", help="Maximum step size in RK4 solver", default=None)
 @click.option("--max-s", help="Maximum ray length between bounces", default=None)
+@click.option("--refl-alt", help="Partial reflection altitude", default=None)
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclination, azimuth, bounces, src_alt,
                 freq, abs_coeff, z_grnd, write_atmo, prof_format, reverse_winds, output_id, calc_amp, max_alt,
-                max_rng, min_ds, max_ds, max_s, topo_file, topo_bl_wind):
+                max_rng, min_ds, max_ds, max_s, refl_alt, topo_file, topo_bl_wind):
     '''
     Run 2D geometry ray tracing analysis for a point source using the effective sound speed approximation
 
@@ -240,6 +241,7 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
     min_ds = define_param(user_config, 'GENERAL', 'min_ds', min_ds)
     max_ds = define_param(user_config, 'GENERAL', 'max_ds', max_ds)
     max_s = define_param(user_config, 'GENERAL', 'max_s', max_s)
+    refl_alt = define_param(user_config, 'GENERAL', 'refl_alt', refl_alt)
 
     z_grnd = define_param(user_config, 'GENERAL', 'z_grnd', z_grnd)
     topo_file = define_param(user_config, 'GENERAL', 'topo_file', topo_file)
@@ -284,6 +286,8 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
     command = set_param(command, min_ds, "min_ds")
     command = set_param(command, max_ds, "max_ds")
     command = set_param(command, max_s, "max_s")
+
+    command = set_param(command, refl_alt, "refl_alt")
 
     command = set_param(command, z_grnd, "z_grnd")
     command = set_param(command, topo_file, "topo_file")
@@ -333,13 +337,14 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
 @click.option("--min-ds", help="Minimum step size (near-ground) in RK4 solver", default=None)
 @click.option("--max-ds", help="Maximum step size in RK4 solver", default=None)
 @click.option("--max-s", help="Maximum ray length between bounces", default=None)
+@click.option("--refl-alt", help="Partial reflection altitude", default=None)
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
 def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt, write_ray, wvfrm_file, wvfrm_opt,
                 wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref, wvfrm_out_step, wvfrm_yield, wvfrm_ds, wvfrm_len, 
                 freq, abs_coeff, z_grnd, write_atmo, prof_format, reverse_winds, output_id, max_alt, max_rng, 
-                min_ds, max_ds, max_s, topo_file, topo_bl_wind):
+                min_ds, max_ds, max_s, refl_alt, topo_file, topo_bl_wind):
     '''
     Run weakly non-linear waveform analysis along a 2D ray path using the effective sound speed approximation.
 
@@ -396,6 +401,7 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
     min_ds = define_param(user_config, 'GENERAL', 'min_ds', min_ds)
     max_ds = define_param(user_config, 'GENERAL', 'max_ds', max_ds)
     max_s = define_param(user_config, 'GENERAL', 'max_s', max_s)
+    refl_alt = define_param(user_config, 'GENERAL', 'refl_alt', refl_alt)
 
     z_grnd = define_param(user_config, 'GENERAL', 'z_grnd', z_grnd)
     topo_file = define_param(user_config, 'GENERAL', 'topo_file', topo_file)
@@ -468,6 +474,8 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
     command = set_param(command, max_ds, "max_ds")
     command = set_param(command, max_s, "max_s")
 
+    command = set_param(command, refl_alt, "refl_alt")
+
     command = set_param(command, z_grnd, "z_grnd")
     command = set_param(command, topo_file, "topo_file")
     if topo_file is not None:
@@ -476,6 +484,366 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
 
     click.echo(command)
     subprocess.run(shlex.split(command), shell=False)
+
+
+@click.command('refl_eigs', short_help="Compute partial reflection eigenrays")
+@click.option("--config-file", help="Configuration file for simulation", default=None)
+@click.option("--atmo-file", help="Atmosphere file", default=None)
+
+@click.option("--refl-alt-min", help="Lower partial reflection altitude [km]", default=25.0)
+@click.option("--refl-alt-max", help="Upper partial reflection altitude [km]", default=40.0)
+@click.option("--refl-alt-step", help="Partial reflection resolution [km]", default=0.5)
+
+@click.option("--rcvr-rng", help="Receiver range [km]", default=100.0)
+@click.option("--rcvr-az", help="REceiver azimuth (clockwise rel. N)", default=90.0)
+@click.option("--local-temp-dir", help="Local temporary directory for results", default=None)
+@click.option("--output-id", help="Output file path", default=None)
+@click.option("--verbose", help="Verbose output of simulations", default=False)
+
+@click.option("--incl-min", help="Minimum inclination angle (rel. horizontal)", default=None)
+@click.option("--incl-max", help="Maximum inclination angle (rel. horizontal)", default=None)
+@click.option("--incl-step", help="Inclination angle step resolution", default=None)
+@click.option("--bounces", help="Maximum number of ground reflections (bounces)", default=None)
+@click.option("--src-alt", help="Source altitude", default=None)
+
+@click.option("--wvfrm-file", help="File containing reference waveform", default=None)
+@click.option("--wvfrm-opt", help="Waveform option ('impulse', 'Uwave', 'Nwave')", default=None)
+
+@click.option("--wvfrm-p0", help="Waveform peak overpressure [Pa]", default=None)
+@click.option("--wvfrm-t0", help="Waveform positive phase duration [s]", default=None)
+@click.option("--wvfrm-alpha", help="Waveform shaping parameter", default=None)
+@click.option("--wvfrm-ref", help="Waveform reference distance", default=None)
+@click.option("--wvfrm-out-step", help="Waveform output step along ray path", default=None)
+@click.option("--wvfrm-yield", help="Eq. TNT yield (kg) for an explosive source", default=None)
+
+@click.option("--wvfrm-ds", help="Burgers equation solver resolution [km]", default=None)
+@click.option("--wvfrm-len", help="Waveform sample count (default = 2e13)", default=None)
+
+@click.option("--freq", help="Frequency for Sutherland-Bass losses", default=None)
+@click.option("--abs-coeff", help="Scaling coefficient for Sutherland-Bass losses", default=None)
+@click.option("--z-grnd", help="Ground elevation (flat ground, km rel. sea level)", default=None)
+@click.option("--write-atmo", help="Option to write atmosphere data (for QC)", default=None)
+@click.option("--prof-format", help="Option to specify the atmospheric file format", default=None)
+@click.option("--reverse-winds", help="Option to reverse wind directions for back projection", default=None, type=bool)
+@click.option("--max-alt", help="Maximum altitude for ray calculation", default=None)
+@click.option("--max-rng", help="Maximum range for ray calculation", default=None)
+
+@click.option("--min-ds", help="Minimum step size (near-ground) in RK4 solver", default=None)
+@click.option("--max-ds", help="Maximum step size in RK4 solver", default=None)
+@click.option("--max-s", help="Maximum ray length between bounces", default=None)
+
+@click.option("--topo-file", help="Terrain file", default=None)
+@click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
+def run_2d_refl_eigs(config_file, atmo_file, refl_alt_min, refl_alt_max, refl_alt_step, rcvr_rng, rcvr_az, local_temp_dir, output_id, verbose,
+                     incl_min, incl_max, incl_step, bounces, src_alt, wvfrm_file, wvfrm_opt, wvfrm_p0, wvfrm_t0, wvfrm_alpha, wvfrm_ref,
+                     wvfrm_out_step, wvfrm_yield, wvfrm_ds, wvfrm_len, freq, abs_coeff, z_grnd, write_atmo, prof_format, reverse_winds, 
+                     max_alt, max_rng, min_ds, max_ds, max_s,topo_file, topo_bl_wind):
+    '''
+    Run partial reflected paths to a specified range via 2D rays using the effective sound speed approximation.
+
+    \b
+    Examples:
+    \t infraga 2d refl_eigs --atmo-file ToyAtmo.met --rcvr-rng 140.0 --rcvr-az -90.0 --wvfrm-yield 1.0e3 --local-temp-dir refl_temp
+    '''
+
+    if config_file:
+        click.echo('\n' + "Loading configuration info from: " + config_file)
+        if os.path.isfile(config_file):
+            user_config = cnfg.ConfigParser()
+            user_config.read(config_file)
+        else:
+            click.echo('\n' + "Invalid configuration file (file not found)")
+            return 0
+    else:
+        user_config = None
+
+    # Set propagation specific parameters
+    incl_min = define_param(user_config, 'PROP', 'incl_min', incl_min)
+    incl_max = define_param(user_config, 'PROP', 'incl_max', incl_max)
+    incl_step = define_param(user_config, 'PROP', 'incl_step', incl_step)
+
+    bounces = define_param(user_config, 'PROP', 'bounces', bounces)
+    src_alt = define_param(user_config, 'PROP', 'src_alt', src_alt)
+
+    wvfrm_file = define_param(user_config, 'WAVEFORM', 'wvfrm_file', wvfrm_file)
+    wvfrm_opt = define_param(user_config, 'WAVEFORM', 'wvfrm_opt', wvfrm_opt)
+    wvfrm_p0 = define_param(user_config, 'WAVEFORM', 'wvfrm_p0', wvfrm_p0)
+    wvfrm_t0 = define_param(user_config, 'WAVEFORM', 'wvfrm_t0', wvfrm_t0)
+    wvfrm_alpha = define_param(user_config, 'WAVEFORM', 'wvfrm_alpha', wvfrm_alpha)
+    wvfrm_ref = define_param(user_config, 'WAVEFORM', 'wvfrm_ref', wvfrm_ref)
+    wvfrm_out_step = define_param(user_config, 'WAVEFORM', 'wvfrm_out_step', wvfrm_out_step)
+    wvfrm_yield = define_param(user_config, 'WAVEFORM', 'wvfrm_yield', wvfrm_yield)
+
+    wvfrm_ds = define_param(user_config, 'WAVEFORM', 'wvfrm_ds', wvfrm_ds)
+    wvfrm_len = define_param(user_config, 'WAVEFORM', 'wvfrm_len', wvfrm_len)
+
+    # Set general parameters
+    freq = define_param(user_config, 'GENERAL', 'freq', freq)
+    abs_coeff = define_param(user_config, 'GENERAL', 'abs_coeff', abs_coeff)
+
+    write_atmo = define_param(user_config, 'GENERAL', 'write_atmo', write_atmo)
+    prof_format = define_param(user_config, 'GENERAL', 'prof_format', prof_format)
+    reverse_winds = define_param(user_config, 'GENERAL', 'reverse_winds', reverse_winds)
+    output_id = define_param(user_config, 'GENERAL', 'output_id', output_id)
+
+    max_alt = define_param(user_config, 'GENERAL', 'max_alt', max_alt)
+    max_rng = define_param(user_config, 'GENERAL', 'max_rng', max_rng)
+
+    min_ds = define_param(user_config, 'GENERAL', 'min_ds', min_ds)
+    max_ds = define_param(user_config, 'GENERAL', 'max_ds', max_ds)
+    max_s = define_param(user_config, 'GENERAL', 'max_s', max_s)
+ 
+    z_grnd = define_param(user_config, 'GENERAL', 'z_grnd', z_grnd)
+    topo_file = define_param(user_config, 'GENERAL', 'topo_file', topo_file)
+    topo_bl_wind = define_param(user_config, 'GENERAL', 'topo_bl_wind', topo_bl_wind)
+
+    with tempfile.TemporaryDirectory(prefix='infraga_') as tmpdirname:
+        if local_temp_dir is not None:
+            click.echo("Writing individual reflection altitude results into " + local_temp_dir)
+            if not os.path.isdir(local_temp_dir):
+                os.mkdir(local_temp_dir)
+            tmpdirname = local_temp_dir
+        else:
+            click.echo('Created temp directory: ' + tmpdirname)
+
+        # Set parameter values for header output
+        def set_header_val(param, default):
+            if param is None:
+                return default
+            else:
+                return param
+            
+        src_alt_out = set_header_val(src_alt, 0.0)
+        incl_min_out = set_header_val(incl_min, 0.5)
+        incl_max_out = set_header_val(incl_max, 45.0)
+        incl_step_out = set_header_val(incl_step, 0.5)
+        z_grnd_out = set_header_val(z_grnd, 0.0)
+
+        wvfrm_opt_out = set_header_val(wvfrm_opt, 'impulse')
+        wvfrm_p0_out = set_header_val(wvfrm_p0, 10.0)
+        wvfrm_t0_out = set_header_val(wvfrm_t0, 1.0)
+        wvfrm_alpha_out = set_header_val(wvfrm_alpha, 1.0)
+
+        if output_id is None:
+            output_id = os.path.splitext(atmo_file)[0]
+                
+        eigenrays_out = open(output_id + ".eigenrays.dat", 'w')
+        wvfrms_out = open(output_id + ".wvfrms.dat", 'w')
+        
+        print("# 'infraga 2d refl_eigs' eigenray paths", '\n#', file=eigenrays_out)
+        print("# 	profile: " + atmo_file, file=eigenrays_out)
+        print("# 	source location: 0.0, " + str(src_alt_out), file=eigenrays_out)
+        print("# 	receiver range [km], azimuth [deg]: " + str(rcvr_rng) + ", " + str(rcvr_az), file=eigenrays_out)
+        print("# 	inclination range: " + str(incl_min_out) + ", " + str(incl_max_out) + ", " + str(incl_step_out), file=eigenrays_out)
+        if topo_file is not None:
+            print("# 	terrain file: " + str(topo_file), file=eigenrays_out)        
+        else:
+            print("# 	ground elevation: " + str(z_grnd_out), file=eigenrays_out)
+        print('\n# r [km]	z [km]	trans. coeff. [dB]	absorption [dB]	time [s]', file=eigenrays_out)
+
+        print("# 'infraga 2d refl_eigs' waveform results", '\n#', file=wvfrms_out)
+        print("# 	profile: " + atmo_file, file=wvfrms_out)
+        print("# 	source location: 0.0, " + str(src_alt_out), file=wvfrms_out)
+        print("# 	receiver range [km], azimuth [deg]: " + str(rcvr_rng) + ", " + str(rcvr_az), file=wvfrms_out)
+        print("# 	inclination range: " + str(incl_min_out) + ", " + str(incl_max_out) + ", " + str(incl_step_out), file=wvfrms_out)
+        if topo_file is not None:
+            print("# 	terrain file: " + str(topo_file), file=wvfrms_out)        
+        else:
+            print("# 	ground elevation: " + str(z_grnd_out), file=wvfrms_out)
+
+        # Waveform calculation parameters
+        if wvfrm_ref is not None:
+            print("#    waveform reference distance:", wvfrm_ref, file=wvfrms_out)
+        else:
+            print("#    waveform reference distance: 1.0", file=wvfrms_out)
+
+        if wvfrm_yield:
+            print("#    waveform source yield:", wvfrm_yield, file=wvfrms_out)
+        else:
+            print("#    waveform option:", wvfrm_opt_out, file=wvfrms_out)
+            print("#    waveform peak op:", wvfrm_p0_out, file=wvfrms_out)
+            print("#    waveform time sc.:", wvfrm_t0_out, file=wvfrms_out)
+            print("#    waveform shaping param.:", wvfrm_alpha_out, file=wvfrms_out)
+
+        print('#\n# Eigenray arrivals:', file=wvfrms_out)
+        print('\n# incl [deg]	az [deg]	n_b	r_0 [km]	time [s]	celerity [km/s]	turning ht [km]	arrival incl. [deg]	trans. coeff. [dB]	absorption [dB]	perp. dist. [km]', file=wvfrms_out)
+
+        wvfrms = []
+        t_lims = [np.inf, 0.0]
+        for refl_alt in np.arange(refl_alt_min, refl_alt_max, refl_alt_step):
+            click.echo("Identifying propagation paths with partial reflection altitude at " + str(refl_alt) + "km...")
+
+            # Build run command
+            if atmo_file is not None:
+                command = bin_path + "infraga-2d -prop " + atmo_file
+            else:
+                click.echo("Simulation requires an '--atmo-file'")
+                return 0
+
+            # Set parameters
+            command = set_param(command, incl_min, "incl_min")
+            command = set_param(command, incl_max, "incl_max")
+            command = set_param(command, incl_step, "incl_step")
+
+            command = set_param(command, str(rcvr_az), "azimuth")
+            command = set_param(command, bounces, "bounces")
+            command = set_param(command, src_alt, "src_alt")
+
+            command = set_param(command, freq, "freq")
+            command = set_param(command, abs_coeff, "abs_coeff")
+
+            if write_atmo is not None:
+                command = set_param(command, str(write_atmo), "write_atmo")
+
+            command = set_param(command, prof_format, "prof_format")
+
+            if reverse_winds is not None:
+                command = set_param(command, str(reverse_winds), "reverse_winds")
+
+            command = set_param(command, max_alt, "max_alt")
+            command = set_param(command, str(1.1 * rcvr_rng), "max_rng")
+
+            command = set_param(command, min_ds, "min_ds")
+            command = set_param(command, max_ds, "max_ds")
+            command = set_param(command, max_s, "max_s")
+
+            command = set_param(command, str(refl_alt), "refl_alt")
+
+            command = set_param(command, z_grnd, "z_grnd")
+            command = set_param(command, topo_file, "topo_file")
+            if topo_file is not None:
+                if topo_bl_wind is not None:
+                    command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
+
+            command = command + " output_id=" + tmpdirname + "/temp_" + str(refl_alt) + "km"
+
+            if verbose:
+                click.echo(command)
+                subprocess.run(shlex.split(command), shell=False)
+            else:
+                subprocess.run(shlex.split(command), shell=False, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
+
+            # interpolate inclination vs. range for each bounce count to get arrival(s)
+            arr_info = np.loadtxt( tmpdirname + "/temp_" + str(refl_alt) + "km.arrivals.dat")
+
+            arr_incl = arr_info[:, 0]
+            arr_bncs = arr_info[:, 2].astype(int)
+            arr_rng = arr_info[:, 3]
+
+            for bn in range(max(arr_bncs)):
+                print('\tEstimating intercept with ' + str(bn) + " bounces...", end='')
+                bnc_mask = arr_bncs == bn
+
+                if np.logical_and(np.min(arr_rng[bnc_mask]) <= rcvr_rng, rcvr_rng <= np.max(arr_rng[bnc_mask])):
+                    click.echo('computing waveform...')
+                    
+                    k = np.argmin(abs(arr_rng[bnc_mask] - rcvr_rng))
+                    incl_est = arr_incl[bnc_mask][k] + (arr_incl[bnc_mask][k + 1] - arr_incl[bnc_mask][k - 1]) / (arr_rng[bnc_mask][k + 1] - arr_rng[bnc_mask][k - 1]) * (rcvr_rng - arr_rng[bnc_mask][k])
+
+                    # Write arrival into file
+                    print("# " + str(incl_est), file=wvfrms_out, end=' ')
+                    print(rcvr_az, file=wvfrms_out, end=' ')
+                    print(bn, file=wvfrms_out, end=' ')
+                    print(rcvr_rng, file=wvfrms_out, end=' ')
+                    for N in range(4, 11):
+                        print(arr_info[:, N][bnc_mask][k] + ( arr_info[:, N][bnc_mask][k + 1] -  arr_info[:, N][bnc_mask][k - 1]) / (arr_rng[bnc_mask][k + 1] - arr_rng[bnc_mask][k - 1]) * (rcvr_rng - arr_rng[bnc_mask][k]), file=wvfrms_out, end=' ')
+                    print('',file=wvfrms_out)
+
+                    command = bin_path + "infraga-2d -wnl_wvfrm " + atmo_file
+                    command = set_param(command, str(incl_est), "inclination")
+                    command = set_param(command, str(rcvr_az), "azimuth")
+                    command = set_param(command, str(bn), "bounces")
+
+                    command = set_param(command, src_alt, "src_alt")
+
+                    command = set_param(command, wvfrm_file, "wvfrm_file")
+                    if wvfrm_yield is not None:
+                        # use atmosphere to define ambient pressure (1 mbar = 0.1 kPa)
+                        atmo = np.loadtxt(atmo_file)
+
+                        if src_alt is not None:
+                            src_ht = float(src_alt)
+                        elif z_grnd is not None:
+                            src_ht = float(z_grnd)
+                        else:
+                            src_ht = 0.0
+
+                        p_ambient = atmo[np.argmin(abs(atmo[:, 0] - src_ht)), 5] * 0.1
+                        T_ambient = atmo[np.argmin(abs(atmo[:, 0] - src_ht)), 1]
+
+                        wvfrm_opt = 'impulse'
+                        wvfrm_ref = str(0.035 * float(wvfrm_yield)**(1.0 / 3.0))
+                        wvfrm_p0 = str(kg_op(float(wvfrm_yield), float(wvfrm_ref), p_amb=p_ambient, T_amb=T_ambient))
+                        wvfrm_t0 = str(kg_ppd(float(wvfrm_yield), float(wvfrm_ref), p_amb=p_ambient, T_amb=T_ambient))
+                        wvfrm_alpha = '0.01'
+
+                    command = set_param(command, wvfrm_opt, "wvfrm_opt")
+                    command = set_param(command, wvfrm_p0, "wvfrm_p0")
+                    command = set_param(command, wvfrm_t0, "wvfrm_t0")
+                    command = set_param(command, wvfrm_alpha, "wvfrm_alpha")
+                    command = set_param(command, wvfrm_ref, "wvfrm_ref")
+                    command = set_param(command, wvfrm_out_step, "wvfrm_out_step")
+
+                    command = set_param(command, wvfrm_ds, "wvfrm_ds")
+                    command = set_param(command, wvfrm_len, "wvfrm_len")
+
+                    command = set_param(command, freq, "freq")
+                    command = set_param(command, abs_coeff, "abs_coeff")
+
+                    command = set_param(command, "True", "write_ray")
+
+                    command = set_param(command, prof_format, "prof_format")
+                    if reverse_winds is not None:
+                        command = set_param(command, str(reverse_winds), "reverse_winds")
+
+                    command = set_param(command, max_alt, "max_alt")
+                    command = set_param(command, max_rng, "max_rng")
+
+                    command = set_param(command, min_ds, "min_ds")
+                    command = set_param(command, max_ds, "max_ds")
+                    command = set_param(command, max_s, "max_s")
+
+                    command = set_param(command, str(refl_alt), "refl_alt")
+
+                    command = set_param(command, z_grnd, "z_grnd")
+                    command = set_param(command, topo_file, "topo_file")
+                    if topo_file is not None:
+                        if topo_bl_wind is not None:
+                            command = set_param(command, str(topo_bl_wind), "topo_bl_wind")
+
+                    command = command + " output_id=" + tmpdirname + "/temp_" + str(refl_alt) + "km-" + str(bn)
+
+                    if verbose:
+                        click.echo(command)
+                        subprocess.run(shlex.split(command), shell=False)
+                    else:
+                        subprocess.run(shlex.split(command), shell=False, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
+
+                    temp = np.loadtxt(tmpdirname + "/temp_" + str(refl_alt) + "km-" + str(bn) + ".wvfrm_out.dat")
+                    wvfrms += [interp1d(temp[:, 0], temp[:, 1], bounds_error=False, fill_value=0.0,  kind='cubic')]
+                    t_lims[0] = min(t_lims[0], temp[0][0])
+                    t_lims[1] = max(t_lims[1], temp[-1][0])
+                    dt = abs(temp[1][0] - temp[0][0])
+
+                    temp = np.loadtxt(tmpdirname + "/temp_" + str(refl_alt) + "km-" + str(bn) + ".raypaths.dat")
+                    for line in temp:
+                        print(*line, file=eigenrays_out)
+                    print('\n', file=eigenrays_out)
+                else:
+                    click.echo('no arrival at receiver range...')
+                
+        click.echo('\nInterpolating and merging waveforms...')
+        print('\n#', "t [s]" + '\t' + "p1 [Pa]", '\t' + "p2 [Pa] ...", file=wvfrms_out)
+        t_vals = np.arange(t_lims[0], t_lims[1], dt)
+        for n in range(len(t_vals)):
+            print(t_vals[n], end='\t', file=wvfrms_out)
+            for wvfrm in wvfrms:
+                print(wvfrm(t_vals[n]), end='\t', file=wvfrms_out)
+            print('', file=wvfrms_out)
+
+        eigenrays_out.close()
+        wvfrms_out.close()
+
 
 
 ###################################
@@ -524,6 +892,8 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
 @click.option("--min-ds", help="Minimum step size (near-ground) in RK4 solver", default=None)
 @click.option("--max-ds", help="Maximum step size in RK4 solver", default=None)
 @click.option("--max-s", help="Maximum ray length between bounces", default=None)
+@click.option("--refl-alt", help="Partial reflection altitude", default=None)
+
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
@@ -2801,7 +3171,7 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
             print("# Eigenray arrivals:", file=file_out)
             print("# incl [deg]	az [deg]	n_b	lat_0 [deg]	lon_0 [deg]	time [s]	cel [km/s]	turning ht [km]	inclination [deg]	back azimuth [deg]	trans. coeff. [dB]	absorption [dB]", file=file_out)
             for line in eig_results:
-                print("#", *line, file=file_out) 
+                print("#", *line, file=file_out)
 
             print('\n#', "t [s]" + '\t' + "p1 [Pa]", '\t' + "p2 [Pa] ...", file=file_out)
             for n in range(len(t_vals)):

@@ -553,8 +553,10 @@ def plot_eigenrays(atmo_file, arrivals, eigenrays, y_axis_option, tr_vel_ref, fi
 @click.option("--tr-vel-ref", help="Reference velocity for trace velocity calculation", default=330.0)
 @click.option("--y-axis-option", help="Arrival parameter to plot on y-axis", default="back-azimuth")
 @click.option("--cmap-option", help="Arrival parameter to plot on colormap", default="trace-velocity")
+@click.option("--tm-min", help="User specified time window min", default=None, type=float)
+@click.option("--tm-max", help="User specified time window max", default=None, type=float)
 @click.option("--figure-out", help="Name of output figure", default=None)
-def plot_eig_wvfrm(atmo_file, eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, figure_out):
+def plot_eig_wvfrm(atmo_file, eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap_option, tm_min, tm_max, figure_out):
     '''
     Visualize results for combined eigenray/waveform analysis
 
@@ -597,34 +599,54 @@ def plot_eig_wvfrm(atmo_file, eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap
     in_arrivals = False
     for line in file_in:
         if "infraga" in line:
-            if "3d" in line:
+            if "2d" in line:
+                geom = '2d'
+                lw_val = 0.25
+            elif "3d" in line:
                 geom = '3d'
+                lw_val = 2.5
             else:
                 geom = 'sph'
+                lw_val = 2.5
         elif "source location" in line:
-            src_loc = np.array([float(val) for val in line.split(":")[-1].split(",")[:2]])
+            if geom == "2d":
+                src_loc = 0.0
+            else:
+                src_loc = np.array([float(val) for val in line.split(":")[-1].split(",")[:2]])
 
         if in_arrivals:
             if len(line) < 2:
                 in_arrivals = False 
                 break
-            line = line[2:].split(' ')
-            arr_tms = arr_tms + [float(line[5])]
-            arr_back_az = arr_back_az + [float(line[9])]
-            arr_trace_vel = arr_trace_vel + [tr_vel_ref / np.cos(np.radians(float(line[8])))]
-            arr_amp = arr_amp + [float(line[10]) + float(line[11])]
 
-        if "# incl" in line:
+            line = line[2:].split(' ')
+            if geom == '2d':           
+                arr_tms = arr_tms + [float(line[4])]
+                arr_back_az = arr_back_az + [-float(line[1])]
+                arr_trace_vel = arr_trace_vel + [tr_vel_ref / np.cos(np.radians(float(line[7])))]
+                arr_amp = arr_amp + [float(line[8]) + float(line[9])]
+            else:       
+                arr_tms = arr_tms + [float(line[5])]
+                arr_back_az = arr_back_az + [float(line[9])]
+                arr_trace_vel = arr_trace_vel + [tr_vel_ref / np.cos(np.radians(float(line[8])))]
+                arr_amp = arr_amp + [float(line[10]) + float(line[11])]
+
+        if "# incl [deg]" in line:
             in_arrivals = True 
 
     # Load data for plotting
     wvfrm_data = np.loadtxt(wvfrms)
     eigenray_data = np.loadtxt(eigenrays)
 
-    if geom == '3d':
+    if geom == '2d':
+        ray_rngs = eigenray_data[:, 0]
+        ray_alts = eigenray_data[:, 1]
+    elif geom == '3d':
         ray_rngs = np.sqrt(eigenray_data[:, 0]**2 + eigenray_data[:, 1]**2)
+        ray_alts = eigenray_data[:, 2]
     else:
         ray_rngs = sph_proj.inv([src_loc[1]] * len(eigenray_data), [src_loc[0]] * len(eigenray_data), eigenray_data[:, 1], eigenray_data[:, 0])[2] * 1.0e-3
+        ray_alts = eigenray_data[:, 2]
 
     print("Plotting...")
     fig = plt.figure(figsize=(7, 7), layout='constrained')
@@ -635,15 +657,18 @@ def plot_eig_wvfrm(atmo_file, eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap
     ax0.set_ylabel("Altitude [km]")
     ax0.set_xlabel("Range [km]")
 
-    indices = np.flatnonzero(np.gradient(eigenray_data[:, 5]) < 0.0)
+    if geom == "2d":
+        indices = np.flatnonzero(np.gradient(eigenray_data[:, 4]) < 0.0)
+    else:
+        indices = np.flatnonzero(np.gradient(eigenray_data[:, 5]) < 0.0)
 
     if len(indices) > 0:
-        ax0.plot(ray_rngs[:indices[0]], eigenray_data[:, 2][:indices[0]], '-k', linewidth=2.5)
+        ax0.plot(ray_rngs[:indices[0]], ray_alts[:indices[0]], '-k', linewidth=lw_val)
         for n, j in enumerate(indices):
-            ax0.plot(ray_rngs[indices[n - 1]:j], eigenray_data[:, 2][indices[n - 1]:j], '-k', linewidth=2.5)
-        ax0.plot(ray_rngs[indices[-1]:], eigenray_data[:, 2][indices[-1]:], '-k', linewidth=2.5)
+            ax0.plot(ray_rngs[indices[n - 1]:j], ray_alts[indices[n - 1]:j], '-k', linewidth=lw_val)
+        ax0.plot(ray_rngs[indices[-1]:], ray_alts[indices[-1]:], '-k', linewidth=lw_val)
     else:
-        ax0.plot(ray_rngs, eigenray_data[:, 2], '-k', linewidth=2.5)
+        ax0.plot(ray_rngs, ray_alts, '-k', linewidth=lw_val)
 
 
     ax0.set_xlim(left=0.0)    
@@ -688,10 +713,15 @@ def plot_eig_wvfrm(atmo_file, eigenrays, wvfrms, tr_vel_ref, y_axis_option, cmap
     ax1.set_ylabel("Pressure [Pa]")
     ax1.set_xlabel(" ")
 
-    ax1.set_xlim(50.0 * np.floor((min(arr_tms) - 50.0) / 50.0), 50.0 * np.ceil((max(arr_tms) + 50.0) / 50.0))
-    ax1.plot(wvfrm_data[:, 0], np.sum(wvfrm_data[:, 1:], axis=1), '-k', linewidth=1.5)
-    
+    if tm_min is None:
+        tm_min = 50.0 * np.floor((min(arr_tms) - 50.0) / 50.0)
 
+    if tm_max is None:
+        tm_max = 50.0 * np.ceil((max(arr_tms) + 50.0) / 50.0)
+
+    ax1.set_xlim(tm_min, tm_max)
+    ax1.plot(wvfrm_data[:, 0], np.sum(wvfrm_data[:, 1:], axis=1), '-k', linewidth=2.0)
+    
     if figure_out is not None:
         print('\t' + "Saving figure to " + figure_out)
         plt.savefig(figure_out, dpi=250)

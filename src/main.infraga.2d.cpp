@@ -111,6 +111,7 @@ void usage(){
     cout << '\t' << "min_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.001" << '\n';
     cout << '\t' << "max_ds"            << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "0.05" << '\n';
     cout << '\t' << "max_s"             << '\t' << '\t' << '\t' << "km"         << '\t' << '\t' << "1000.0" << '\n';
+    cout << '\t' << "refl_alt"          << '\t' << '\t' << "km"                 << '\t' << '\t' << "None" << '\n';
     cout << '\t' << "topo_file"         << '\t' << '\t' << "see manual" << '\t' << "none" << '\n' << '\n';
 
     cout << "Output (see output files or manual for units):" << '\n';
@@ -184,6 +185,7 @@ void run_prop(char* inputs[], int count){
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 12;}
         else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){                                            reverse_winds = string2bool(inputs[i] + 14);}
+        else if ((strncmp(inputs[i], "refl_alt=", 9) == 0) || (strncmp(inputs[i], "alt_refl=", 9) == 0)){   atmo::z_reflect = atof(inputs[i] + 9);}
 
         else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
                                                                                                             output_id = inputs[i] + 10;}
@@ -221,6 +223,7 @@ void run_prop(char* inputs[], int count){
     
     if (write_caustics){    cout << '\t' << "write_caustics: true" << '\n';} else { cout << '\t' << "write_caustics: false" << '\n';}
     if (geoac::calc_amp){   cout << '\t' << "calc_amp: true" << '\n';} else {       cout << '\t' << "calc_amp: false" << '\n';}
+    if (atmo::z_reflect < geoac::alt_max){  cout << '\t' << "reflection altitude: " << atmo::z_reflect << '\n';}
     cout << '\n';
     
     // Extract the file name from the input and use it to ID the output
@@ -254,6 +257,9 @@ void run_prop(char* inputs[], int count){
         results << "#" << '\t' << "ground elevation: " << topo::z0 << '\n';
     } else {
         results << "#" << '\t' << "topo file:" << topo_file << '\n';
+    }
+    if (atmo::z_reflect < geoac::alt_max){
+        results << '#' << '\t' << "reflection altitude: " << atmo::z_reflect << '\n';
     }
     results << "#" << '\t' << "frequency: " << freq << '\n';
     results << "#" << '\t' << "S&B atten coeff: " << atmo::tweak_abs << '\n' << '\n';
@@ -319,6 +325,7 @@ void run_prop(char* inputs[], int count){
 		for(int bnc_cnt = 0; bnc_cnt <= bounces; bnc_cnt++){
             
 			k = geoac::prop_rk4(solution, break_check, length);
+
             if(print_resid){
                 cout << '\t' << "Residuals at Ray Termination (region boundary or reflection):" << '\n';
                 cout << '\t' << '\t' << "Eikonal residual: " << geoac::eval_eikonal(solution, k - 1) << '\n';
@@ -329,7 +336,6 @@ void run_prop(char* inputs[], int count){
                 caustics.open(output_buffer,fstream::app);
                 D_prev = geoac::jacobian(solution, 1);
             }
-            
             
             for(int m = 1; m < k ; m++){
                 geoac::travel_time(travel_time_sum, solution, m - 1,m);
@@ -363,19 +369,23 @@ void run_prop(char* inputs[], int count){
                 break;
             }
             
-            results << theta;
-			results << '\t' << azimuth;
-            results << '\t' << bnc_cnt;
-			results << '\t' << solution[k][0];
-			results << '\t' << travel_time_sum;
-            results << '\t' << solution[k][0] / travel_time_sum;
-            results << '\t' << z_max;
-            results << '\t' <<  - asin(atmo::c(0.0, 0.0, topo::z(solution[k][0])) / atmo::c(0.0, 0.0, z_src) * solution[k][3]) * (180.0 / Pi);
-            if(geoac::calc_amp){    results << '\t' << 20.0 * log10(geoac::amp(solution, k));}
-            else{                   results << '\t' << 0.0;}
-            results << '\t' << -2.0 * attenuation;
-            results << '\t' << geoac::est_dev(solution,k);
-			results << '\n';
+            if(solution[k - 1][1] > topo::z_bndlyr){
+                bnc_cnt -= 1;
+            } else {
+                results << theta;
+                results << '\t' << azimuth;
+                results << '\t' << bnc_cnt;
+                results << '\t' << solution[k][0];
+                results << '\t' << travel_time_sum;
+                results << '\t' << solution[k][0] / travel_time_sum;
+                results << '\t' << z_max;
+                results << '\t' <<  - asin(atmo::c(0.0, 0.0, topo::z(solution[k][0])) / atmo::c(0.0, 0.0, z_src) * solution[k][3]) * (180.0 / Pi);
+                if(geoac::calc_amp){    results << '\t' << 20.0 * log10(geoac::amp(solution, k));}
+                else{                   results << '\t' << 0.0;}
+                results << '\t' << -2.0 * attenuation;
+                results << '\t' << geoac::est_dev(solution,k);
+                results << '\n';
+            }
             
             geoac::set_refl(solution,k);
 		}
@@ -470,6 +480,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         else if (strncmp(inputs[i], "write_atmo=", 11) == 0){                                               write_atmo = string2bool(inputs[i] + 11);}
         else if (strncmp(inputs[i], "prof_format=", 12) == 0){                                              prof_format = inputs[i] + 15;}
         else if (strncmp(inputs[i], "reverse_winds=", 14) == 0){                                            reverse_winds = string2bool(inputs[i] + 14);}
+        else if ((strncmp(inputs[i], "refl_alt=", 9) == 0) || (strncmp(inputs[i], "alt_refl=", 9) == 0)){   atmo::z_reflect = atof(inputs[i] + 9);}
 
         else if (strncmp(inputs[i], "output_id=", 10) == 0){                                                custom_output_id = true; 
                                                                                                             output_id = inputs[i] + 10;}
@@ -502,6 +513,9 @@ void run_wnl_wvfrm(char* inputs[], int count){
     }
     cout << '\t' << "frequency: " << freq << '\n';
     cout << '\t' << "S&B atten coeff: " << atmo::tweak_abs << '\n';
+    if (atmo::z_reflect < geoac::alt_max){
+        cout << '\t' << "reflection altitude: " << atmo::z_reflect << '\n';
+    }
     if (strncmp(wvfrm_file, "none", 4) != 0){
         cout << '\t' << "waveform source file: " << wvfrm_file << '\n';
     } else {
@@ -605,6 +619,10 @@ void run_wnl_wvfrm(char* inputs[], int count){
         }
 
         if(break_check) break;
+
+        if(solution[k - 1][1] > topo::z_bndlyr){
+            bnc_cnt -= 1;
+        }
         geoac::set_refl(solution,k);
     }
 
@@ -636,7 +654,9 @@ void run_wnl_wvfrm(char* inputs[], int count){
         wvfrm_out << "#" << '\t' << "topo file:" << topo_file << '\n';
     }
 
-    wvfrm_out << "#" << '\t' << "ground evevation: " << topo::z0 << '\n';
+    if (atmo::z_reflect < geoac::alt_max){
+        wvfrm_out << '#' << '\t' << "reflection altitude: " << atmo::z_reflect << '\n';
+    }
     wvfrm_out << "#" << '\t' << "S&B atten coeff: " << atmo::tweak_abs << '\n';
     if (strncmp(wvfrm_file, "none", 4) != 0){
         wvfrm_out << "#" << '\t' << "waveform source file: " << wvfrm_file << '\n';

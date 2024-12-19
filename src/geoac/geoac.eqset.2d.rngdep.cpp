@@ -11,7 +11,7 @@
 #include "geoac.params.h"
 #include "geoac.eqset.h"
 #include "../atmo/atmo_state.h"
-#include "../atmo/atmo_io.2d.h"
+#include "../atmo/atmo_io.2d-rngdep.h"
 #include "../util/interpolation.h"
 #include "../util/waveforms.h"
 
@@ -31,14 +31,14 @@ void geoac::set_system(){
 //-----------------------------------------------------------//
 namespace geoac {
     struct src_refs{
-        double z0;          // Altitude of the source
-        double c_eff0;      // Effective sound speed at the source
-        double c_eff;       // Effective sound speed
-        double dc_eff;      // First order derivatives of c_eff
-        double ddc_eff;     // Second order derivatives of c_eff
+        double z0;              // Altitude of the source
+        double c_eff0;          // Effective sound speed at the source
+        double c_eff;           // Effective sound speed
+        double dc_eff[2];       // First order derivatives of c_eff
+        double ddc_eff[2][2];   // Second order derivatives of c_eff
     };
 
-    struct src_refs refs = {0.0, 0.0, 0.0, 0.0, 0.0};
+    struct src_refs refs = {0.0, 0.0, 0.0, {0.0, 0.0}, {{0.0, 0.0}, {0.0, 0.0}}};
 }
 //----------------------------------------------------------------------//
 //-------Fill in solution[0][n] with the appropriate initial values-----//
@@ -71,25 +71,11 @@ void geoac::set_initial(double ** & solution, double r0, double z0){
 //-------Taylor series to more accurately deterine intercept values-----//
 //----------------------------------------------------------------------//
 void geoac::approx_intercept(double ** solution, int k, double* & prev){
-
-    double dz_grnd, dz_k;
-
-    if(solution[k - 1][1] < topo::z_bndlyr){
-        double dz_grnd = topo::z(solution[k-1][0]) - solution[k-1][1];                               // set dz from z_{k-1} to ground
-        double dz_k = (solution[k-1][1] - solution[k-2][1])
-                        - topo::dz(solution[k - 1][0]) * (solution[k-1][0] - solution[k-2][0]);  // set effective dz for step = z_k - z_{k-1} with ground slope
-        
-        for(int n_eq = 0; n_eq < eq_cnt; n_eq++){
-            prev[n_eq] = solution[k-1][n_eq] + (solution[k-1][n_eq] - solution[k-2][n_eq]) / dz_k * dz_grnd;
-        }
-    } else {
-        double dz_grnd = atmo::z_reflect - solution[k-1][1];  // set dz from z_{k-1} to ground
-        double dz_k = (solution[k-1][1] - solution[k-2][1]);  // set effective dz for step = z_k - z_{k-1}
-
-        for(int n_eq = 0; n_eq < eq_cnt; n_eq++){
-            prev[n_eq] = solution[k-1][n_eq] + (solution[k-1][n_eq] - solution[k-2][n_eq]) / dz_k * dz_grnd;
-        }
-    }
+	double dz_grnd = topo::z(solution[k-1][0]) - solution[k-1][1];                               // set dz from z_{k-1} to ground
+	double dz_k = (solution[k-1][1] - solution[k-2][1])
+                    - topo::dz(solution[k - 1][0]) * (solution[k-1][0] - solution[k-2][0]);  // set effective dz for step = z_k - z_{k-1} with ground slope
+    
+	for(int n_eq = 0; n_eq < eq_cnt; n_eq++){ prev[n_eq] = solution[k-1][n_eq] + (solution[k-1][n_eq] - solution[k-2][n_eq]) / dz_k * dz_grnd;}
 }
 
 //-------------------------------------------------------------------------//
@@ -103,30 +89,19 @@ void geoac::set_refl(double** & solution, int k_end){
     double zg, c_eff, c_eff_diff, C1, C2, dC1, dC2, ds0_dtheta;
     double a, norm, da_dtheta, dnur_ds, dnuz_ds;
 
-    if(prev[1] < topo::z_bndlyr){
-        zg = topo::z(prev[0]);
-        c_eff = atmo::c(0.0, 0.0, zg) + atmo::u(0.0, 0.0, zg) * cos(phi) + atmo::v(0.0, 0.0, zg) * sin(phi);
-        c_eff_diff = atmo::dc(0.0, 0.0, zg, 2) + atmo::du(0.0, 0.0, zg, 2) * cos(phi) + atmo::dv(0.0, 0.0, zg, 2) * sin(phi);
-        if (is_topo){
-            a = topo::dz(prev[0]);
-            norm = 1.0 + pow(a, 2);
-            da_dtheta = (prev[4] * prev[3] - prev[5] * prev[2]) / (prev[3] - a * prev[2]) * topo::ddz(prev[0]);
+    zg = topo::z(prev[0]);
+    c_eff = atmo::c(0.0, 0.0, zg) + atmo::u(0.0, 0.0, zg) * cos(phi) + atmo::v(0.0, 0.0, zg) * sin(phi);
+    c_eff_diff = atmo::dc(0.0, 0.0, zg, 2) + atmo::du(0.0, 0.0, zg, 2) * cos(phi) + atmo::dv(0.0, 0.0, zg, 2) * sin(phi);
+    if (is_topo){
+        a = topo::dz(prev[0]);
+        norm = 1.0 + pow(a, 2);
+        da_dtheta = (prev[4] * prev[3] - prev[5] * prev[2]) / (prev[3] - a * prev[2]) * topo::ddz(prev[0]);
 
-            C1 = (1.0 - pow(a,2)) / norm;   dC1 = -2.0 * da_dtheta / norm * C2;
-            C2 = 2.0 * a / norm;            dC2 = 2.0 * da_dtheta / norm * C1;
+        C1 = (1.0 - pow(a,2)) / norm;   dC1 = -2.0 * da_dtheta / norm * C2;
+        C2 = 2.0 * a / norm;            dC2 = 2.0 * da_dtheta / norm * C1;
 
-            ds0_dtheta = - refs.c_eff0 / c_eff * (prev[5] - a * prev[4]) / (prev[3] - a * prev[2]);
-        } else {
-            C1 = 1.0;  dC1 = 0.0;
-            C2 = 0.0;  dC2 = 0.0;
-            ds0_dtheta = - refs.c_eff0 / c_eff * prev[5] / prev[3];
-        }
+        ds0_dtheta = - refs.c_eff0 / c_eff * (prev[5] - a * prev[4]) / (prev[3] - a * prev[2]);
     } else {
-        // Reflection at elevated point
-        zg = atmo::z_reflect;
-        c_eff = atmo::c(0.0, 0.0, zg) + atmo::u(0.0, 0.0, zg) * cos(phi) + atmo::v(0.0, 0.0, zg) * sin(phi);
-        c_eff_diff = atmo::dc(0.0, 0.0, zg, 2) + atmo::du(0.0, 0.0, zg, 2) * cos(phi) + atmo::dv(0.0, 0.0, zg, 2) * sin(phi);
-
         C1 = 1.0;  dC1 = 0.0;
         C2 = 0.0;  dC2 = 0.0;
         ds0_dtheta = - refs.c_eff0 / c_eff * prev[5] / prev[3];
@@ -158,7 +133,6 @@ void geoac::set_refl(double** & solution, int k_end){
 	delete [] prev;
 }
 
-
 //-----------------------------------------------------------------------------------//
 //-------Vary the solver step size, currently uses smaller steps near the ground-----//
 //-----------------------------------------------------------------------------------//
@@ -174,7 +148,7 @@ double geoac::set_ds(double* current_values){
 //-------Update the source functions-----//
 //---------------------------------------//
 void geoac::update_refs(double ray_length, double* current_values){
-    double z_eval = interp::in_interval(current_values[1], atmo::c_spline.x_vals[0], atmo::c_spline.x_vals[atmo::c_spline.length - 1]);
+    double z_eval = interp::in_interval(current_values[1], atmo::c_spline.x_vals[0], atmo::c_spline.x_vals[atmo::c_spline.length_x - 1]);
     double c, dc, ddc, u, du, ddu, v, dv, ddv;
 
     if(calc_amp){
@@ -202,8 +176,8 @@ double geoac::eval_src_eq(double ray_length, double* current_values, int eq_n){
 	double result;
 
 	double nu_r = current_values[2],    nu_z = current_values[3];
-    double c0 = refs.c_eff0, c = refs.c_eff;
-    double dc_dr = 0.0,      dc_dz = refs.dc_eff;
+    double c0 = refs.c_eff0,            c = refs.c_eff;
+    double dc_dr = refs.dc_eff[0],      dc_dz = refs.dc_eff[1];
 
     double R, Z, mu_r, mu_z;
     double ddc_ddr, ddc_ddz, ddc_drdz;
@@ -252,8 +226,7 @@ double geoac::eval_eikonal(double ** solution, int k){
 }
 
 //--------------------------------------------------------------------------//
-//-------Check if ray left propagation region, returned to the ground,------//
-//----------------or reached the partial reflection altitude----------------//
+//-------Check if ray has left propagation region or returned to ground-----//
 //--------------------------------------------------------------------------//
 bool geoac::break_check(double ** & solution, int k){
     if((solution[k][0] > rng_max) || (solution[k][1] > alt_max)){
@@ -267,13 +240,6 @@ bool geoac::ground_check(double ** solution, int k){
         if(solution[k][1] < topo::z(solution[k][0])){
             return true;
         }
-    }
-    return false;
-}
-
-bool geoac::reflect_check(double ** solution, int k){
-    if(solution[k][1] > atmo::z_reflect){
-        return true;
     }
     return false;
 }

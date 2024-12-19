@@ -28,6 +28,8 @@ void geoac::set_limits(){
     
     topo::z0 = atmo::c_spline.x_vals[0];
     alt_max  = atmo::c_spline.x_vals[atmo::c_spline.length - 1];
+
+    atmo::z_reflect = alt_max + 1.0;
 }
 
 //-----------------------------------//

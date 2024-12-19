@@ -20,6 +20,7 @@ namespace  geoac{
     
     bool    break_check(double ** &, int);                      // Check for ray leaving the propagation region
     bool    ground_check(double **, int);                       // Check for ray returning to ground
+    bool    reflect_check(double **, int);                      // Check for ray reaching partial reflection altitude
 
     double  travel_time(double **, int);                                        // Calculate travel time from ray origin to s = ds * index
     void    travel_time(double&, double**, int, int);                           // Increment travel time from ds*k_1 to d2*k_2

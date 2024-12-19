@@ -21,6 +21,8 @@ using namespace std;
 double atmo::gam = 1.4;
 double atmo::R = 287.058;
 
+double atmo::z_reflect = 100.0;
+
 //---------------------------------------------------//
 //---------Functions Defining the Topography---------//
 //--------------For 2D Planar Propgation-------------//
