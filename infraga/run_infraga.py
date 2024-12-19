@@ -892,8 +892,6 @@ def run_2d_refl_eigs(config_file, atmo_file, refl_alt_min, refl_alt_max, refl_al
 @click.option("--min-ds", help="Minimum step size (near-ground) in RK4 solver", default=None)
 @click.option("--max-ds", help="Maximum step size in RK4 solver", default=None)
 @click.option("--max-s", help="Maximum ray length between bounces", default=None)
-@click.option("--refl-alt", help="Partial reflection altitude", default=None)
-
 
 @click.option("--topo-file", help="Terrain file", default=None)
 @click.option("--topo-BL-wind", help="Use terrain corrected boundary layer winds", default=None, type=bool)
