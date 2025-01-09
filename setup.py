@@ -14,7 +14,6 @@ setup(
     packages = ['infraga',
                 'infraga.cli',
                 'infraga.doc',
-                'infraga.resources',
                 'infraga.src',
                 'infraga.src.atmo',
                 'infraga.src.geoac',
