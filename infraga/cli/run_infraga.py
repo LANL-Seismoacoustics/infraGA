@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 from importlib.util import find_spec
 from scipy.interpolate import interp1d
 
-bin_path =  find_spec('infraga').submodule_search_locations[0][:-8] + "/bin/"
+bin_path =  find_spec('infraga').submodule_search_locations[0] + "/bin/"
 
 ###################################
 #                                 #
