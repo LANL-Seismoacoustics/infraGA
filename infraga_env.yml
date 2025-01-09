@@ -1,4 +1,4 @@
-name: infraga_env
+name: infraga_env2
 
 channels:
   - conda-forge
@@ -18,5 +18,5 @@ dependencies:
   - python-wget
 
   - pip:
-    - -e .
+    - git+ssh://git@git.lanl.gov/ees-geophysics/infraga.git@master#egg=infraga
 
