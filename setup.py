@@ -1,19 +1,54 @@
 # -*- coding: utf-8 -*-
 
-from distutils.core import setup
+from distutils.core import setup, Extension
 
 setup(
     name = "infraga",
     license='LANL-MIT',
-    version = '1.0.3',
+    version = '1.1.0',
     description = "A tool for modeling the propagation of infrasound in the limit of geometric acoustics (Python interface).",
     keywords=['infrasound', 'geophysics', 'seismic', 'array'],
     author = "LANL Seismoacoustics Infrasound (LANL-SA) Team",
     author_email = 'pblom@lanl.gov',
 
-    packages = ['infraga'],
+    packages = ['infraga',
+                'infraga.cli',
+                'infraga.doc',
+                'infraga.doc.build',
+                'infraga.doc.build.html',
+                'infraga.doc.build.html._images',
+                'infraga.doc.build.html._sources',
+                'infraga.doc.build.html._static',
+                'infraga.doc.build.html._static._images',
+                'infraga.doc.build.html._static.css',
+                'infraga.doc.build.html._static.css.fonts',
+                'infraga.doc.build.html._static.fonts',
+                'infraga.doc.build.html._static.fonts.Lato',
+                'infraga.doc.build.html._static.fonts.RobotoSlab',
+                'infraga.doc.build.html._static.js',
+                'infraga.src',
+                'infraga.src.atmo',
+                'infraga.src.geoac',
+                'infraga.src.util'],
 
-    entry_points = {'console_scripts':['infraga=infraga.__main__:main']},
+    package_data={'infraga': ['makefile'],
+                  'infraga.doc.build.html' : ['*'],
+                  'infraga.doc.build.html._images' : ['*'],
+                  'infraga.doc.build.html._sources' : ['*'],
+                  'infraga.doc.build.html._static' : ['*'],
+                  'infraga.doc.build.html._static._images' : ['*'],
+                  'infraga.doc.build.html._static.css' : ['*'],
+                  'infraga.doc.build.html._static.css.fonts' : ['*'],
+                  'infraga.doc.build.html._static.fonts' : ['*'],
+                  'infraga.doc.build.html._static.fonts.Lato' : ['*'],
+                  'infraga.doc.build.html._static.fonts.RobotSlab' : ['*'],
+                  'infraga.doc.build.html._static.js' : ['*'],
+                  'infraga.src' : ['*.cpp'],
+                  'infraga.src.atmo' : ['*.cpp', '*.h'],
+                  'infraga.src.geoac' : ['*.cpp', '*.h'],
+                  'infraga.src.util' : ['*.cpp', '*.h']},
+
+    entry_points = {'console_scripts':['infraga=infraga.cli.__main__:main']},
 
     install_requires = ['cartopy',
                         'click',

@@ -23,7 +23,28 @@ import matplotlib.pyplot as plt
 from importlib.util import find_spec
 from scipy.interpolate import interp1d
 
-bin_path =  find_spec('infraga').submodule_search_locations[0][:-8] + "/bin/"
+bin_path =  find_spec('infraga').submodule_search_locations[0] + "/bin/"
+
+def check_compile_status():
+
+    check = True
+    if not os.path.isdir(bin_path):
+        check = False
+    
+    for infraga_method in ["infraga-2d", "infraga-3d", "infraga-sph", "infraga-3d-rngdep", "infraga-sph-rngdep"]:
+        if not os.path.isfile(bin_path + infraga_method):
+            check = False 
+
+    if not check:
+        print('\ninfraGA C/C++ methods not compiled.')
+        print("  Compile methods using 'infraga compile'")
+        print("  Alternately, run makefile manually:")
+        print("    make -C " + bin_path[:-5])
+        print("    make accel -C " + bin_path[:-5] + '\n')
+        return False
+    else:
+        return True
+
 
 ###################################
 #                                 #
@@ -203,6 +224,9 @@ def run_2d_prop(config_file, atmo_file, incl_min, incl_max, incl_step, inclinati
     \t infraga 2d prop --atmo-file ToyAtmo.met --config-file example.cnfg
     '''
 
+    if not check_compile_status():
+        return 
+
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
         if os.path.isfile(config_file):
@@ -353,6 +377,9 @@ def run_2d_wvfrm(config_file, atmo_file, inclination, azimuth, bounces, src_alt,
     \t infraga 2d wnl_wvfrm --atmo-file ToyAtmo.met --inclination 12.0 --azimuth -90.0 --wvfrm-p0 500.0
     \t infraga 2d wnl_wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
     '''
+
+    if not check_compile_status():
+        return 
 
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
@@ -545,6 +572,9 @@ def run_2d_refl_eigs(config_file, atmo_file, refl_alt_min, refl_alt_max, refl_al
     Examples:
     \t infraga 2d refl_eigs --atmo-file ToyAtmo.met --rcvr-rng 140.0 --rcvr-az -90.0 --wvfrm-yield 1.0e3 --local-temp-dir refl_temp
     '''
+
+    if not check_compile_status():
+        return 
 
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
@@ -911,6 +941,9 @@ def run_3d_prop(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, i
 
     '''
 
+    if not check_compile_status():
+        return 
+
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
         if os.path.isfile(config_file):
@@ -1120,6 +1153,9 @@ def run_3d_eig(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_min, in
 
     '''
 
+    if not check_compile_status():
+        return 
+
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
         if os.path.isfile(config_file):
@@ -1326,6 +1362,9 @@ def run_3d_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, inclinatio
     \t infraga 3d wnl_wvfrm --atmo-file ToyAtmo.met --inclination 4.1314876 --azimuth -84.969455 --bounces 1 --wvfrm-p0 500.0
     \t infraga 3d wnl_wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
     '''
+
+    if not check_compile_status():
+        return 
 
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
@@ -1559,6 +1598,10 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
     \t infraga 3d eig_wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
 
     '''
+    
+    if not check_compile_status():
+        return 
+
 
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
@@ -2082,6 +2125,9 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
     
     '''
 
+    if not check_compile_status():
+        return 
+
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
         if os.path.isfile(config_file):
@@ -2291,6 +2337,9 @@ def run_sph_eig(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl_
 
     '''
 
+    if not check_compile_status():
+        return 
+
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
         if os.path.isfile(config_file):
@@ -2498,6 +2547,9 @@ def run_sph_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, inc
     \t infraga sph wnl_wvfrm --atmo-file ToyAtmo.met --src-lat 30.0 --src-lon -100.0 --inclination 4.1314876 --azimuth -84.969455 --bounces 1 --wvfrm-yield 10e3
     \t infraga sph wnl_wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
     '''
+
+    if not check_compile_status():
+        return 
 
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
@@ -2732,6 +2784,9 @@ def run_sph_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons,
     \t infraga sph eig_wvfrm --atmo-file ToyAtmo.met --config-file example.cnfg
 
     '''
+
+    if not check_compile_status():
+        return 
 
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
@@ -3254,6 +3309,9 @@ def run_sph_supersonic(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons
 
     '''
 
+    if not check_compile_status():
+        return 
+        
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
         if os.path.isfile(config_file):

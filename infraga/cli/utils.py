@@ -16,8 +16,10 @@ import sys
 import wget
 import fnmatch
 import subprocess
+import shlex
+import webbrowser
 
-from importlib.util import find_spec, spec_from_file_location 
+from importlib.util import find_spec 
 
 import numpy as np
 
@@ -34,12 +36,42 @@ from netCDF4 import Dataset
 
 sph_proj = Geod(ellps='sphere')
 
+pkg_loc = find_spec('infraga').submodule_search_locations[0]
+
 def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
     # call this function to initialize the use of offline maps.  turn_on will initialize the pre_existing_data_directory
     if turn_on:
         cartopy.config['pre_existing_data_dir'] = pre_existing_data_dir
     else:
         cartopy.config['pre_existing_data_dir'] = ""
+
+
+#######################
+##    Open Manual    ##
+#######################
+
+@click.command('doc', short_help="Open infraGA manual")
+def open_doc():
+
+    filename = (pkg_loc + '/doc/build/html/index.html')
+    print(filename)
+    
+    webbrowser.open('file://' + os.path.realpath(filename), new=2)
+
+
+##################################
+##    Compile the C/C++ Code    ##
+##################################
+@click.command('compile', short_help="Compile (or re-compile) the C/C++ methods")
+def compile():
+
+    subprocess.run(shlex.split("make -C " + pkg_loc), shell=False)
+
+    try:
+        subprocess.check_output(["mpicc", "--version"], stderr=subprocess.STDOUT)
+        subprocess.run(shlex.split("make accel -C " + pkg_loc), shell=False)
+    except subprocess.CalledProcessError:
+        print('OpenMPI compiler not found. \n  Cannot compile accelerated infraga methods.')
 
 
 ################################
@@ -224,13 +256,13 @@ def interp_etopo(ll_corner, ur_corner):
                 of the upper-right corner of the region
 
         Returns:
-        elev_interp : scipy.interpolate.interp2d
+        elev_interp : scipy.interpolate.RegularGridInterpolator
             A 2d interpolation of the elevation within 
                 the specified region
     """
 
     # load etopo_file and extract grid information
-    etopo1 = Dataset(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd")
+    etopo1 = Dataset(find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd")
     grid_lons = etopo1.variables['x'][:]
     grid_lats = etopo1.variables['y'][:]
     grid_elev = etopo1.variables['z'][:]
@@ -245,7 +277,7 @@ def interp_etopo(ll_corner, ur_corner):
     # Change underwater values to sea surface
     region_elev[region_elev < 0.0] = 0.0
 
-    return interpolate.interp2d(region_lon, region_lat, region_elev / 1000.0, kind='linear')
+    return interpolate.RegularGridInterpolator((region_lat, region_lon), region_elev / 1000.0)
 
 
 def extract_single(ecmwf_file, lat, lon, output):
@@ -390,7 +422,7 @@ def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, outp
 
     '''
 
-    if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
+    if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd"):
         if option == "single":
             extract_single(ecmwf_file, lat1, lon1, output_path)
         else:
@@ -398,8 +430,11 @@ def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, outp
     else:
         print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
         download_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
-        destination = find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd.gz"
+        destination = find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd.gz"
         try:
+            if not os.path.isdir(os.path.split(destination)[0]):
+                os.mkdir(os.path.split(destination)[0])
+
             wget.download(download_url, destination)
             print("Extracting...")
             os.system("gzip -d " + destination)
@@ -463,7 +498,7 @@ def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=1.852, show_fig=True):
     print('#% z, km', file=output)
     for n in range(N):
         print(sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0, file=output, end='\t')
-        print(elev_interp(line_pnts[n][0], line_pnts[n][1])[0], file=output)
+        print(elev_interp((line_pnts[n][1], line_pnts[n][0])), file=output)
     output.close()
 
     if show_fig:
@@ -474,7 +509,7 @@ def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=1.852, show_fig=True):
 
         for n in range(N_highres):
             rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
-            elev_vals[n] = elev_interp(line_pnts[n][0], line_pnts[n][1])[0]
+            elev_vals[n] = elev_interp((line_pnts[n][1], line_pnts[n][0]))
 
         plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.25')
         plt.xlabel("Range [km]")
@@ -533,10 +568,10 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852, show_fig=True):
     print('#% r, km', file=output)
     print('#% z, km', file=output)
 
-    print(0.0, '\t', elev_interp(src_loc[0], src_loc[1])[0], file=output)
+    print(0.0, '\t', elev_interp((src_loc[0], src_loc[1])), file=output)
     for n in range(N):
         print(sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0, file=output, end='\t')
-        print(elev_interp(line_pnts[n][0], line_pnts[n][1])[0], file=output)
+        print(elev_interp((line_pnts[n][1], line_pnts[n][0])), file=output)
     output.close()
 
     if show_fig:
@@ -547,7 +582,7 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852, show_fig=True):
 
         for n in range(N):
             rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
-            elev_vals[n] = elev_interp(line_pnts[n][0], line_pnts[n][1])[0]
+            elev_vals[n] = elev_interp((line_pnts[n][1], line_pnts[n][0]))
     
         plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.25')
         plt.xlabel("Range [km]")
@@ -617,10 +652,10 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=1.852, show_fig
         print('#% r, km', file=output)
         print('#% z, km', file=output)
 
-        print(0.0, '\t', elev_interp(src_loc[0], src_loc[1])[0], file=output)
+        print(0.0, '\t', elev_interp((src_loc[0], src_loc[1])), file=output)
         for n in range(N):
             print(sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0, file=output, end='\t')
-            print(elev_interp(line_pnts[n][0], line_pnts[n][1])[0], file=output)
+            print(elev_interp((line_pnts[n][1], line_pnts[n][0])), file=output)
         output.close()
 
         if show_fig:
@@ -631,7 +666,7 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=1.852, show_fig
 
             for n in range(N):
                 rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
-                elev_vals[n] = elev_interp(line_pnts[n][0], line_pnts[n][1])[0]
+                elev_vals[n] = elev_interp((line_pnts[n][1], line_pnts[n][0]))
         
             plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.25')
             plt.xlabel("Range [km]")
@@ -697,7 +732,7 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852, show_fig=
     for n in range(len(x_vals)):
         for m in range(len(y_vals)):
             pnt = sph_proj.fwd(src_loc[1], src_loc[0], np.degrees(np.arctan2(x_vals[n], y_vals[m])), np.sqrt(x_vals[n]**2 + y_vals[m]**2) * 1.0e3, radians=False)
-            xy_elev[n][m] = elev_interp(pnt[0], pnt[1])
+            xy_elev[n][m] = elev_interp((pnt[1], pnt[0]))
             print(x_vals[n], y_vals[m], xy_elev[n][m], file=output)
     output.close()
 
@@ -733,7 +768,7 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
     print(" to " + str(ur_corner[0]) + ", " + str(ur_corner[1]))
 
     # load etopo_file and extract grid information
-    etopo1 = Dataset(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd")
+    etopo1 = Dataset(find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd")
     grid_lons = etopo1.variables['x'][:]
     grid_lats = etopo1.variables['y'][:]
     grid_elev = etopo1.variables['z'][:]
@@ -817,8 +852,8 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
 @click.option("--lon1", help="Longitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=-110.0)
 @click.option("--lat2", help="Latitude of second point (end point for 'pnt2pnt', upper-right corner for grids)", default=30.0)
 @click.option("--lon2", help="Longitude of second point (end point for 'pnt2pnt', upper-right corner for grids)", default=-114.0)
-@click.option("--ref-lat", help="Reference latitude of second point (0.0 for xy-grid option)", default=None)
-@click.option("--ref-lon", help="Reference longitude of second point (0.0 for xy-grid option)", default=None)
+@click.option("--ref-lat", help="Reference latitude of second point (0.0 for xy-grid option)", default=None, type=float)
+@click.option("--ref-lon", help="Reference longitude of second point (0.0 for xy-grid option)", default=None, type=float)
 @click.option("--azimuth", help="Azimuth of great circle path for line option", default=-90.0)
 @click.option("--range", help="Great circle distance for line option", default=1000.0)
 @click.option("--output-file", help="Output file", prompt="Specify output file: ")
@@ -849,7 +884,7 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
     if ref_lon is None:
         ref_lon = lon1
 
-    if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd"):
+    if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd"):
         if geom == "line":
             pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_terrain)
         elif geom == "pnt2pnt":
@@ -865,8 +900,11 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
     else:
         print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
         download_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
-        destination = find_spec('infraga').submodule_search_locations[0] + "/ETOPO1_Ice_g_gmt4.grd.gz"
+        destination = find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd.gz"
         try:
+            if not os.path.isdir(os.path.split(destination)[0]):
+                os.mkdir(os.path.split(destination)[0])
+
             wget.download(download_url, destination)
             print("Extracting...")
             os.system("gzip -d " + destination)

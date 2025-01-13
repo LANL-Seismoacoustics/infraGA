@@ -66,6 +66,9 @@ main.add_command(run_sph)
 main.add_command(plot)
 main.add_command(utils)
 
+main.add_command(infraga_utils.open_doc)
+main.add_command(infraga_utils.compile)
+
 run_2d.add_command(run_infraga.run_2d_prop)
 run_2d.add_command(run_infraga.run_2d_wvfrm)
 run_2d.add_command(run_infraga.run_2d_refl_eigs)
@@ -87,7 +90,7 @@ plot.add_command(plotting.plot_eigenrays)
 plot.add_command(plotting.plot_eig_wvfrm)
 plot.add_command(plotting.plot_map)
 plot.add_command(plotting.plot_animation)
-    
+
 utils.add_command(infraga_utils.build_g2s_grid)
 utils.add_command(infraga_utils.extract_ecmwf)
 utils.add_command(infraga_utils.extract_terrain)
