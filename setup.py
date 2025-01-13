@@ -5,7 +5,7 @@ from distutils.core import setup, Extension
 setup(
     name = "infraga",
     license='LANL-MIT',
-    version = '1.1.0',
+    version = '1.2.0',
     description = "A tool for modeling the propagation of infrasound in the limit of geometric acoustics (Python interface).",
     keywords=['infrasound', 'geophysics', 'seismic', 'array'],
     author = "LANL Seismoacoustics Infrasound (LANL-SA) Team",
