@@ -37,9 +37,10 @@ def check_compile_status():
 
     if not check:
         print('\ninfraGA C/C++ methods not compiled.')
-        print("  Compile methods using 'infraga utils compile'")
-        print("  Alternately, run makefile manually: make -C " + bin_path[:-5])
-        print("    For OpenMPI methods, manual makefile also requires: make accel -C " + bin_path[:-5] + '\n')
+        print("  Compile methods using 'infraga compile'")
+        print("  Alternately, run makefile manually:")
+        print("    make -C " + bin_path[:-5])
+        print("    make accel -C " + bin_path[:-5] + '\n')
         return False
     else:
         return True

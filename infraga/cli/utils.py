@@ -17,8 +17,9 @@ import wget
 import fnmatch
 import subprocess
 import shlex
+import webbrowser
 
-from importlib.util import find_spec, spec_from_file_location 
+from importlib.util import find_spec 
 
 import numpy as np
 
@@ -35,6 +36,8 @@ from netCDF4 import Dataset
 
 sph_proj = Geod(ellps='sphere')
 
+pkg_loc = find_spec('infraga').submodule_search_locations[0]
+
 def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
     # call this function to initialize the use of offline maps.  turn_on will initialize the pre_existing_data_directory
     if turn_on:
@@ -43,13 +46,25 @@ def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
         cartopy.config['pre_existing_data_dir'] = ""
 
 
+#######################
+##    Open Manual    ##
+#######################
+
+@click.command('doc', short_help="Open infraGA manual")
+def open_doc():
+
+    filename = (pkg_loc + '/doc/build/html/index.html')
+    print(filename)
+    
+    webbrowser.open('file://' + os.path.realpath(filename), new=2)
+
+
 ##################################
 ##    Compile the C/C++ Code    ##
 ##################################
 @click.command('compile', short_help="Compile (or re-compile) the C/C++ methods")
 def compile():
 
-    pkg_loc = find_spec('infraga').submodule_search_locations[0]
     subprocess.run(shlex.split("make -C " + pkg_loc), shell=False)
 
     try:
