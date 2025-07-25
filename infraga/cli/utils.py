@@ -448,7 +448,7 @@ def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, outp
         except:
             print("Download failed.")
             print("Try manual download: " + download_url)
-            print("Place file in /path/to/infraGA/infraga/ (here .py files are located)")
+            print("Place extracted .grd file in " + find_spec('infraga').submodule_search_locations[0] + "/resources/")
 
 
 ################################
@@ -901,6 +901,8 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
         print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
         download_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
         destination = find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd.gz"
+        wget.download(download_url, destination)
+
         try:
             if not os.path.isdir(os.path.split(destination)[0]):
                 os.mkdir(os.path.split(destination)[0])
@@ -925,9 +927,7 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
         except:
             print("Download failed.")
             print("Try manual download: " + download_url)
-            print("Place file in /path/to/infraGA/infraga/ (here .py files are located)")
-
-
+            print("Place extracted .grd file in " + find_spec('infraga').submodule_search_locations[0] + "/resources/")
 
 
 @click.command('nearby-arrivals', short_help="Identify arrivals neary a specified receiver")
