@@ -177,9 +177,9 @@ void geoac::set_refl(double** & solution, int k_end){
         dnu_th_ds = refs.c0 / c_grnd * atmo::dc(rg, prev[1], prev[2], 1) + prev[3] * atmo::dw(rg, prev[1], prev[2], 1) + prev[4] * atmo::dv(rg, prev[1], prev[2], 1) + prev[5] * atmo::du(rg, prev[1], prev[2], 1);
         dnu_ph_ds = refs.c0 / c_grnd * atmo::dc(rg, prev[1], prev[2], 2) + prev[3] * atmo::dw(rg, prev[1], prev[2], 2) + prev[4] * atmo::dv(rg, prev[1], prev[2], 2) + prev[5] * atmo::du(rg, prev[1], prev[2], 2);
         
-        dnu_r_ds  += pow(c_grnd, 2) / refs.c0 * 1.0 / rg * (pow(prev[4], 2) + pow(prev[5], 2));
-        dnu_th_ds -= pow(c_grnd, 2) / refs.c0 * (prev[3] * prev[4] + tan(prev[1]) * pow(prev[5], 2));
-        dnu_ph_ds -= pow(c_grnd, 2) / refs.c0 * prev[5] * (prev[3] * cos(prev[1]) + prev[4] * sin(prev[1]));
+        dnu_r_ds  -= (pow(c_grnd, 2) / refs.c0) * (1.0 / rg) * (pow(prev[4], 2) + pow(prev[5], 2));
+        dnu_th_ds += (pow(c_grnd, 2) / refs.c0) * (prev[3] * prev[4] + pow(prev[5], 2) * tan(prev[1]));
+        dnu_ph_ds += (pow(c_grnd, 2) / refs.c0) * prev[5] * (prev[3] * cos(prev[1]) - prev[4] * sin(prev[1]));
         
         dnu_r_ds *= - 1.0 / c_grnd;
         dnu_th_ds *= - 1.0 / (c_grnd * rg);
@@ -352,15 +352,18 @@ void geoac::update_refs(double ray_length, double* current_values){
         refs.dG[1][0] = -R_lt[0] / (pow(r, 2));                                                     refs.dG[1][1] = -R_lp[0] / (pow(r,2));
         refs.dG[2][0] = -R_lt[0] / (pow(r, 2) * cos(t)) + sin(t) / (r * pow(cos(t),2)) * R_lt[1];   refs.dG[2][1] = -R_lp[0] / (pow(r,2) * cos(t)) + sin(t) / (r * pow(cos(t),2)) * R_lp[1];
         
+        // refs.T[0] = - 1.0 / r * (nu[1] * refs.c_gr[1] + nu[2] * refs.c_gr[2]);
         refs.dT[0][0] = R_lt[0] / pow(r, 2) * (nu[1] * refs.c_gr[1] + nu[2] * refs.c_gr[2]) - (1.0 / r) * (mu_lt[1] * refs.c_gr[1] + nu[1] * refs.dc_gr[1][0] + mu_lt[2] * refs.c_gr[2] + nu[2] * refs.dc_gr[2][0]);
         refs.dT[0][1] = R_lp[0] / pow(r, 2) * (nu[1] * refs.c_gr[1] + nu[2] * refs.c_gr[2]) - (1.0 / r) * (mu_lp[1] * refs.c_gr[1] + nu[1] * refs.dc_gr[1][1] + mu_lp[2] * refs.c_gr[2] + nu[2] * refs.dc_gr[2][1]);
 
-        refs.dT[1][0] = (mu_lt[0] * refs.v + nu[0] * refs.dv[3] - mu_lt[1] * refs.w - nu[1] * refs.dw[3]);
-        refs.dT[1][1] = (mu_lp[0] * refs.v + nu[0] * refs.dv[4] - mu_lp[1] * refs.w - nu[1] * refs.dw[4]);
+        // refs.T[1] = (nu[0] * refs.v - nu[1] * refs.w) + nu[0] * refs.c_gr[1] + nu[2] * refs.c_gr[2] * tan(t);
+        refs.dT[1][0] = (mu_lt[0] * refs.v + nu[0] * refs.dv[3] - mu_lt[1] * refs.w - nu[1] * refs.dw[3]) + mu_lt[0] * refs.c_gr[1] + nu[0] * refs.dc_gr[1][0];
+        refs.dT[1][1] = (mu_lp[0] * refs.v + nu[0] * refs.dv[4] - mu_lp[1] * refs.w - nu[1] * refs.dw[4]) + mu_lp[0] * refs.c_gr[1] + nu[0] * refs.dc_gr[1][1];
 
-        refs.dT[1][0] += mu_lt[0] * refs.c_gr[1] + nu[0] * refs.dc_gr[1][0] + (mu_lt[2] * refs.c_gr[2] + nu[2] * refs.dc_gr[2][0]) * tan(t) + nu[2] * refs.c_gr[2] * R_lt[1] / pow(cos(t), 2);
-        refs.dT[1][1] += mu_lp[0] * refs.c_gr[1] + nu[0] * refs.dc_gr[1][1] + (mu_lp[2] * refs.c_gr[2] + nu[2] * refs.dc_gr[2][1]) * tan(t) + nu[2] * refs.c_gr[2] * R_lp[1] / pow(cos(t), 2);
+        refs.dT[1][0] += (mu_lt[2] * refs.c_gr[2] + nu[2] * refs.dc_gr[2][0]) * tan(t) + nu[2] * refs.c_gr[2] * R_lt[1] / pow(cos(t), 2);
+        refs.dT[1][1] += (mu_lp[2] * refs.c_gr[2] + nu[2] * refs.dc_gr[2][1]) * tan(t) + nu[2] * refs.c_gr[2] * R_lp[1] / pow(cos(t), 2);
 
+        // refs.T[2] = (nu[0] * refs.u - nu[2] * refs.w) * cos(t) + (nu[1] * refs.u - nu[2] * refs.v) * sin(t) + refs.c_gr[2] * (nu[0] * cos(t) - nu[1] * sin(t));
         refs.dT[2][0] = (mu_lt[0] * refs.u + nu[0] * refs.du[3] - mu_lt[2] * refs.w - nu[2] * refs.dw[3]) * cos(t) - (nu[0] * refs.u - nu[2] * refs.w) * R_lt[1] * sin(t);
         refs.dT[2][1] = (mu_lp[0] * refs.u + nu[0] * refs.du[4] - mu_lp[2] * refs.w - nu[2] * refs.dw[4]) * cos(t) - (nu[0] * refs.u - nu[2] * refs.w) * R_lp[1] * sin(t);
 
