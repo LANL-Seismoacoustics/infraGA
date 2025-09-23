@@ -917,7 +917,7 @@ double geoac::wnl_wvfrm(double** solution, double** & u, int k1, int k2, double 
         ray_ph.x_vals[k] = s;   ray_ph.f_vals[k] = solution[k1 + k][2];
 
         D.x_vals[k] = s;        D.f_vals[k] = jacobian(solution, k1 + k);
-        beta.x_vals[k] = s;     beta.f_vals[k] = beta0 * sqrt(fabs((D0 * rho0 * pow(cg0, 3)) / (D.f_vals[k] * rho * pow(c, 3)) * (c * pow(nu, 3)) / (c0 * pow(nu0, 3))));
+        beta.x_vals[k] = s;     beta.f_vals[k] = beta0 * sqrt(fabs((D0 * rho0 * pow(cg0, 3)) / (D.f_vals[k] * rho * pow(cg, 3)) * (c * pow(nu, 3)) / (c0 * pow(nu0, 3))));
 
         beta_caustic.x_vals[k] = s;
         if(k < 1){  beta_caustic.f_vals[k] = 0.0;}
