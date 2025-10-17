@@ -2065,6 +2065,20 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
 ##   Python CLI for infraga-sph   ##
 ##                                ##
 ####################################
+def _extract_loc_from_header(file_name):
+    with open(file_name, 'r') as file:
+        for line in file:
+            if "# Location = [" in line:
+                lat, lon = [float(item) for item in line.split("[")[1].split("]")[0].split(",")]
+            elif "# Ground Height" in line:
+                z_grnd = float(line.split("=")[-1][:-3])
+
+            if "# The following" in line:
+                break
+
+    return lat, lon, z_grnd
+
+
 @click.command('prop', short_help="Run a point source propagation simulation")
 @click.option("--config-file", help="Configuration file for simulation", default=None)
 @click.option("--atmo-file", help="Atmosphere file", default=None)
@@ -2127,6 +2141,11 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
 
     if not check_compile_status():
         return 
+
+    if atmo_file is not None:
+        g2s_lat, g2s_lon, g2s_z_grnd = _extract_loc_from_header(atmo_file)
+    else:
+        g2s_lat, g2s_lon, g2s_z_grnd = _extract_loc_from_header(atmo_prefix + "0.met")
 
     if config_file:
         click.echo('\n' + "Loading configuration info from: " + config_file)
@@ -2207,6 +2226,16 @@ def run_sph_prop(config_file, atmo_file, atmo_prefix, grid_lats, grid_lons, incl
     else:
         click.echo("Simulation requires either an '--atmo-file' or --atmo-prefix' with grid info (--grid-lats and --grid-lons)")
         return 0
+
+    # If not specified in CLI or config file, use G2S header location
+    if src_lat is None:
+        src_lat = str(g2s_lat)
+    
+    if src_lon is None:
+        src_lon = str(g2s_lon)
+
+    if z_grnd is None:
+        z_grnd = str(g2s_z_grnd)
 
     # Set parameters
     command = set_param(command, incl_min, "incl_min")

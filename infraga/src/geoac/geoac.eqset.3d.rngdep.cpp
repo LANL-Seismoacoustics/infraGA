@@ -803,9 +803,9 @@ double geoac::wnl_wvfrm(double** solution, double** & u, int k1, int k2, double 
 
         double nu = sqrt(pow(solution[k1 + k][3], 2) + pow(solution[k1 + k][4], 2) + pow(solution[k1 + k][5], 2));
 
-        double cg_x = c * solution[k1 + k][3] / nu * atmo::u(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
-        double cg_y = c * solution[k1 + k][4] / nu * atmo::v(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
-        double cg_z = c * solution[k1 + k][5] / nu * atmo::w(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
+        double cg_x = c * solution[k1 + k][3] / nu + atmo::u(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
+        double cg_y = c * solution[k1 + k][4] / nu + atmo::v(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
+        double cg_z = c * solution[k1 + k][5] / nu + atmo::w(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
         double cg = sqrt(pow(cg_x, 2) + pow(cg_y, 2) + pow(cg_z, 2));
 
         ray_x.x_vals[k] = s;    ray_x.f_vals[k] = solution[k1 + k][0];

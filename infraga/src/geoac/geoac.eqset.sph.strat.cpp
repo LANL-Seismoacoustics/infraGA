@@ -910,9 +910,9 @@ double geoac::wnl_wvfrm(double** solution, double** & u, int k1, int k2, double 
 
         double nu = sqrt(pow(solution[k1 + k][3], 2) + pow(solution[k1 + k][4], 2) + pow(solution[k1 + k][5], 2));
 
-        double cg_r  = c * solution[k1 + k][3] / nu * atmo::w(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
-        double cg_th = c * solution[k1 + k][4] / nu * atmo::v(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
-        double cg_ph = c * solution[k1 + k][5] / nu * atmo::u(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
+        double cg_r  = c * solution[k1 + k][3] / nu + atmo::w(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
+        double cg_th = c * solution[k1 + k][4] / nu + atmo::v(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
+        double cg_ph = c * solution[k1 + k][5] / nu + atmo::u(solution[k1 + k][0], solution[k1 + k][1], solution[k1 + k][2]);
         double cg = sqrt(pow(cg_r, 2) + pow(cg_th, 2) + pow(cg_ph, 2));
 
         ray_r.x_vals[k] = s;    ray_r.f_vals[k] = solution[k1 + k][0];
@@ -979,7 +979,7 @@ double geoac::wnl_wvfrm(double** solution, double** & u, int k1, int k2, double 
         U[n][1] = fft_spec[n][1];
     }
 
-    Uf_max = 0.0;
+    Uf_max = 0.0; 
     for(int n = 0; n < fft_len; n++){
         Uf_max = max(Uf_max, (1.0 / dt * n / wvfrm::len) * sqrt(pow(U[n][0], 2) + pow(U[n][1], 2)));
     }
