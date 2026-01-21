@@ -1026,9 +1026,9 @@ def nearby_arrivals(arrivals, rcvr_lat, rcvr_lon, dr_tolerance, arrival_toleranc
 
 
 @click.command('normal-projection', short_help="Compute normal vectors to terrain into launch angles")
-@click.option("--lat", help="Latitude of source region center", default=30.0)
-@click.option("--lon", help="Longitude of source region center", default=-110.0)
-@click.option("--radius", help="Radius of source region [km]", default=10.0)
+@click.option("--lat", help="Latitude of source region center", default=41.30)
+@click.option("--lon", help="Longitude of source region center", default=129.08)
+@click.option("--radius", help="Radius of source region [km]", default=20.0)
 @click.option("--output-file", help="Output file", prompt="Specify output file: ")
 @click.option("--show-fig", help="Visualize results", default=True)
 @click.option("--offline-maps-dir", help="Use directory for offline cartopy maps", default=None)
@@ -1038,7 +1038,7 @@ def normal_projection(lat, lon, radius, output_file, show_fig, offline_maps_dir)
 
     \b
     Examples:
-    \t infraga utils normal-projection --lat1 39.9 --lon1 -105.8 --lat2 40.2 --lon2 -105.4 --output-file norm_proj.dat
+    \t infraga utils normal-projection --lat 41.3 --lon 129.08 --radius 20.0 --output-file norm_proj.dat
 
     '''
 
@@ -1075,30 +1075,23 @@ def normal_projection(lat, lon, radius, output_file, show_fig, offline_maps_dir)
         region_elev = grid_elev[lat_mask,:][:,lon_mask]
 
         LON, LAT = np.meshgrid(region_lon, region_lat)
-        dx = 6371.0 * np.cos(np.radians(LAT)) * np.radians(np.gradient(LON, axis=1))
+        dx = 6371.0 * np.sin(np.radians(LAT)) * np.radians(np.gradient(LON, axis=1))
         dy = 6371.0 * np.radians(np.gradient(LAT, axis=0))
 
         dzdx = np.gradient(region_elev / 1.0e3, axis=1) / dx
         dzdy = np.gradient(region_elev / 1.0e3, axis=0) / dy
 
-
         vec_norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
-        vec_h = np.sqrt(dzdx**2 + dzdy**2) / vec_norm
-        vec_z = 1.0 / vec_norm
 
-        phi = np.degrees(np.arctan2(dzdy, dzdx))
+        phi = np.degrees(np.arctan2(-dzdx, -dzdy))
         theta = np.degrees(np.arctan(1.0 / np.sqrt(dzdx**2 + dzdy**2)))
-
-        print(np.mean(theta))
-        print(np.std(theta))
-        print(np.min(theta))
 
         if show_fig:
             print("Plotting terrain on map...")
             map_proj = cartopy.crs.PlateCarree()
 
-            fig = plt.figure()
-            ax1 = fig.add_subplot(1, 3, 1, projection=map_proj)
+            fig = plt.figure(figsize=(12, 5))
+            ax1 = fig.add_subplot(1, 2, 1, projection=map_proj)
 
             ax1.set_xlim(ll_corner[1], ur_corner[1])
             ax1.set_ylim(ll_corner[0], ur_corner[0])
@@ -1127,6 +1120,7 @@ def normal_projection(lat, lon, radius, output_file, show_fig, offline_maps_dir)
             ax1.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
 
             cmesh = ax1.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, transform=map_proj, vmin=-1.4, vmax=5.0)
+            ax1.quiver(LON, LAT, -dzdx / vec_norm, -dzdy / vec_norm, transform=map_proj)
 
             divider = make_axes_locatable(ax1)
             ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
@@ -1135,17 +1129,22 @@ def normal_projection(lat, lon, radius, output_file, show_fig, offline_maps_dir)
             cbar.set_label('Elevation [km]')
 
 
-            ax2 = fig.add_subplot(1, 3, 2, projection=map_proj)
-            # val_max = np.max(abs(dzdx))
-            # ax2.pcolormesh(LON, LAT, dzdx, cmap=plt.cm.seismic, transform=map_proj, vmin=-val_max, vmax=val_max)
-            ax2.pcolormesh(LON, LAT, phi, cmap=plt.cm.jet, transform=map_proj, vmin=-180.0, vmax=180.0)
+            # ax2 = fig.add_subplot(1, 2, 2, projection=map_proj, sharex=ax1, sharey=ax1)
+            # ax2.pcolormesh(LON, LAT, theta, cmap=plt.cm.jet, transform=map_proj)
 
+            ax2 = fig.add_subplot(1, 2, 2, projection='polar')
+            ax2.set_theta_zero_location("N")
+            ax2.set_theta_direction(-1)
 
-            ax3 = fig.add_subplot(1, 3, 3, projection=map_proj)
-            # val_max = np.max(abs(dzdy))
-            # ax3.pcolormesh(LON, LAT, dzdy, cmap=plt.cm.seismic, transform=map_proj, vmin=-val_max, vmax=val_max)
-            ax3.pcolormesh(LON, LAT, theta, cmap=plt.cm.jet, transform=map_proj, vmin=0.0, vmax=90.0)
+            ax2.set_xticks(np.linspace(0, 2 * np.pi, 4, endpoint=False))
+            ax2.set_xticklabels(['N', 'E', 'S', 'W'])
 
+            incl_min = 15.0 * np.floor(np.min(theta) / 15.0)
+
+            ax2.set_ylim(90.0, incl_min)
+            ax2.set_yticks(np.arange(incl_min, 90.0, 15.0))
+
+            ax2.plot(np.radians(phi), theta, marker='.', linestyle='none', color='maroon', markersize=2.0)
 
             plt.show()               
 
