@@ -31,7 +31,8 @@ import cartopy
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 from pyproj import Geod
-from scipy import interpolate
+from scipy import interpolate, stats
+
 from netCDF4 import Dataset
 
 sph_proj = Geod(ellps='sphere')
@@ -1029,10 +1030,11 @@ def nearby_arrivals(arrivals, rcvr_lat, rcvr_lon, dr_tolerance, arrival_toleranc
 @click.option("--lat", help="Latitude of source region center", default=41.30)
 @click.option("--lon", help="Longitude of source region center", default=129.08)
 @click.option("--radius", help="Radius of source region [km]", default=20.0)
+@click.option("--steepening", help="Steepening percentage [%] (default 50)", default=50.0)
 @click.option("--output-file", help="Output file", prompt="Specify output file: ")
 @click.option("--show-fig", help="Visualize results", default=True)
 @click.option("--offline-maps-dir", help="Use directory for offline cartopy maps", default=None)
-def normal_projection(lat, lon, radius, output_file, show_fig, offline_maps_dir):
+def normal_projection(lat, lon, radius, steepening, output_file, show_fig, offline_maps_dir):
     '''
     Extract lines or grids of terrain information from an ETOPO1 file
 
@@ -1044,10 +1046,6 @@ def normal_projection(lat, lon, radius, output_file, show_fig, offline_maps_dir)
 
     if offline_maps_dir is not None:
         use_offline_maps(offline_maps_dir)
-
-
-
-
 
     if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd"):
 
@@ -1075,22 +1073,42 @@ def normal_projection(lat, lon, radius, output_file, show_fig, offline_maps_dir)
         region_elev = grid_elev[lat_mask,:][:,lon_mask]
 
         LON, LAT = np.meshgrid(region_lon, region_lat)
-        dx = 6371.0 * np.sin(np.radians(LAT)) * np.radians(np.gradient(LON, axis=1))
-        dy = 6371.0 * np.radians(np.gradient(LAT, axis=0))
 
-        dzdx = np.gradient(region_elev / 1.0e3, axis=1) / dx
-        dzdy = np.gradient(region_elev / 1.0e3, axis=0) / dy
+        # generate radial mask
+        radial_vals = sph_proj.inv(lon * np.ones_like(LON), lat * np.ones_like(LAT), LON, LAT)[2] * 1.0e-3
+        radial_mask = radial_vals < radius
 
-        vec_norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
+        # Compute gradients
+        dx = 6371.0 * np.sin(np.radians(LAT[radial_mask])) * np.radians(np.gradient(LON, axis=1))[radial_mask]
+        dy = 6371.0 * np.radians(np.gradient(LAT, axis=0))[radial_mask]
 
+        dzdx = (np.gradient(region_elev / 1.0e3, axis=1)[radial_mask] / dx) * (1.0 + steepening / 100.0)
+        dzdy = (np.gradient(region_elev / 1.0e3, axis=0)[radial_mask] / dy) * (1.0 + steepening / 100.0)
+
+        # compute launch angles
         phi = np.degrees(np.arctan2(-dzdx, -dzdy))
         theta = np.degrees(np.arctan(1.0 / np.sqrt(dzdx**2 + dzdy**2)))
+
+        a = (90.0 - theta) * np.sin(np.radians(phi))
+        b = (90.0 - theta) * np.cos(np.radians(phi))
+        kernel = stats.gaussian_kde(np.vstack([a.flatten(), b.flatten()]))
+
+        phi_out = np.arange(-180.0, 180.0, 1.0)
+        theta_out = np.arange(0.0, 89.0, 0.5)
+        THETA, PHI = np.meshgrid(theta_out, phi_out)
+
+        A = (90.0 - THETA) * np.sin(np.radians(PHI))
+        B = (90.0 - THETA) * np.cos(np.radians(PHI))
+        P = kernel([A.flatten(), B.flatten()])       
+
+        # write this out to file...
+        np.savetxt(output_file, np.vstack([THETA.flatten(), PHI.flatten(), P / P.max()]).T)
 
         if show_fig:
             print("Plotting terrain on map...")
             map_proj = cartopy.crs.PlateCarree()
 
-            fig = plt.figure(figsize=(12, 5))
+            fig = plt.figure(figsize=(15, 6))
             ax1 = fig.add_subplot(1, 2, 1, projection=map_proj)
 
             ax1.set_xlim(ll_corner[1], ur_corner[1])
@@ -1120,18 +1138,18 @@ def normal_projection(lat, lon, radius, output_file, show_fig, offline_maps_dir)
             ax1.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
 
             cmesh = ax1.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, transform=map_proj, vmin=-1.4, vmax=5.0)
-            ax1.quiver(LON, LAT, -dzdx / vec_norm, -dzdy / vec_norm, transform=map_proj)
+
+            vec_norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
+            ax1.quiver(LON[radial_mask], LAT[radial_mask], -dzdx / vec_norm, -dzdy / vec_norm, transform=map_proj)
 
             divider = make_axes_locatable(ax1)
             ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
             fig.add_axes(ax_cb)
             cbar = plt.colorbar(cmesh, cax=ax_cb)
             cbar.set_label('Elevation [km]')
+            ax1.set_title("Terrain and Normal Vector Projections")
 
-
-            # ax2 = fig.add_subplot(1, 2, 2, projection=map_proj, sharex=ax1, sharey=ax1)
-            # ax2.pcolormesh(LON, LAT, theta, cmap=plt.cm.jet, transform=map_proj)
-
+            # plot scatter of normal vector angles
             ax2 = fig.add_subplot(1, 2, 2, projection='polar')
             ax2.set_theta_zero_location("N")
             ax2.set_theta_direction(-1)
@@ -1139,17 +1157,28 @@ def normal_projection(lat, lon, radius, output_file, show_fig, offline_maps_dir)
             ax2.set_xticks(np.linspace(0, 2 * np.pi, 4, endpoint=False))
             ax2.set_xticklabels(['N', 'E', 'S', 'W'])
 
-            incl_min = 15.0 * np.floor(np.min(theta) / 15.0)
+            bnd_thresh = 0.01
+            phi_bnd = np.arange(-180.0, 180.0, 1.0)
+            th_bnd = []
+            for phi_k in phi_bnd:
+                TH2, PH2 = np.meshgrid(np.arange(0.0, 89.0, 0.5), [phi_k])
+                A2 = (90.0 - TH2) * np.sin(np.radians(PH2))
+                B2 = (90.0 - TH2) * np.cos(np.radians(PH2))
+                P2 = kernel([A2.flatten(), B2.flatten()]) / P.max()
+                th_bnd = th_bnd + [TH2.flatten()[P2 > bnd_thresh][0]]
+
+            incl_min = 15.0 * np.floor((np.min(th_bnd)) / 15.0)
 
             ax2.set_ylim(90.0, incl_min)
             ax2.set_yticks(np.arange(incl_min, 90.0, 15.0))
+            ax2.yaxis.set_major_formatter(mticker.StrMethodFormatter(u"{x}°"))
 
-            ax2.plot(np.radians(phi), theta, marker='.', linestyle='none', color='maroon', markersize=2.0)
+            ax2.scatter(np.radians(PHI.flatten()), THETA.flatten(), c=P, cmap=plt.cm.gist_stern_r)         
+            ax2.plot(np.radians(phi_bnd), th_bnd, linestyle='dashed', linewidth=1.5, color='slateblue')
+            ax2.plot(np.radians(phi), theta, marker='.', linestyle='none', color='0.4', markersize=1.0)
+            ax2.set_title("Normal Vector Azimuth and Inclination Angles")
 
             plt.show()               
-
-        click.echo("hi")
-
 
     else:
         print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
