@@ -1,6 +1,6 @@
 CC= g++
 mpiCC= mpic++
-CFLAGS=  -Wno-write-strings -lfftw3
+CFLAGS=  -Wno-write-strings -lfftw3 ${CXXFLAGS}
 
 MAINS_DIR= src/
 ATMO_DIR= src/atmo/

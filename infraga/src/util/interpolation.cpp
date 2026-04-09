@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <math.h>
+#include <limits>
+#include <iostream>
+#include <cstdlib>
 #include "interpolation.h"
 
 using namespace std;
@@ -101,6 +104,7 @@ void interp::prep(struct natural_cubic_spline_1D & spline, int length){
 }
 
 void interp::set(struct natural_cubic_spline_1D & spline){
+
     double ai, bi, ci, di;
     double new_c[spline.length-1];
     double new_d[spline.length];
@@ -119,17 +123,33 @@ void interp::set(struct natural_cubic_spline_1D & spline){
         ai = 1.0 / dx1; bi = 2.0 * (1.0 / dx1 + 1.0 / dx2); ci = 1.0 / dx2;
         di = 3.0 * ((spline.f_vals[i] - spline.f_vals[i - 1]) / pow(dx1, 2)
                   + (spline.f_vals[i + 1] - spline.f_vals[i]) / pow(dx2, 2));
-        
-        new_c[i] = ci / (bi - new_c[i - 1] * ai);
-        new_d[i] = (di - new_d[i - 1] * ai) / (bi - new_c[i - 1] * ai);
+
+        if ((ci / (bi - new_c[i - 1] * ai)) <= std::numeric_limits<double>::max()) {
+            new_c[i] = ci / (bi - new_c[i - 1] * ai);
+        } else {
+            std::cout << "interpolation.cpp@" << __LINE__ << " overflow - ABORT" << std::endl;
+            std::abort();
+        }
+
+        if (((di - new_d[i - 1] * ai) / (bi - new_c[i - 1] * ai)) <= std::numeric_limits<double>::max()) {
+            new_d[i] = (di - new_d[i - 1] * ai) / (bi - new_c[i - 1] * ai);
+        } else {
+            std::cout << "interpolation.cpp@" << __LINE__ << " overflow - ABORT" << std::endl;
+            std::abort();
+        }
     }
     
     ai = 1.0 / (spline.x_vals[spline.length - 1] - spline.x_vals[spline.length - 2]);
     bi = 2.0 / (spline.x_vals[spline.length - 1] - spline.x_vals[spline.length - 2]);
     di = 3.0 * (spline.f_vals[spline.length - 1] - spline.f_vals[spline.length - 2])
           / pow(spline.x_vals[spline.length - 1] - spline.x_vals[spline.length - 2], 2);
-    
-    new_d[spline.length - 1] = (di - new_d[spline.length - 2] * ai) / (bi - new_c[spline.length - 2] * ai);
+
+    if (((di - new_d[spline.length - 2] * ai) / (bi - new_c[spline.length - 2] * ai)) <= std::numeric_limits<double>::max()) {
+        new_d[spline.length - 1] = (di - new_d[spline.length - 2] * ai) / (bi - new_c[spline.length - 2] * ai);
+    } else {
+        std::cout << "interpolation.cpp@" << __LINE__ << " overflow - ABORT" << std::endl;
+        std::abort();
+    }
     
     spline.slopes[spline.length - 1] = new_d[spline.length - 1];
     for(int i = spline.length - 2; i > -1; i--){ spline.slopes[i] = new_d[i] - new_c[i] * spline.slopes[i + 1];}
@@ -331,6 +351,7 @@ void interp::clear(struct natural_cubic_spline_2D & spline){
 
 double interp::eval_node_f(double y, struct natural_cubic_spline_2D spline, int nx, int ny){
     double df, dy, X, A, B;
+    double rdret = 0.00;
 
     df = spline.f_vals[nx][ny + 1] - spline.f_vals[nx][ny];
     dy = spline.y_vals[ny + 1] - spline.y_vals[ny];
@@ -338,8 +359,15 @@ double interp::eval_node_f(double y, struct natural_cubic_spline_2D spline, int 
     X = (y - spline.y_vals[ny]) / dy;
     A = spline.f_slopes[nx][ny] * dy - df;
     B = -spline.f_slopes[nx][ny + 1] * dy + df;
-    
-    return spline.f_vals[nx][ny] + X * (df + (1.0 - X) * (A * (1.0 - X) + B * X));
+
+    if ( (spline.f_vals[nx][ny] + X * (df + (1.0 - X) * (A * (1.0 - X) + B * X))) <= std::numeric_limits<double>::max()) {
+        rdret = spline.f_vals[nx][ny] + X * (df + (1.0 - X) * (A * (1.0 - X) + B * X));
+    } else {
+        std::cout << "interpolation.cpp@" << __LINE__ << " overflow - ABORT" << std::endl;
+        std::abort(); 
+    }
+
+    return rdret;
 }
 
 double interp::eval_node_dfdy(double y, struct natural_cubic_spline_2D spline, int nx, int ny){
@@ -370,6 +398,7 @@ double interp::eval_node_ddfdydy(double y, struct natural_cubic_spline_2D spline
 
 double interp::eval_node_dddfdydydy(double y, struct natural_cubic_spline_2D spline, int nx, int ny){
     double df, dy, X, A, B;
+    double rdret = 0.00;
 
     df = spline.f_vals[nx][ny + 1] - spline.f_vals[nx][ny];
     dy = spline.y_vals[ny + 1] - spline.y_vals[ny];
@@ -378,7 +407,14 @@ double interp::eval_node_dddfdydydy(double y, struct natural_cubic_spline_2D spl
     A = spline.f_slopes[nx][ny] * dy - df;
     B = -spline.f_slopes[nx][ny + 1] * dy + df;
 
-    return 6.0 * (A - B) / pow(dy, 3);
+    if ((6.0 * (A - B) / pow(dy, 3)) <= std::numeric_limits<double>::max()) {
+        rdret = 6.0 * (A - B) / pow(dy, 3);
+    } else {
+        std::cout << "interpolation.cpp@" << __LINE__ << " overflow - ABORT" << std::endl;
+        std::abort();
+    }
+
+    return rdret;
 }
 
 void interp::set_node_slopes(double node_vals [], double node_slopes [], struct natural_cubic_spline_2D spline){
@@ -400,16 +436,32 @@ void interp::set_node_slopes(double node_vals [], double node_slopes [], struct 
         ai = 1.0 / dx1; bi = 2.0 * (1.0 / dx1 + 1.0 / dx2); ci = 1.0 / dx2;
         di = 3.0 * ((node_vals[nx] - node_vals[nx - 1]) / pow(dx1, 2)
                   + (node_vals[nx + 1] - node_vals[nx]) / pow(dx2, 2));
-        
-        new_c[nx] = ci / (bi - new_c[nx - 1] * ai);
-        new_d[nx] = (di - new_d[nx - 1] * ai)/(bi - new_c[nx - 1] * ai);
+
+        if ((ci / (bi - new_c[nx - 1] * ai)) <= std::numeric_limits<double>::max()) {
+            new_c[nx] = ci / (bi - new_c[nx - 1] * ai);
+        } else {
+            std::cout << "interpolation.cpp@" << __LINE__ << " overflow - ABORT" << std::endl;
+            std::abort();
+        }
+
+        if (((di - new_d[nx - 1] * ai)/(bi - new_c[nx - 1] * ai)) <= std::numeric_limits<double>::max()) {
+            new_d[nx] = (di - new_d[nx - 1] * ai)/(bi - new_c[nx - 1] * ai);
+        } else {
+            std::cout << "interpolation.cpp@" << __LINE__ << " overflow - ABORT" << std::endl;
+            std::abort();
+        }
     }
     
     ai = 1.0 / (spline.x_vals[spline.length_x - 1] - spline.x_vals[spline.length_x - 2]);
     bi = 2.0 / (spline.x_vals[spline.length_x - 1] - spline.x_vals[spline.length_x - 2]);
     di = 3.0 * (node_vals[spline.length_x - 1] - node_vals[spline.length_x - 2]) / pow(spline.x_vals[spline.length_x - 1] - spline.x_vals[spline.length_x - 2], 2);
-    
-    new_d[spline.length_x - 1] = (di - new_d[spline.length_x - 2] * ai) / (bi - new_c[spline.length_x - 2] * ai);
+
+    if ((di - new_d[spline.length_x - 2] * ai) / (bi - new_c[spline.length_x - 2] * ai) <= std::numeric_limits<double>::max()) {
+        new_d[spline.length_x - 1] = (di - new_d[spline.length_x - 2] * ai) / (bi - new_c[spline.length_x - 2] * ai);
+    } else {
+        std::cout << "interpolation.cpp@" << __LINE__ << " overflow - ABORT" << std::endl;
+        std::abort();
+    }
 
     node_slopes[spline.length_x - 1] = new_d[spline.length_x - 1];
     for(int nx = spline.length_x - 2; nx >= 0; nx--){
@@ -546,7 +598,7 @@ double interp::eval_dddf(double x, double y, int n1, int n2, int n3, struct natu
 }
 
 void interp::eval_all(double x, double y, struct natural_cubic_spline_2D & spline, double & f, double dfdx []){
-    int kx, ky;
+    int kx = 0, ky = 0;
     double node_f_vals[spline.length_x], node_f_slopes[spline.length_x];
     double node_df_vals[spline.length_x], node_df_slopes[spline.length_x];
     double df, dx, X, A, B;
@@ -554,10 +606,11 @@ void interp::eval_all(double x, double y, struct natural_cubic_spline_2D & splin
     kx = find_segment(x, spline.x_vals, spline.length_x, spline.accel[0]);
     ky = find_segment(y, spline.y_vals, spline.length_y, spline.accel[1]);    
 
-    for(int nx = 0; nx < spline.length_x; nx++){ 
+    for(int nx = 0; nx < spline.length_x; nx++){
         node_f_vals[nx] = eval_node_f(y, spline, nx, ky);
         node_df_vals[nx] = eval_node_dfdy(y, spline, nx, ky);
     }
+
     set_node_slopes(node_f_vals, node_f_slopes, spline);
     set_node_slopes(node_df_vals, node_df_slopes, spline);
 
@@ -1070,6 +1123,7 @@ void interp::clear(struct hybrid_spline_3D & spline){
 // Evaluate the functions on the nodes
 double interp::eval_node_f(double z, struct hybrid_spline_3D spline, int kx, int ky, int kz){
     double dz, X, df, A, B;
+    double rdret = 0.00;
 
     dz = spline.z_vals[kz + 1] - spline.z_vals[kz];
     X = (z - spline.z_vals[kz]) / dz;
@@ -1078,7 +1132,14 @@ double interp::eval_node_f(double z, struct hybrid_spline_3D spline, int kx, int
     A = spline.f_slopes[kx][ky][kz] * dz - df;
     B = -spline.f_slopes[kx][ky][kz + 1] * dz + df;
     
-    return spline.f_vals[kx][ky][kz] + X * (df + (1.0 - X) * (A * (1.0 - X) + B * X));
+    if ((spline.f_vals[kx][ky][kz] + X * (df + (1.0 - X) * (A * (1.0 - X) + B * X))) <= std::numeric_limits<double>::max()) {
+        rdret = spline.f_vals[kx][ky][kz] + X * (df + (1.0 - X) * (A * (1.0 - X) + B * X));
+    } else {
+        std::cout << "interpolation.cpp@" << __LINE__ << " overflow - ABORT" << std::endl;
+        std::abort();
+    }
+
+    return rdret; 
 }
 
 double interp::eval_node_dfdx(double z, struct hybrid_spline_3D spline, int kx, int ky, int kz){
@@ -1104,6 +1165,7 @@ double interp::eval_node_dfdx(double z, struct hybrid_spline_3D spline, int kx, 
 double interp::eval_node_dfdy(double z, struct hybrid_spline_3D spline, int kx, int ky, int kz){
     int ky_up, ky_dn;
     double dfdy_kz, dfdy_kzp1, df, dz, X, A, B;
+    double rdval = 0.00;
     
     ky_up = min(ky + 1, spline.length_y - 1);
     ky_dn = max(ky - 1, 0);
@@ -1117,8 +1179,15 @@ double interp::eval_node_dfdy(double z, struct hybrid_spline_3D spline, int kx, 
     df = dfdy_kzp1 - dfdy_kz;
     A = spline.dfdx_slopes[kx][ky][kz] * dz - df;
     B = -spline.dfdx_slopes[kx][ky][kz + 1] * dz + df;
-    
-    return dfdy_kz + X * (df + (1.0 - X) * (A * (1.0 - X) + B * X));
+
+    if ((dfdy_kz + X * (df + (1.0 - X) * (A * (1.0 - X) + B * X))) <= std::numeric_limits<double>::max()) {
+        rdval = dfdy_kz + X * (df + (1.0 - X) * (A * (1.0 - X) + B * X));
+    } else { 
+        std::cout << "interpolation.cpp@" << __LINE__ << " ABORT" << std::endl;
+        std::abort();
+    }
+
+    return rdval;
 }
 
 double interp::eval_node_dfdz(double z, struct hybrid_spline_3D spline, int kx, int ky, int kz){
