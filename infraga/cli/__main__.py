@@ -92,7 +92,7 @@ plot.add_command(plotting.plot_map)
 plot.add_command(plotting.plot_animation)
 
 utils.add_command(infraga_utils.build_g2s_grid)
-utils.add_command(infraga_utils.extract_ecmwf)
+#utils.add_command(infraga_utils.extract_ecmwf)
 utils.add_command(infraga_utils.extract_terrain)
 utils.add_command(infraga_utils.nearby_arrivals)
 utils.add_command(infraga_utils.normal_projection)
