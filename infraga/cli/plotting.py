@@ -52,7 +52,8 @@ def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
 @click.option("--max-alt", help="Maximum altitude for analysis (default: 120 km)", default=None, type=float)
 @click.option("--format", help="Atmospheric atmo_file format (default: 'zTuvdp')", default='zTuvdp')
 @click.option("--grnd-elev", help="Ground surface elevantion [km]", default=None)
-def plot_atmo(atmo_file, max_alt, format, grnd_elev):
+@click.option("--polar-plot", help="Visualize refraction in polar coordinates", default=False)
+def plot_atmo(atmo_file, max_alt, format, grnd_elev, polar_plot):
     '''
     Visualize the sound speed, wind fields, and effective sound speed ratio ducting information for an atmospheric atmo_file
 
@@ -86,42 +87,64 @@ def plot_atmo(atmo_file, max_alt, format, grnd_elev):
 
     ht_mask = np.logical_and(grnd_ht <= z, z <= max_alt)
 
-    f, ax = plt.subplots(1, 3, gridspec_kw={'width_ratios': [1, 1, 4]}, figsize=(12, 5))
-    
-    ax[0].grid(color='k', linestyle='--', linewidth=0.5)
-    ax[1].grid(color='k', linestyle='--', linewidth=0.5)
 
-    ax[0].set_ylim(grnd_ht, max_alt)
-    ax[0].set_ylabel("Altitude [km]")
-    ax[0].set_xlabel("Sound Speed [m/s]")
+    if polar_plot:
+        f, (ax1, ax2, ax3) = plt.subplots(1, 3, gridspec_kw={'width_ratios': [1, 1, 3]}, figsize=(9, 5))
+    else:
+        f, (ax1, ax2, ax3) = plt.subplots(1, 3, gridspec_kw={'width_ratios': [1, 1, 4]}, figsize=(12, 5))
+            
 
-    ax[1].set_ylim(grnd_ht, max_alt)
-    ax[1].set_xlabel("Wind Speed [m/s]")
+    ax1.grid(color='k', linestyle='--', linewidth=0.5)
+    ax2.grid(color='k', linestyle='--', linewidth=0.5)
 
-    ax[1].yaxis.set_ticklabels([])
+    ax1.set_ylim(grnd_ht, max_alt)
+    ax1.set_ylabel("Altitude [km]")
+    ax1.set_xlabel("Sound Speed [m/s]")
 
-    ax[2].yaxis.set_label_position("right")
-    ax[2].yaxis.tick_right()
+    ax2.set_ylim(grnd_ht, max_alt)
+    ax2.set_xlabel("Wind Speed [m/s]")
 
-    ax[2].set_xlim(-180.0, 180.0)
-    ax[2].set_ylim(0.0, 50.0)
-    ax[2].set_xticks((-180.0, -135.0, -90.0, -45.0, 0.0, 45.0, 90.0, 135.0, 180.0))
-    ax[2].set_xticklabels(["S", "SW", "W", "NW", "N", "NE", "E", "SE", "S"])
-    ax[2].set_xlabel("Propagation Direction")
-    ax[2].set_ylabel("Inclination [deg]")
+    ax2.yaxis.set_ticklabels([])
 
-    ax[0].plot(c[ht_mask], z[ht_mask], '-k', linewidth=3.0)
-    ax[1].plot(u[ht_mask], z[ht_mask], '-b', linewidth=3.0, label='Zonal')
-    ax[1].plot(v[ht_mask], z[ht_mask], '-r', linewidth=3.0, label='Merid.')
-    ax[1].legend(fontsize='small')
+    if polar_plot:
+        ax3.remove()  # Remove existing axis
+        ax3 = f.add_subplot(133, projection='polar')
+        
+        ax3.set_xticks(np.linspace(0, 2 * np.pi, 4, endpoint=False))
+        ax3.set_xticklabels(["E", "N", "W", "S"])
+
+        ax3.set_ylim(75.0, 0.0)
+        ax3.set_yticks([60.0, 45.0, 30.0, 15.0, 0.0])
+        ax3.set_rlabel_position(60.0)
+        ax3.yaxis.set_major_formatter(mticker.StrMethodFormatter(u"{x:.0f}°"))
+
+    else:
+        ax3.yaxis.set_label_position("right")
+        ax3.yaxis.tick_right()
+
+        ax3.set_xlim(-180.0, 180.0)
+        ax3.set_ylim(0.0, 50.0)
+        ax3.set_xticks((-180.0, -135.0, -90.0, -45.0, 0.0, 45.0, 90.0, 135.0, 180.0))
+        ax3.set_xticklabels(["S", "SW", "W", "NW", "N", "NE", "E", "SE", "S"])
+        ax3.set_xlabel("Propagation Direction")
+        ax3.set_ylabel("Inclination [deg]")
+
+    ax1.plot(c[ht_mask], z[ht_mask], '-k', linewidth=3.0)
+    ax2.plot(u[ht_mask], z[ht_mask], '-b', linewidth=3.0, label='Zonal')
+    ax2.plot(v[ht_mask], z[ht_mask], '-r', linewidth=3.0, label='Merid.')
+    ax2.legend(fontsize='small')
 
     incl_vals = np.arange(0.0, 50.0, 0.2)
     for az in np.arange(-180.0, 180.0, 1.0):
         ceff = (c + u * np.sin(np.radians(az)) + v * np.cos(np.radians(az)))[ht_mask]
         refract_ht = [z[ht_mask][np.min(np.where((ceff / ceff[0]) * np.cos(np.radians(incl)) > 1.0)[0])] if len(np.where((ceff / ceff[0]) * np.cos(np.radians(incl)) > 1.0)[0]) > 0 else max_alt for incl in incl_vals]
-        sc = ax[2].scatter([az] * len(refract_ht), incl_vals, c=refract_ht, cmap=cm.jet_r, marker="s", s=5.0, alpha=0.75, edgecolor='none', vmin=grnd_ht, vmax=120.0)
 
-    f.colorbar(sc, ax=[ax[2]], location='top', label="Estimated Refraction Altitude [km]")
+        if polar_plot:
+            sc = ax3.scatter(np.pi / 2.0 - np.radians([az] * len(refract_ht)), incl_vals, c=refract_ht, cmap=cm.nipy_spectral, marker="s", s=5.0, alpha=0.75, edgecolor='none', vmin=grnd_ht, vmax=120.0)
+        else:
+            sc = ax3.scatter([az] * len(refract_ht), incl_vals, c=refract_ht, cmap=cm.nipy_spectral, marker="s", s=5.0, alpha=0.75, edgecolor='none', vmin=grnd_ht, vmax=120.0)
+
+    f.colorbar(sc, ax=[ax3], location='top', pad=0.1, label="Estimated Refraction Altitude [km]")
 
     plt.show()
 

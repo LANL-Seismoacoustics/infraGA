@@ -31,6 +31,14 @@ The adiabatic sound speed and ambient winds for a given atmospheric specificatio
       :width: 1500px
       :align: center
 
+The refraction altitude information can also be displayed in a polar coordinate system where inclination is inverted along the radial axis if that is more useful in understanding expected waveguides,  :code:`infraga plot atmo --atmo-file ToyAtmo.met --polar-plot True`,
+
+
+  .. image:: _static/_images/atmo_plot-polar.png
+      :width: 1500px
+      :align: center
+
+
 The other options in this visualization method allow one to cut the maximum altitude of the atmosphere data and to specify the file format as discussed in :ref:`atmospheres`.
 
 

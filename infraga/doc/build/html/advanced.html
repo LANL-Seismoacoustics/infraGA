@@ -1,22 +1,22 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Advanced Usage &mdash; infraGA/GeoAc  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -29,12 +29,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> infraGA/GeoAc
-            <img src="_static/LANL Logo White.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            infraGA/GeoAc
+              <img src="_static/LANL Logo White.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -70,7 +74,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Advanced Usage</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/advanced.rst.txt" rel="nofollow"> View page source</a>
@@ -82,10 +86,10 @@
            <div itemprop="articleBody">
              
   <section id="advanced-usage">
-<span id="advanced"></span><h1>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Permalink to this heading"></a></h1>
+<span id="advanced"></span><h1>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Link to this heading"></a></h1>
 <p>In addition to the <code class="code docutils literal notranslate"><span class="pre">prop</span></code> option that simulate propagation from a point source through a specified atmospheric structure.  Additional parameter settings are available to include range dependence and realistic terrain interactions and additional simulation options include methods to compute eigenray paths connecting specific source-receiver geometries as well as compute the weakly non-linear (weak shock limit) waveform evolution along individual ray paths.</p>
 <section id="advanced-parameter-settings">
-<h2>Advanced Parameter Settings<a class="headerlink" href="#advanced-parameter-settings" title="Permalink to this heading"></a></h2>
+<h2>Advanced Parameter Settings<a class="headerlink" href="#advanced-parameter-settings" title="Link to this heading"></a></h2>
 <p><strong>Range Dependent Analysis</strong></p>
 <p>Using the <code class="code docutils literal notranslate"><span class="pre">--atmo-file</span></code> parameter defines a single atmospheric specification to use for a stratified atmospheric model.  In cases where propagation extends more than a few hundred kilometers, horizontal variations in the atmospheric structure can become significant.  Range dependent atmospheric structure can be used in infraGA/GeoAc via specification of an atmospheric file prefix as well as horizontal grid nodes.  An example 4x4 grid is provided in the examples/profs directory that includes 16 atmospheric files (example0.met, example1.met, example2.met, etc.) along with example_lat.dat and example_lon.dat that contain the latitude and longitude of the grid nodes.</p>
 <blockquote>
@@ -145,7 +149,8 @@ Calculating ray path: 45 degrees inclination, 90 degrees azimuth.
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file profs/example0.met --arrivals profs/example.arrivals.dat --ray-paths profs/example.raypaths.dat
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/rng-dep_azimuthal.png"><img alt="_images/rng-dep_azimuthal.png" class="align-center" src="_images/rng-dep_azimuthal.png" style="width: 1200px;" /></a>
+<a class="reference internal image-reference" href="_images/rng-dep_azimuthal.png"><img alt="_images/rng-dep_azimuthal.png" class="align-center" src="_images/rng-dep_azimuthal.png" style="width: 1200px;" />
+</a>
 </div></blockquote>
 <p>Although the range-dependent effects aren’t overly obvious in this simulation due to the limited propagation range, comparison of the inclination angles and point-to-point propagation of the ray paths does exhibit variations.  Due to the added complexity of multi-variate interpolation needed to compute the gradients of the atmospheric parameters not only in the vertical direction but also in the horizontal, computation of range-dependent ray paths is notably slower than stratified analyses.</p>
 <p>For global scale analyses (e.g., analysis of propagation paths from large bolides or volcanic eruptions), one can define a maximum propagation range greater than half of the circumference of the Earth (~24,000 km) so that the great circle distances never reach the break condition and use the <code class="code docutils literal notranslate"><span class="pre">--max-tm</span></code> parameter to define a maximum propagation time (defined in hours): <code class="code docutils literal notranslate"><span class="pre">--max-rng</span> <span class="pre">25000</span> <span class="pre">--max-tm</span> <span class="pre">24.0</span> <span class="pre">--bounces</span> <span class="pre">1000</span></code></p>
@@ -158,7 +163,8 @@ Calculating ray path: 45 degrees inclination, 90 degrees azimuth.
 </div></blockquote>
 <p>In this function call a latitude/longitude grid is defined with a lower-left corner at (35.0, -110.0) and upper-right corner at (45.0, -100.0).  The terrain is written into a file named <code class="code docutils literal notranslate"><span class="pre">sph_topo.dat</span></code> and a map showing the terrain is printed to screen.  The method will download the <a class="reference external" href="https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz">ETOPO1 model file</a> for use and store it within the infraGA/GeoAc directory structure at an expected location for repeated use in subsequent function calls.  The spatial resolution of the output preserves the 1 arc-minute (<span class="math notranslate nohighlight">\(\sim1.85\)</span> km) resolution of the ETOPO1 model.  Also, it should be noted that the elevation scale extends below sea level to show oceanic regions in the visualization; however, the terrain file snaps such locations to sea level as infrasonic waves will reflect from the ocean surface.</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/terrain_extraction.png"><img alt="_images/terrain_extraction.png" class="align-center" src="_images/terrain_extraction.png" style="width: 600px;" /></a>
+<div><a class="reference internal image-reference" href="_images/terrain_extraction.png"><img alt="_images/terrain_extraction.png" class="align-center" src="_images/terrain_extraction.png" style="width: 600px;" />
+</a>
 </div></blockquote>
 <p>The file created by the utility function contains 3 columns describing latitude, longitude, and ground surface elevation.  The ordering of grid points is such that longitude values are cycled through at each latitude point (note that this is the same convention used in specifying files for the range-dependent grid above).</p>
 <blockquote>
@@ -219,11 +225,13 @@ Calculating ray path: 1.5441 degrees inclination, -90 degrees azimuth.
 <p>The ground intercept condition is more numerically intensive when considering terrain because instead of comparing the ray altitude to a constant value the interpolated ground surface must be evaluated at the latitude and longitude of the ray path.  The reason that a 2 km layer is chosen is that the envelope which smoothly forces the wind fields to zero at the ground surface extends some distance above the ground and that envelope also requires evaluation of the terrain interpolation.  This results in longer computation times for tropospheric propagation paths for which the ray path is in this near ground region for a large portion of the simulation, but avoid increasing the computation time for middle- and upper atmospheric portions of the path when terrain isn’t directly impacting the propagation path.</p>
 <p>Visualization of the propagation results can be done using the same azimuthal function from the <a class="reference internal" href="quickstart.html#quickstart"><span class="std std-ref">Quickstart</span></a>, <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">azimuthal</span> <span class="pre">--atmo-file</span> <span class="pre">ToyAtmo.met</span></code>, and the interaction of terrain is evident in the scatter of reflected arrivals near 350 km downrange that becomes even more severe beyond 500 km.</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/terrain_prop1.png"><img alt="_images/terrain_prop1.png" class="align-center" src="_images/terrain_prop1.png" style="width: 1200px;" /></a>
+<div><a class="reference internal image-reference" href="_images/terrain_prop1.png"><img alt="_images/terrain_prop1.png" class="align-center" src="_images/terrain_prop1.png" style="width: 1200px;" />
+</a>
 </div></blockquote>
 <p>The interaction with terrain can be directly seen by zooming the figure into the near ground as shown below (simply click/drag to highlight the region in the matplotlib window).  The variable altitude and gradients of the terrain are evident in the lower bound of the ray paths.</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/terrain_prop2.png"><img alt="_images/terrain_prop2.png" class="align-center" src="_images/terrain_prop2.png" style="width: 1200px;" /></a>
+<div><a class="reference internal image-reference" href="_images/terrain_prop2.png"><img alt="_images/terrain_prop2.png" class="align-center" src="_images/terrain_prop2.png" style="width: 1200px;" />
+</a>
 </div></blockquote>
 <p>It would be useful to also visualize the terrain along the propagation path; however, this isn’t immediately possible as the terrain file defined the latitude and longitude grid for the entire region.  The parameter <code class="code docutils literal notranslate"><span class="pre">--write-topo</span></code> can be used to output the terrain profile immediately underneath the first ray path.  Though not included in the below example, it is also useful to leverage the OpenMPI methods for this computation because of the increased computation time needed to use the terrain interpolation.  Recalling that the multi-threaded methods automatically turn off ray path output, this requires <code class="code docutils literal notranslate"><span class="pre">--write-rays</span> <span class="pre">True</span> <span class="pre">--cpu-cnt</span> <span class="pre">8</span></code> with the CPU count set to whatever is available on you machine.</p>
 <blockquote>
@@ -236,7 +244,8 @@ Calculating ray path: 1.5441 degrees inclination, -90 degrees azimuth.
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met --terrain-profile ToyAtmo.terrain.dat
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/terrain_prop3.png"><img alt="_images/terrain_prop3.png" class="align-center" src="_images/terrain_prop3.png" style="width: 1200px;" /></a>
+<a class="reference internal image-reference" href="_images/terrain_prop3.png"><img alt="_images/terrain_prop3.png" class="align-center" src="_images/terrain_prop3.png" style="width: 1200px;" />
+</a>
 </div></blockquote>
 <p>This visualization is notably more clear in showing what the terrain profile looks like along the path.</p>
 <p>It should be noted that in some cases cross winds and terrain interactions can lead to ray paths that deviate significantly from the initial azimuthal plane.  In such a case, the terrain profile projected below the first ray path may differ significantly from that below other ray paths and those ray paths may appear to reflect from regions above or below the projected terrain profile.  In such a case, a secondary simulation using a higher inclination initial ray path might be useful to investigate the terrain profile below others in the simulation (be sure to save the arrivals and ray path output before doing this as they will be overwritten in the repeated simulations).</p>
@@ -252,7 +261,8 @@ Calculating ray path: 1.5441 degrees inclination, -90 degrees azimuth.
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/elevated_source1.png"><img alt="_images/elevated_source1.png" class="align-center" src="_images/elevated_source1.png" style="width: 900px;" /></a>
+<a class="reference internal image-reference" href="_images/elevated_source1.png"><img alt="_images/elevated_source1.png" class="align-center" src="_images/elevated_source1.png" style="width: 900px;" />
+</a>
 </div></blockquote>
 <p>The Jacobian computation that is required to solve the Transport equation and calculate the geometric spreading has a singularity for inclination angles of <span class="math notranslate nohighlight">\(\pm 90^o\)</span>; therefore, a minimum inclination angle of <span class="math notranslate nohighlight">\(89^o\)</span> should be used as the lower limit in computing ray paths for an elevated source:</p>
 <blockquote>
@@ -265,15 +275,17 @@ Calculating ray path: 1.5441 degrees inclination, -90 degrees azimuth.
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot azimuthal --atmo-file ToyAtmo.met
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/elevated_source2.png"><img alt="_images/elevated_source2.png" class="align-center" src="_images/elevated_source2.png" style="width: 900px;" /></a>
+<a class="reference internal image-reference" href="_images/elevated_source2.png"><img alt="_images/elevated_source2.png" class="align-center" src="_images/elevated_source2.png" style="width: 900px;" />
+</a>
 </div></blockquote>
 <p>Reducing the maximum propagation range to 400 km (adding <code class="code docutils literal notranslate"><span class="pre">--max-rng</span> <span class="pre">400</span></code> to the above simulation command) more clearly shows the ensonification below the source and the two sets of ray paths contained within the stratospheric waveguide.</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/elevated_source3.png"><img alt="_images/elevated_source3.png" class="align-center" src="_images/elevated_source3.png" style="width: 700px;" /></a>
+<div><a class="reference internal image-reference" href="_images/elevated_source3.png"><img alt="_images/elevated_source3.png" class="align-center" src="_images/elevated_source3.png" style="width: 700px;" />
+</a>
 </div></blockquote>
 </section>
 <section id="advanced-option-usage">
-<h2>Advanced Option Usage<a class="headerlink" href="#advanced-option-usage" title="Permalink to this heading"></a></h2>
+<h2>Advanced Option Usage<a class="headerlink" href="#advanced-option-usage" title="Link to this heading"></a></h2>
 <p><strong>Eigenray Analysis</strong></p>
 <p>In some scenarios, those specific propagation paths connecting known source and receiver locations are of interest.  Such propagation paths are termed ‘eigenrays’ and can be difficult to compute when considering propagation paths in 3 dimensions including cross winds.  The auxiliary parameters that are utilized by infraGA/GeoAc for computation of the geometric spreading losses can also be leveraged for computation of launch angle changes that shift an arrival closer to a desired location.  A Levenberg-Marquardt (LM) algorithm has been implemented that uses the auxiliary parameters for such a search (more detail in the <a class="reference internal" href="physics.html#physics"><span class="std std-ref">Propagation Physics</span></a> discussion and in Blom &amp; Waxler (2017)).  The eigenray methods in infraGA/GeoAc are accessed using the <code class="code docutils literal notranslate"><span class="pre">eigenray</span></code> flag instead of <code class="code docutils literal notranslate"><span class="pre">prop</span></code> and have a number of common parameters.  In addition to specifying a source location, the receiver location is also needed.  The following command runs an eigenray search for a source at (30, -100) to a receiver to the west-south-west at (30.25, -104.25).</p>
 <blockquote>
@@ -389,11 +401,13 @@ Identified 3 eigenray(s).
 </div></blockquote>
 <p>Eigenray results can be visualized using <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">eigenray</span> <span class="pre">--atmo-file</span> <span class="pre">ToyAtmo.met</span></code> and show the along-azimuth effective sound speed profile for reference, all identified eigenray paths, and some characteristic (default is launch inclination vs. travel time).  As seen below, the color of the ray path corresponds to the arrival characteristics so the individual paths can be compared.  In this case, a direct thermospheric path (blue) is identified with later arrival time than the pair of single-reflection stratospheric arrivals (orange, green).</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/eigenray1.png"><img alt="_images/eigenray1.png" class="align-center" src="_images/eigenray1.png" style="width: 1200px;" /></a>
+<div><a class="reference internal image-reference" href="_images/eigenray1.png"><img alt="_images/eigenray1.png" class="align-center" src="_images/eigenray1.png" style="width: 1200px;" />
+</a>
 </div></blockquote>
 <p>The <code class="code docutils literal notranslate"><span class="pre">--y-axis-option</span></code> parameter included in the azimuthal visualizations is available in this method as well.  Running the above visualization and adding <code class="code docutils literal notranslate"><span class="pre">--y-axis-option</span> <span class="pre">amplitude</span></code> produces the below result so one can see how the largest amplitude amplitude is the shallower angle stratospheric arrival (often termed the ‘slow stratospheric phase’ per Waxler et al. (2015)).  The earlier, steeper inclination angle stratospheric phase (often termed the ‘fast stratospheric phase’) is markedly lower amplitude, and the thermospheric phase arriving later is even more attenuated due to combination of geometric and thermo-viscous losses.</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/eigenray2.png"><img alt="_images/eigenray2.png" class="align-center" src="_images/eigenray2.png" style="width: 1200px;" /></a>
+<div><a class="reference internal image-reference" href="_images/eigenray2.png"><img alt="_images/eigenray2.png" class="align-center" src="_images/eigenray2.png" style="width: 1200px;" />
+</a>
 </div></blockquote>
 <p><strong>Waveform Calculations</strong></p>
 <p>Waveform evolution along individual ray paths can be computed in the weakly non-linear (also termed the weak shock limit) using a Burgers equation method (summarized in the discussion of <a class="reference internal" href="physics.html#physics"><span class="std std-ref">Propagation Physics</span></a> and in Lonzaga et al. (2015) and Blom &amp; Waxler (2021)) through the <code class="code docutils literal notranslate"><span class="pre">wnl-wvfrm</span></code> option.  Such analysis requires a known waveform at some location, <span class="math notranslate nohighlight">\(s_1\)</span>, along the ray path and computes the evolved waveform at some later location, <span class="math notranslate nohighlight">\(s_2\)</span> further along the path.  Because such analysis focuses on the waveform evolution along a single ray path, a single inclination and azimuth angle combination are needed to identify the ray path of interest.</p>
@@ -497,22 +511,26 @@ Calculating ray path geometry and weakly non-linear waveform evolution...
 <p>The <code class="code docutils literal notranslate"><span class="pre">--keep-eig-results</span></code> option preserves the individual eigenray path files from the eigenray stage (useful if you want to run the eigenray visualization to see each arrival’s characteristics) as well as the arrivals file itself.  It should be noted that keeping the arrivals file enables rapid calculation of new waveform predictions if the source is modified.  That is, if the above simulation has been run and one wants to see how the results change for a 100 ton eq. TNT source, one can simply modify the <code class="code docutils literal notranslate"><span class="pre">--wvfrm-yield</span></code> parameter and the Python methods will check whether eigenray results are already present and skip that portion of the analysis if results are found.</p>
 <p>The combined eigenray and waveform predictions can be visualized using similar syntax to the azimuthal and eigenray visualizations <code class="code docutils literal notranslate"><span class="pre">infraga</span> <span class="pre">plot</span> <span class="pre">eig_wvfrms</span> <span class="pre">--atmo-file</span> <span class="pre">ToyAtmo.met</span></code>,</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/eig_wvfrm1.png"><img alt="_images/eig_wvfrm1.png" class="align-center" src="_images/eig_wvfrm1.png" style="width: 600px;" /></a>
+<div><a class="reference internal image-reference" href="_images/eig_wvfrm1.png"><img alt="_images/eig_wvfrm1.png" class="align-center" src="_images/eig_wvfrm1.png" style="width: 600px;" />
+</a>
 </div></blockquote>
 <p>The resulting figures shows the eigenray paths, predicted overpressure waveform, and arrival characteristics using a matching travel time axis.  In this example, the stratospheric pair is easily identified in the early potion of the waveform and can be seen more clearly by zooming (again, click/drag the matplotlib window) as shown below.</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/eig_wvfrm2.png"><img alt="_images/eig_wvfrm2.png" class="align-center" src="_images/eig_wvfrm2.png" style="width: 600px;" /></a>
+<div><a class="reference internal image-reference" href="_images/eig_wvfrm2.png"><img alt="_images/eig_wvfrm2.png" class="align-center" src="_images/eig_wvfrm2.png" style="width: 600px;" />
+</a>
 </div></blockquote>
 <p>The later arrival from the upper atmosphere can also be more clearly visualized using the interactive matplotlib window as shown below.  In this case the relatively low amplitude of the source and the high turning height of the propagation path results in an overly small amplitude for this waveform contribution.</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/eig_wvfrm3.png"><img alt="_images/eig_wvfrm3.png" class="align-center" src="_images/eig_wvfrm3.png" style="width: 600px;" /></a>
+<div><a class="reference internal image-reference" href="_images/eig_wvfrm3.png"><img alt="_images/eig_wvfrm3.png" class="align-center" src="_images/eig_wvfrm3.png" style="width: 600px;" />
+</a>
 </div></blockquote>
 <p>Lastly, similar to the azimuthal and eigenray visualization methods, the lower panel can be modified by specifying the y-axis and colormap variables.  Visualization of the trace velocity and amplitude information can be achieved as,</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot eig_wvfrms --atmo-file ToyAtmo.met --y-axis-option trace-velocity --cmap-option amplitude
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/eig_wvfrm4.png"><img alt="_images/eig_wvfrm4.png" class="align-center" src="_images/eig_wvfrm4.png" style="width: 800px;" /></a>
+<a class="reference internal image-reference" href="_images/eig_wvfrm4.png"><img alt="_images/eig_wvfrm4.png" class="align-center" src="_images/eig_wvfrm4.png" style="width: 800px;" />
+</a>
 </div></blockquote>
 <p><strong>Supersonic Sources</strong></p>
 <p>The set of ray paths emitted by a supersonic source as defined by the geometry of the Mach cone can be computed as discussed in Blom et al. (2024).  The Mach cone ray paths are computed for a single source location by specifying a source location, orientation (attack and azimuth angles), and Mach number (velocity relative to the ambient sound speed).  Usage of this method for a single point source can be run using the below syntax:</p>
@@ -521,7 +539,7 @@ Calculating ray path geometry and weakly non-linear waveform evolution...
 </pre></div>
 </div>
 </div></blockquote>
-<p>In practice, computation of the infrasonic signals produced by a supersonic source’s Mach cone requires computation of the above set of Mach cone rays at each point along a trajectory and then combination of all predicted paths with appropriate time delay.  The python interface for <em>infraGA/GeoAc</em> includes a method that will ingest atmospheric data as well as a trajectory file (containing time, latitude, longitude, and altitude).  The method computes the Mach number and source orientation information from the trajectory and steps through all points on the trajectory.  Running the prediction of rays for a supersonic source requires an atmospheric file (or range dependent grid) and a trajectory file containing [time:lat:lon:alt]:</p>
+<p>In practice, computation of the infrasonic signals produced by a supersonic source’s Mach cone requires computation of the above set of Mach cone rays at each point along a trajectory and then combination of all predicted paths with appropriate time delay.  The python interface for <em>infraGA/GeoAc</em> includes a method that will ingest atmospheric data as well as a trajectory file (containing time, latitude, longitude, and altitude).  The method computes the Mach number and source orientation information from the trajectory and steps through all points on the trajectory.  Running the prediction of rays for a supersonic source requires an atmospheric file (or range dependent grid) and a trajectory file containing [time : lat : lon : alt]:</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga sph supersonic --atmo-file G2S_example.met --trajectory trajectories/ballistic_traj.dat --traj-step 6 --cpu-cnt 12 --output-id ballistic --local-temp-dir ballistic_temp
 </pre></div>
@@ -529,14 +547,16 @@ Calculating ray path geometry and weakly non-linear waveform evolution...
 </div></blockquote>
 <p>The <code class="code docutils literal notranslate"><span class="pre">--traj-step</span></code> allows one to skip through high resolution trajectory information (the step is that used in <em>numpy</em> indexing notation, <code class="code docutils literal notranslate"><span class="pre">traj_data[::k]</span></code>).  The <code class="code docutils literal notranslate"><span class="pre">--local-temp-dir</span></code> path can be used to keep the predicted ray path data for individual trajectory points.  If a local temporary data directory is not specified, one is created via the <code class="code docutils literal notranslate"><span class="pre">tempfile</span></code> package and removed when the simulation is compelted. By default, only arrival information is stored when running the method unless the <code class="code docutils literal notranslate"><span class="pre">--write-rays</span></code> option is turned on.  While ray paths are being computed, the trajectory information is displayed in a window with points showing where along the trajectory the current computations is located:</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/supersonic_trajectory.png"><img alt="_images/supersonic_trajectory.png" class="align-center" src="_images/supersonic_trajectory.png" style="width: 800px;" /></a>
+<div><a class="reference internal image-reference" href="_images/supersonic_trajectory.png"><img alt="_images/supersonic_trajectory.png" class="align-center" src="_images/supersonic_trajectory.png" style="width: 800px;" />
+</a>
 </div></blockquote>
 <p>Once the computation is complete, the arrival information can be visualized as with other ray tracing simulations:</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>infraga plot map --arrivals ballistic.arrivals.dat
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/ballistic_arrivals.png"><img alt="_images/ballistic_arrivals.png" class="align-center" src="_images/ballistic_arrivals.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="_images/ballistic_arrivals.png"><img alt="_images/ballistic_arrivals.png" class="align-center" src="_images/ballistic_arrivals.png" style="width: 600px;" />
+</a>
 </div></blockquote>
 <p>More information about simulating infrasound from supersonic sources can be found in Blom et al. (2024) and citations therein.</p>
 </section>

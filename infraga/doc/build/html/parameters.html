@@ -1,22 +1,22 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Parameters &mdash; infraGA/GeoAc  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -29,12 +29,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> infraGA/GeoAc
-            <img src="_static/LANL Logo White.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            infraGA/GeoAc
+              <img src="_static/LANL Logo White.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,7 +76,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Parameters</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/parameters.rst.txt" rel="nofollow"> View page source</a>
@@ -84,18 +88,12 @@
            <div itemprop="articleBody">
              
   <section id="parameters">
-<span id="id1"></span><h1>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h1>
+<span id="id1"></span><h1>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h1>
 <section id="general-parameters">
-<h2>General Parameters<a class="headerlink" href="#general-parameters" title="Permalink to this heading"></a></h2>
+<h2>General Parameters<a class="headerlink" href="#general-parameters" title="Link to this heading"></a></h2>
 <p><strong>Common Parameters (all geometries, all options)</strong></p>
 <p>All infraga/GeoAc simulations have a common set of parameters that can be modified as summarized in the below table.  Note that there is a syntax difference when specifying a parameter value in the C/C++ command line interface (e.g., <code class="code docutils literal notranslate"><span class="pre">freq=0.1</span></code>) compared with the Python interface that uses the Click library (eg., <code class="code docutils literal notranslate"><span class="pre">--freq</span> <span class="pre">0.1</span></code>).  Somewhat confusingly, the way in which the Python config file parsing works requires parameters defined in a configuration file to use the C/C++ syntax (underscores replacing hyphens).  Most of these parameters are relatively self explanatory or detailed in the <a class="reference internal" href="quickstart.html#quickstart"><span class="std std-ref">Quickstart</span></a> or <a class="reference internal" href="advanced.html#advanced"><span class="std std-ref">Advanced Usage</span></a> sections.  All parameters in this section are defined in the <code class="code docutils literal notranslate"><span class="pre">[GENERAL]</span></code> section of configuration file.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 26%" />
-<col style="width: 29%" />
-<col style="width: 16%" />
-<col style="width: 29%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -180,12 +178,6 @@
 <p><strong>3D Cartesian Region Boundaries</strong></p>
 <p>For all 3D Cartessian anlayses, the <span class="math notranslate nohighlight">\(x\)</span> (east/west) and <span class="math notranslate nohighlight">\(y\)</span> (north/south) edges of the propagation domain can be defined:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 26%" />
-<col style="width: 29%" />
-<col style="width: 16%" />
-<col style="width: 29%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -220,12 +212,6 @@
 <p><strong>Spherical Geometry Region Boundaries</strong></p>
 <p>In the current implementation of the spherical atmospheric layer propagation geometry, wrapping of ray paths across the global poles is not enabled so that ray paths are terminated if they extend beyond latitudes of <span class="math notranslate nohighlight">\(\pm90^\circ\)</span>.  Wrapping of ray paths at the <span class="math notranslate nohighlight">\(\pm180^\circ\)</span> longitude boundary is included in analysis so that keeping the below bounds allows ray paths to wrap through this boundary.  It should be noted that some of the visualization methods included don’t work well for data that crosses this boundary.  For a smaller region of the globe, the latitude and longitude bounds can be defined as below.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 26%" />
-<col style="width: 29%" />
-<col style="width: 16%" />
-<col style="width: 29%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -260,12 +246,6 @@
 <p><strong>Weakly Non-Linear Waveform Evolution</strong></p>
 <p>Weakly non-linear waveform methods require a single ray path and initialization of the waveform at some location near the source in order to compute the evolution of the waveform along the ray path.  The initial waveform can be specified from a file or through the built in options (‘impulse’, ‘u-wave’, or ‘n-wave’).  The Python interface includes an implementation of the Kinney &amp; Graham scaling laws that enables use of an explosive yield (kg eq. TNT) to initialize the waveform.  The script checks the source altitude and atmosphere file to define the ambient temperature and pressure information and computes the peak overpressure and positive phase duration for the impulse (blastwave) near the source.  See <a class="reference internal" href="advanced.html#advanced"><span class="std std-ref">Advanced Usage</span></a> for a full discussion of waveform calculation usage.  The parameters below are specified in the <code class="code docutils literal notranslate"><span class="pre">[WAVEFORM]</span></code> section of configuration files.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 28%" />
-<col style="width: 30%" />
-<col style="width: 16%" />
-<col style="width: 27%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -349,16 +329,10 @@
 </table>
 </section>
 <section id="two-dimensional-simulation-parameters">
-<h2>Two-Dimensional Simulation Parameters<a class="headerlink" href="#two-dimensional-simulation-parameters" title="Permalink to this heading"></a></h2>
+<h2>Two-Dimensional Simulation Parameters<a class="headerlink" href="#two-dimensional-simulation-parameters" title="Link to this heading"></a></h2>
 <p>Simulation of ray paths in an azimuthal plane (range vs. altitude) using the effective sound speed approximation is parameterized by a set of inclination angles, a single azimuth, a maximum number of possible ground bounces (reflections) and the source altitude (relative to sea level).  Waveform analysis in 2D requires only the source altitude in addition to the above common parameters.  In the below tables, the Point Source Propagation parameters are defined in the <code class="code docutils literal notranslate"><span class="pre">[PROP]</span></code> section of configuration files and the waveform parameters are defined using the <code class="code docutils literal notranslate"><span class="pre">[WAVEFORM]</span></code> header.</p>
 <p><strong>Point Source Propagation</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 26%" />
-<col style="width: 29%" />
-<col style="width: 16%" />
-<col style="width: 29%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -407,12 +381,6 @@
 </table>
 <p><strong>Weakly Non-Linear Waveform Evolution</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 28%" />
-<col style="width: 30%" />
-<col style="width: 15%" />
-<col style="width: 27%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -431,16 +399,10 @@
 </table>
 </section>
 <section id="three-dimensional-simulation-parameters">
-<h2>Three-Dimensional Simulation Parameters<a class="headerlink" href="#three-dimensional-simulation-parameters" title="Permalink to this heading"></a></h2>
+<h2>Three-Dimensional Simulation Parameters<a class="headerlink" href="#three-dimensional-simulation-parameters" title="Link to this heading"></a></h2>
 <p>Computation of ray paths in 3D (Cartesian) geometry requires both a set of inclination angles as well as azimuth angles.  The ‘azimuth’ and ‘inclination’ parameters define single values of the respective angles for simulations focused on a single azimuthal direction or considering propagation at all compass directions from a single radiating inclination, respectively.  The source location for 3D Cartesian simulations requires an <span class="math notranslate nohighlight">\(x\)</span> (east/west), <span class="math notranslate nohighlight">\(y\)</span> (north/south), and altitude.  Because multi-azimuth simulations produce relatively large volumes of ray path data, an option is included to prevent that information from being written to file and instead only return the arrival information where ray paths intercept the ground surface.  In the case of eigenray analysis, both the source and receiver locations are defined in terms of their <span class="math notranslate nohighlight">\(x\)</span> (east/west), <span class="math notranslate nohighlight">\(y\)</span> (north/south) locations.  The receiver location is assumed to be on the ground surface, but the source location can be on the surface or aloft.  The various other eigenray parmaeters are summarized in <a class="reference internal" href="advanced.html#advanced"><span class="std std-ref">Advanced Usage</span></a>.  In the below tables, the Point Source Propagation parameters are defined in the <code class="code docutils literal notranslate"><span class="pre">[PROP]</span></code> section of configuration files, Eigenray Analysis parameters using the <code class="code docutils literal notranslate"><span class="pre">[EiGENRAY]</span></code> header, and the waveform parameters are defined using the <code class="code docutils literal notranslate"><span class="pre">[WAVEFORM]</span></code> header.</p>
 <p><strong>Point Source Propagation</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 26%" />
-<col style="width: 29%" />
-<col style="width: 16%" />
-<col style="width: 29%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -529,12 +491,6 @@
 </table>
 <p><strong>Eigenray Analysis</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 28%" />
-<col style="width: 30%" />
-<col style="width: 15%" />
-<col style="width: 28%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -633,12 +589,6 @@
 </table>
 <p><strong>Weakly Non-Linear Waveform Evolution</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 26%" />
-<col style="width: 29%" />
-<col style="width: 16%" />
-<col style="width: 29%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -667,16 +617,10 @@
 </table>
 </section>
 <section id="spherical-atmosphere-layer-simulation-parameters">
-<h2>Spherical Atmosphere Layer Simulation Parameters<a class="headerlink" href="#spherical-atmosphere-layer-simulation-parameters" title="Permalink to this heading"></a></h2>
+<h2>Spherical Atmosphere Layer Simulation Parameters<a class="headerlink" href="#spherical-atmosphere-layer-simulation-parameters" title="Link to this heading"></a></h2>
 <p>Ray path calculation in a spherical atmospheric layer geometry again utilizes sets of inclination and azimuthal angles and single values can be specified using ‘inclination’ or ‘azimuth’, respectively.  The location of the source (and receiver for eigenray analysis) is defined by the latitude and longitude on the globe.  In most other respects, the parameter set for the spherical geometry methods is identical to that of the 3D Cartesian.  Similar to the 3D Cartesian configuration file header, the Point Source Propagation parameters are defined in the <code class="code docutils literal notranslate"><span class="pre">[PROP]</span></code> section of configuration files, Eigenray Analysis parameters using the <code class="code docutils literal notranslate"><span class="pre">[EiGENRAY]</span></code> header, and the waveform parameters are defined using the <code class="code docutils literal notranslate"><span class="pre">[WAVEFORM]</span></code> header.  The supersonic source parameters can be specified using <code class="code docutils literal notranslate"><span class="pre">[SUPERSONIC]</span></code> header.</p>
 <p><strong>Point Source Propagation</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 26%" />
-<col style="width: 29%" />
-<col style="width: 16%" />
-<col style="width: 29%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -765,12 +709,6 @@
 </table>
 <p><strong>Eigenray Analysis</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 28%" />
-<col style="width: 30%" />
-<col style="width: 15%" />
-<col style="width: 28%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -869,12 +807,6 @@
 </table>
 <p><strong>Weakly Non-Linear Waveform Evolution</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 26%" />
-<col style="width: 29%" />
-<col style="width: 16%" />
-<col style="width: 29%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td colspan="2"><p><strong>Parameter</strong></p></td>
 <td colspan="2"><p><strong>Info</strong></p></td>
@@ -903,12 +835,6 @@
 </table>
 <p><strong>Supersonic Source Simulation</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 26%" />
-<col style="width: 33%" />
-<col style="width: 14%" />
-<col style="width: 26%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><strong>Parameter</strong></p></td>
 <td><p><strong>Info</strong></p></td>

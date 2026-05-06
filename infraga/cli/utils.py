@@ -14,6 +14,7 @@ import click
 import os
 import sys 
 import wget
+import requests
 import fnmatch
 import subprocess
 import shlex
@@ -31,12 +32,18 @@ import cartopy
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 from pyproj import Geod
-from scipy import interpolate
+from scipy import interpolate, stats
+
 from netCDF4 import Dataset
 
 sph_proj = Geod(ellps='sphere')
 
 pkg_loc = find_spec('infraga').submodule_search_locations[0]
+
+
+##########################
+## Offline Cartopy Maps ##
+##########################
 
 def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
     # call this function to initialize the use of offline maps.  turn_on will initialize the pre_existing_data_directory
@@ -181,6 +188,88 @@ def build_g2s_grid(g2s_path, output_path, src_info=None, celerity_est=0.29):
     print('\t' + "infraga sph prop --atmo-prefix " + output_path + ". --grid-lats " + output_path + ".lats.dat --grid-lons " + output_path + ".lons.dat" + '\n')
 
 
+###########################
+##  ETOPO 2022 Download  ##
+###########################
+etopo_2022_file = find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO_2022_v1_30s_N90W180_surface.nc"
+
+def _download_etopo_2022():
+    print('\n' + "*" * 25 +'\n' + "ETOPO 2022 file not found" + '\n' + "Downloading from https://www.ngdc.noaa.gov/thredds/fileServer/global/")
+    etopo2022_url = "https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/30s/30s_surface_elev_netcdf/ETOPO_2022_v1_30s_N90W180_surface.nc"
+    destination = etopo_2022_file
+
+    try:
+        if not os.path.isdir(os.path.split(destination)[0]):
+            os.mkdir(os.path.split(destination)[0])
+        # wget.download(etopo2022_url, destination)
+
+        response = requests.get(etopo2022_url)
+        if response.status_code == 200:
+            with open(destination, "wb") as file:
+                file.write(response.content)
+
+        print("ETOPO file successfully downloaded." + '\n' + "*" * 25 +'\n')
+        return True 
+    
+    except:
+        print("Download failed.")
+        print("Try manual download: " + etopo2022_url)
+        print("Place .nc file in " + find_spec('infraga').submodule_search_locations[0] + "/resources/")
+        print("*" * 25 +'\n')
+        return False 
+
+
+def _interp_etopo(ll_corner, ur_corner, user_topo=None):
+    """
+        Loads and interpolates the ETOPO1 topography
+            data within a region specified by low-left
+            and upper-right corner latitude, longitudes
+
+        Parameters
+        ----------
+        ll_corner : iterable
+            Iterable containing the latitude and longitude
+                of the lower-left corner of the region
+        ur_corner : iterable
+            Iterable containing the latitude and longitude
+                of the upper-right corner of the region
+
+        Returns:
+        elev_interp : scipy.interpolate.RegularGridInterpolator
+            A 2d interpolation of the elevation within 
+                the specified region
+    """
+
+    # load etopo_file and extract grid information
+    if user_topo is not None:
+        topo_data = Dataset(user_topo)
+
+        print("Loaded custom topo file:", user_topo)
+        print("Latitude bounds:", np.round(topo_data.variables['lat'][0], 2), ",", np.round(topo_data.variables['lat'][-1], 2))
+        print("Longitude bounds:", np.round(topo_data.variables['lon'][0], 2), ",", np.round(topo_data.variables['lon'][-1], 2))
+
+    else:
+        topo_data = Dataset(etopo_2022_file)
+
+    grid_lats = topo_data.variables['lat'][:]
+    grid_lons = topo_data.variables['lon'][:]
+    grid_elev = topo_data.variables['z'][:]
+
+    lat_mask = np.logical_and(ll_corner[0] - 2.0 <= grid_lats, grid_lats <= ur_corner[0] + 2.0).nonzero()[0]
+    lon_mask = np.logical_and(ll_corner[1] - 2.0 <= grid_lons, grid_lons <= ur_corner[1] + 2.0).nonzero()[0]
+
+    region_lat = grid_lats[lat_mask]
+    region_lon = grid_lons[lon_mask]
+    region_elev = grid_elev[lat_mask,:][:,lon_mask]
+
+    # Change underwater values to sea surface
+    region_elev[region_elev < 0.0] = 0.0
+
+    return interpolate.RegularGridInterpolator((region_lat, region_lon), region_elev / 1000.0)
+
+
+
+
 ############################
 ##    ECMWF Extraction    ##
 ############################
@@ -221,6 +310,7 @@ def density(z):
 
     return den0 * 10.0**(poly_A / poly_B)
 
+
 def pressure(z, T):
     """
         Computes the atmospheric pressure according to 
@@ -238,46 +328,6 @@ def pressure(z, T):
     """
      
     return density(z) * gasR * T * 10.0
-
-
-def interp_etopo(ll_corner, ur_corner):
-    """
-        Loads and interpolates the ETOPO1 topography
-            data within a region specified by low-left
-            and upper-right corner latitude, longitudes
-
-        Parameters
-        ----------
-        ll_corner : iterable
-            Iterable containing the latitude and longitude
-                of the lower-left corner of the region
-        ur_corner : iterable
-            Iterable containing the latitude and longitude
-                of the upper-right corner of the region
-
-        Returns:
-        elev_interp : scipy.interpolate.RegularGridInterpolator
-            A 2d interpolation of the elevation within 
-                the specified region
-    """
-
-    # load etopo_file and extract grid information
-    etopo1 = Dataset(find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd")
-    grid_lons = etopo1.variables['x'][:]
-    grid_lats = etopo1.variables['y'][:]
-    grid_elev = etopo1.variables['z'][:]
-
-    lat_mask = np.logical_and(ll_corner[0] - 2.0 <= grid_lats, grid_lats <= ur_corner[0] + 2.0).nonzero()[0]
-    lon_mask = np.logical_and(ll_corner[1] - 2.0 <= grid_lons, grid_lons <= ur_corner[1] + 2.0).nonzero()[0]
-
-    region_lat = grid_lats[lat_mask]
-    region_lon = grid_lons[lon_mask]
-    region_elev = grid_elev[lat_mask,:][:,lon_mask]
-
-    # Change underwater values to sea surface
-    region_elev[region_elev < 0.0] = 0.0
-
-    return interpolate.RegularGridInterpolator((region_lat, region_lon), region_elev / 1000.0)
 
 
 def extract_single(ecmwf_file, lat, lon, output):
@@ -311,7 +361,7 @@ def extract_single(ecmwf_file, lat, lon, output):
     n_lat = np.argmin(abs(lat_vals - lat))
     n_lon = np.argmin(abs(lon_vals - lon))
 
-    grnd_lvl_interp = interp_etopo((lat - 1.5, lon - 1.5), (lat + 1.5, lon + 1.5))
+    grnd_lvl_interp = _interp_etopo((lat - 1.5, lon - 1.5), (lat + 1.5, lon + 1.5))
     z_gl = grnd_lvl_interp(lon, lat)[0]
 
     print("Extracting profile at " + str(lat) + ", " + str(lon) + " into " + output + " with ground elevation " + str(z_gl))
@@ -372,7 +422,7 @@ def extract_grid(ecmwf_file, lat_llc, lon_llc, lat_urc, lon_urc, output_id, grid
     np.savetxt(output_id + "lats.dat", grid_lats)
     np.savetxt(output_id + "lons.dat", grid_lons)
 
-    grnd_lvl_interp = interp_etopo((lat_llc, lon_llc), (lat_urc, lon_urc))
+    grnd_lvl_interp = _interp_etopo((lat_llc, lon_llc), (lat_urc, lon_urc))
 
     z_min = 100.0
     for n1, n_lat in enumerate(grid_n_lats):
@@ -421,40 +471,26 @@ def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, outp
     \t infraga utils extract-ecmwf --ecmwf-file EN19110100.nc --option grid  --lat1 30.0 --lon1 -120.0 --lat2 40.0 --lon2 -110.0 --output-path test_grid
 
     '''
+    # Method needs to be updated...
 
-    if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd"):
+    '''
+    if os.path.isfile(etopo_2022_file):
+        continue_check = True
+    else:
+        continue_check = _download_etopo_2022()
+
+    if continue_check:
         if option == "single":
             extract_single(ecmwf_file, lat1, lon1, output_path)
         else:
             extract_grid(ecmwf_file, lat1, lon1, lat2, lon2, output_path, sample_skips)
-    else:
-        print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
-        download_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
-        destination = find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd.gz"
-        try:
-            if not os.path.isdir(os.path.split(destination)[0]):
-                os.mkdir(os.path.split(destination)[0])
-
-            wget.download(download_url, destination)
-            print("Extracting...")
-            os.system("gzip -d " + destination)
-            print("ETOPO file successfully downloaded.  Running extraction...")
-
-            if option == "single":
-                extract_single(ecmwf_file, lat1, lon1, output_path)
-            else:
-                extract_grid(ecmwf_file, lat1, lon1, lat2, lon2, output_path, sample_skips)
-
-        except:
-            print("Download failed.")
-            print("Try manual download: " + download_url)
-            print("Place extracted .grd file in " + find_spec('infraga').submodule_search_locations[0] + "/resources/")
+    '''
 
 
 ################################
 ##     Terrain Extraction     ##
 ################################   
-def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=1.852, show_fig=True):
+def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=0.1, show_fig=True, user_topo=None):
     """
         Extract topography information along a line defined
             by source and receiver locations (latitude, 
@@ -483,7 +519,7 @@ def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=1.852, show_fig=True):
     # note: src_loc is (lat, lon), Geod returns (lon, lat) so indices reverse
     ll_corner = [min(src_loc[0], rcvr_loc[0]) - 0.5, min(src_loc[1], rcvr_loc[1]) - 0.5]
     ur_corner = [max(src_loc[0], rcvr_loc[0]) + 0.5, max(src_loc[1], rcvr_loc[1]) + 0.5]
-    elev_interp = interp_etopo(ll_corner, ur_corner)
+    elev_interp = _interp_etopo(ll_corner, ur_corner, user_topo=user_topo)
 
     # Etopo1 has resolution of 1 arc minute = 1.852 kms, so write that resolution to file
     N = int((sph_proj.inv(src_loc[1], src_loc[0], rcvr_loc[1], rcvr_loc[0], radians=False)[2] / 1000.0) / resol)
@@ -517,7 +553,7 @@ def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=1.852, show_fig=True):
         plt.show()
 
 
-def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852, show_fig=True):
+def pull_line(src_loc, azimuth, rng_max, file_out, resol=0.1, show_fig=True, user_topo=None):
     """
         Extract topography information along a line defined
             by a great circle path from a source location 
@@ -551,10 +587,10 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852, show_fig=True):
     ll_corner = [min(src_loc[0], end_loc[1]) - 0.5, min(src_loc[1], end_loc[0]) - 0.5]
     ur_corner = [max(src_loc[0], end_loc[1]) + 0.5, max(src_loc[1], end_loc[0]) + 0.5]
 
-    elev_interp = interp_etopo(ll_corner, ur_corner)
+    elev_interp = _interp_etopo(ll_corner, ur_corner, user_topo=user_topo)
 
     # Etopo1 has resolution of 1 arc minute = 1.852 kms, so write that resolution to file
-    N = int(rng_max / resol)
+    N = int(rng_max / resol)   
     line_pnts = sph_proj.npts(src_loc[1], src_loc[0], end_loc[0], end_loc[1], N, radians=False)
     rng_vals, elev_vals = np.empty(N), np.empty(N)
 
@@ -576,7 +612,7 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852, show_fig=True):
 
     if show_fig:
         # interpolate at 4x resolution to plot
-        N = int(rng_max / resol * 4)
+        N = int((rng_max / resol) * 4)
         line_pnts = sph_proj.npts(src_loc[1], src_loc[0], end_loc[0], end_loc[1], N, radians=False)
         rng_vals, elev_vals = np.empty(N), np.empty(N)
 
@@ -590,7 +626,7 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=1.852, show_fig=True):
         plt.show()
     
 
-def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=1.852, show_fig=True):
+def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=0.2, show_fig=False, user_topo=None):
     """
         Extract topography information along a series of lines
             defined by great circle paths from a source location 
@@ -628,7 +664,7 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=1.852, show_fig
     ll_corner = S_lim[1] - 0.5, W_lim[0] - 0.5
     ur_corner = N_lim[1] + 0.5, E_lim[0] + 0.5 
 
-    elev_interp = interp_etopo(ll_corner, ur_corner)
+    elev_interp = _interp_etopo(ll_corner, ur_corner, user_topo=user_topo)
 
     N = int(rng_max / resol)
     rng_vals, elev_vals = np.empty(N), np.empty(N)
@@ -636,7 +672,6 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=1.852, show_fig
     if show_fig:
         plt.figure(figsize=(10, 3))
         plt.show(block=False)
-
 
     for az_val in np.arange(0, 360.0 - az_resol / 2.0, az_resol):
         end_pnt = sph_proj.fwd(src_loc[1], src_loc[0], az_val, rng_max * 1.0e3, radians=False)
@@ -675,7 +710,8 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=1.852, show_fig
             plt.pause(0.01)
             plt.clf()
 
-def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852, show_fig=True):
+
+def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=0.2, show_fig=True, user_topo=None):
     """
         Extract topography information across a region defined
             by the lower-left and upper-right corner latitudes
@@ -712,7 +748,7 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852, show_fig=
         return
 
     # load etopo_file and interpolate within region
-    elev_interp = interp_etopo(ll_corner, ur_corner)
+    elev_interp = _interp_etopo(ll_corner, ur_corner, user_topo=user_topo)
 
     # define dx, dy values of corners
     az, _, dr = sph_proj.inv(src_loc[1], src_loc[0], ll_corner[1], ll_corner[0])
@@ -723,30 +759,30 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=1.852, show_fig=
 
     x_vals = np.arange(ll_x, ur_x, resol)
     y_vals = np.arange(ll_y, ur_y, resol)
-    xy_elev = np.empty((len(x_vals), len(y_vals)))
+    
+    print("Evaluating terrain across grid...")
+    # note: infraGA methods to ingest topo file can't recognize header notation yet, so no header in these files
+    
+    X,Y = np.meshgrid(x_vals, y_vals, indexing='ij')
+    x_grid = X.flatten()
+    y_grid = Y.flatten()
+
+    pnts = np.array(sph_proj.fwd([src_loc[1]] * len(x_grid), [src_loc[0]] * len(y_grid), np.degrees(np.arctan2(x_grid, y_grid)), np.sqrt(x_grid**2 + y_grid**2) * 1.0e3, radians=False))
+    z_grid = elev_interp((pnts[1], pnts[0]))
     
     print("Writing terrain info into file:", file_out)
-    output = open(file_out, 'w')
-    # print("# Rng (E/W) [km]" + '\t' + "Rng (N/S) [km]"  + '\t' + "Elev [km]", file=output)
-    # note: infraGA methods to ingest topo file can't recognize header notation yet, so no header in these files
-    for n in range(len(x_vals)):
-        for m in range(len(y_vals)):
-            pnt = sph_proj.fwd(src_loc[1], src_loc[0], np.degrees(np.arctan2(x_vals[n], y_vals[m])), np.sqrt(x_vals[n]**2 + y_vals[m]**2) * 1.0e3, radians=False)
-            xy_elev[n][m] = elev_interp((pnt[1], pnt[0]))
-            print(x_vals[n], y_vals[m], xy_elev[n][m], file=output)
-    output.close()
+    np.savetxt(file_out, np.vstack((x_grid, y_grid, z_grid)).T)
 
     if show_fig:
-        XX, YY = np.meshgrid(x_vals, y_vals)
-        plt.pcolormesh(XX, YY, xy_elev.T, cmap=plt.cm.terrain, vmin=-1.4, vmax=5.0)
+        print("Plotting terrain....")
+        plt.pcolormesh(X, Y, z_grid.reshape(X.shape), cmap=plt.cm.terrain, vmin=-1.4, vmax=5.0)
         plt.xlabel("Range (E/W) [km]")
         plt.ylabel("Range (N/S) [km]")
         plt.colorbar(label="Elevation [km]")
-
         plt.show()
 
 
-def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None, rcvr_file=None):
+def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None, rcvr_file=None, user_topo=None):
     """
         Extract topography information across a region defined
             by the lower-left and upper-right corner latitudes
@@ -768,10 +804,14 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
     print(" to " + str(ur_corner[0]) + ", " + str(ur_corner[1]))
 
     # load etopo_file and extract grid information
-    etopo1 = Dataset(find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd")
-    grid_lons = etopo1.variables['x'][:]
-    grid_lats = etopo1.variables['y'][:]
-    grid_elev = etopo1.variables['z'][:]
+    if user_topo is not None:
+        topo_data = Dataset(user_topo)
+    else:
+        topo_data = Dataset(etopo_2022_file)
+
+    grid_lats = topo_data.variables['lat'][:]
+    grid_lons = topo_data.variables['lon'][:]
+    grid_elev = topo_data.variables['z'][:]
 
     lat_mask = np.logical_and(ll_corner[0] <= grid_lats, grid_lats <= ur_corner[0]).nonzero()[0]
     lon_mask = np.logical_and(ll_corner[1] <= grid_lons, grid_lons <= ur_corner[1]).nonzero()[0]
@@ -780,14 +820,15 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
     region_lon = grid_lons[lon_mask]
     region_elev = grid_elev[lat_mask,:][:,lon_mask]
 
-    output = open(file_out, 'w')
-    # print("# Latitude [deg]" + '\t' + "Longitude [deg]"  + '\t' + "Elev [km]", file=output)
     # note: infraGA methods to ingest topo file can't recognize header notation yet, so no header in these files
     print("Writing terrain info into file:", file_out)
-    for n in range(len(region_lat)):
-        for m in range(len(region_lon)):
-            print(region_lat[n], region_lon[m], max(region_elev[n][m], 0.0) / 1.0e3, file=output)
-    output.close()
+    LAT, LON = np.meshgrid(region_lat, region_lon, indexing='ij')
+    lat_grid, lon_grid = LAT.flatten(), LON.flatten()
+    
+    z_grid = region_elev.flatten() / 1.0e3
+    z_grid[z_grid < 0.0] = 0.0
+
+    np.savetxt(file_out, np.vstack((lat_grid, lon_grid, z_grid)).T)
 
     if show_fig:
         print("Plotting terrain on map.")
@@ -852,8 +893,8 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
 @click.option("--lon1", help="Longitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)", default=-110.0)
 @click.option("--lat2", help="Latitude of second point (end point for 'pnt2pnt', upper-right corner for grids)", default=30.0)
 @click.option("--lon2", help="Longitude of second point (end point for 'pnt2pnt', upper-right corner for grids)", default=-114.0)
-@click.option("--ref-lat", help="Reference latitude of second point (0.0 for xy-grid option)", default=None, type=float)
-@click.option("--ref-lon", help="Reference longitude of second point (0.0 for xy-grid option)", default=None, type=float)
+@click.option("--lat-ref", help="Reference latitude of second point (0.0 for xy-grid option)", default=None, type=float)
+@click.option("--lon-ref", help="Reference longitude of second point (0.0 for xy-grid option)", default=None, type=float)
 @click.option("--azimuth", help="Azimuth of great circle path for line option", default=-90.0)
 @click.option("--range", help="Great circle distance for line option", default=1000.0)
 @click.option("--output-file", help="Output file", prompt="Specify output file: ")
@@ -861,7 +902,9 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
 @click.option("--rcvr-file", help="File containing stations to plot on map", default=None)
 @click.option("--nx2d-resol", help="Azimuth resolution for Nx2d geom", default=3.0)
 @click.option("--offline-maps-dir", help="Use directory for offline cartopy maps", default=None)
-def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, range, output_file, show_terrain, rcvr_file, nx2d_resol, offline_maps_dir):
+@click.option("--custom-topo", help="User specified topography files", default=None)
+@click.option("--rng-resol", help="Horizontal range resolution (default: 1.0 km)", default=1.0)     # ETOPO 2022 resolution of 30 arc seconds = 0.926 km, so write that resolution to file
+def extract_terrain(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, range, output_file, show_terrain, rcvr_file, nx2d_resol, offline_maps_dir, custom_topo, rng_resol):
     '''
     Extract lines or grids of terrain information from an ETOPO1 file
 
@@ -870,64 +913,43 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, ref_lat, ref_lon, azimuth, ran
     \t infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth -90.0 --range 750.0 --output-file line_topo.dat
     \t infraga utils extract-terrain --geom pnt2pnt --lat1 40.0 --lon1 -102.5 --lat2 40.0 --lon2 -110.0 --output-file line_topo.dat
     \t infraga utils extract-terrain --geom nx2d --lat1 40.0 --lon1 -102.5 --range 500.0 --nx2d-resol 3.0 --output-file nx2d_test
-    \t infraga utils extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
-    \t infraga utils extract-terrain --geom latlon-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
+    \t infraga utils extract-terrain --geom xy-grid --lat1 37.5 --lon1 -107.5 --lat2 42.5 --lon2 -102.5 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
+    \t infraga utils extract-terrain --geom latlon-grid --lat1 37.5 --lon1 -107.5 --lat2 42.5 --lon2 -102.5 --output-file sph_topo.dat
 
     '''
+
 
     if offline_maps_dir is not None:
         use_offline_maps(offline_maps_dir)
 
-    if ref_lat is None:
-        ref_lat = lat1
+    if lat_ref is None: lat_ref = lat1
+    if lon_ref is None: lon_ref = lon1
 
-    if ref_lon is None:
-        ref_lon = lon1
+    if custom_topo is None:
+        if os.path.isfile(etopo_2022_file):
+            continue_check = True
+        else:
+            continue_check = _download_etopo_2022()
+    elif os.path.isfile(custom_topo):
+        continue_check = True
+    else:
+        click.echo("Specified topography file is invalid.")
+        continue_check = False 
 
-    if os.path.isfile(find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd"):
+    if continue_check:
         if geom == "line":
-            pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_terrain)
+            pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_terrain, resol=rng_resol, user_topo=custom_topo)
         elif geom == "pnt2pnt":
-            pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
+            pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain, resol=rng_resol, user_topo=custom_topo)
         elif geom == "nx2d":
-            pull_Nx2d((lat1, lon1), range, output_file, az_resol=nx2d_resol, show_fig=show_terrain)
+            pull_Nx2d((lat1, lon1), range, output_file, az_resol=nx2d_resol, show_fig=show_terrain, resol=rng_resol, user_topo=custom_topo)
         elif geom == "xy-grid":
-            pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
+            pull_xy_grid((lat_ref, lon_ref), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain, resol=rng_resol, user_topo=custom_topo)
         elif geom == "latlon-grid":
-            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain, src_loc=(ref_lat, ref_lon), rcvr_file=rcvr_file)
+            pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain, src_loc=(lat_ref, lon_ref), rcvr_file=rcvr_file, user_topo=custom_topo)
         else:
             print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'nx2d', 'xy-grid' or 'latlon-grid')")        
-    else:
-        print("Topography file not found.  Downloading from https://www.ngdc.noaa.gov/mgg/global/")
-        download_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
-        destination = find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO1_Ice_g_gmt4.grd.gz"
-        wget.download(download_url, destination)
 
-        try:
-            if not os.path.isdir(os.path.split(destination)[0]):
-                os.mkdir(os.path.split(destination)[0])
-
-            wget.download(download_url, destination)
-            print("Extracting...")
-            os.system("gzip -d " + destination)
-            print("ETOPO file successfully downloaded.  Running extraction...")
-
-            if geom == "line":
-                pull_line((lat1, lon1), azimuth, range, output_file, show_fig=show_terrain)
-            elif geom == "pnt2pnt":
-                pull_pnt2pnt((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
-            elif geom == "nx2d":
-                pull_Nx2d((lat1, lon1), range, output_file, az_resol=nx2d_resol, show_fig=show_terrain)
-            elif geom == "xy-grid":
-                pull_xy_grid((ref_lat, ref_lon), (lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain)
-            elif geom == "latlon-grid":
-                pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain, src_loc=(ref_lat, ref_lon), rcvr_file=rcvr_file)  
-            else:
-                print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'nx2d', 'xy-grid' or 'latlon-grid')")        
-        except:
-            print("Download failed.")
-            print("Try manual download: " + download_url)
-            print("Place extracted .grd file in " + find_spec('infraga').submodule_search_locations[0] + "/resources/")
 
 
 @click.command('nearby-arrivals', short_help="Identify arrivals neary a specified receiver")
@@ -1004,4 +1026,175 @@ def nearby_arrivals(arrivals, rcvr_lat, rcvr_lon, dr_tolerance, arrival_toleranc
         print('\t' + "Turning height [km]: " + str(line[7]))
         print('\t' + "Arrival inclination and back azimuth [deg]: " + str(line[8]) + ", " + str(line[9]))
         print('\t' + "Predicted attenuation (transport, S&B) [dB rel. 1 km]: " + str(line[10]) + ", " + str(line[11]) + '\n')
+
+
+
+
+@click.command('normal-projection', short_help="Compute normal vectors to terrain into launch angles")
+@click.option("--lat", help="Latitude of source region center", default=41.30)
+@click.option("--lon", help="Longitude of source region center", default=129.08)
+@click.option("--radius", help="Radius of source region [km]", default=20.0)
+@click.option("--steepening", help="Steepening percentage [%] (default 50)", default=50.0)
+@click.option("--output-file", help="Output file", default=None)
+@click.option("--show-fig", help="Visualize results", default=True)
+@click.option("--offline-maps-dir", help="Use directory for offline cartopy maps", default=None)
+@click.option("--custom-topo", help="User specified topography files", default=None)
+def normal_projection(lat, lon, radius, steepening, output_file, show_fig, offline_maps_dir, custom_topo):
+    '''
+    Extract lines or grids of terrain information from an ETOPO1 file
+
+    \b
+    Examples:
+    \t infraga utils normal-projection --lat 41.3 --lon 129.08 --radius 20.0 --output-file norm_proj.dat
+
+    '''
+
+    click.echo("Extracting normal vector angles to estimate surface-motion induced radiation pattern")
+    # load etopo_file and extract grid information
+    if custom_topo is None:
+        if os.path.isfile(etopo_2022_file):
+            continue_check = True
+        else:
+            continue_check = _download_etopo_2022()
+    elif os.path.isfile(custom_topo):
+        continue_check = True
+    else:
+        click.echo("  Specified topography file is invalid.")
+        continue_check = False 
+
+    if continue_check:
+        click.echo("  Extracting terrain from file and masking to source region...")
+        if custom_topo is not None:
+            topo_data = Dataset(custom_topo)
+        else:
+            topo_data = Dataset(etopo_2022_file)
+
+        grid_lats = topo_data.variables['lat'][:]
+        grid_lons = topo_data.variables['lon'][:]
+        grid_elev = topo_data.variables['z'][:]
+        
+        # Determine region bounds
+        bnd_lons, bnd_lats, _ = sph_proj.fwd([lon] * 359, [lat] * 359, np.arange(0.0, 359.0, 1.0), [radius * 1.0e3] * 359, radians=False)
+        ll_corner = [min(bnd_lats), min(bnd_lons)]
+        ur_corner = [max(bnd_lats), max(bnd_lons)]
+
+        lat_mask = np.logical_and(ll_corner[0] <= grid_lats, grid_lats <= ur_corner[0]).nonzero()[0]
+        lon_mask = np.logical_and(ll_corner[1] <= grid_lons, grid_lons <= ur_corner[1]).nonzero()[0]
+
+        region_lat = grid_lats[lat_mask]
+        region_lon = grid_lons[lon_mask]
+        region_elev = grid_elev[lat_mask,:][:,lon_mask]
+
+        LON, LAT = np.meshgrid(region_lon, region_lat)
+
+        # generate radial mask
+        radial_vals = sph_proj.inv(lon * np.ones_like(LON), lat * np.ones_like(LAT), LON, LAT)[2] * 1.0e-3
+        radial_mask = radial_vals < radius
+
+        click.echo("  Computing terrain gradients and normal vector angles...")
+
+        # Compute gradients
+        dx = 6371.0 * np.sin(np.radians(LAT[radial_mask])) * np.radians(np.gradient(LON, axis=1))[radial_mask]
+        dy = 6371.0 * np.radians(np.gradient(LAT, axis=0))[radial_mask]
+
+        dzdx = (np.gradient(region_elev / 1.0e3, axis=1)[radial_mask] / dx) * (1.0 + steepening / 100.0)
+        dzdy = (np.gradient(region_elev / 1.0e3, axis=0)[radial_mask] / dy) * (1.0 + steepening / 100.0)
+
+        # compute launch angles
+        phi = np.degrees(np.arctan2(-dzdx, -dzdy))
+        theta = np.degrees(np.arctan(1.0 / np.sqrt(dzdx**2 + dzdy**2)))
+
+        a = (90.0 - theta) * np.sin(np.radians(phi))
+        b = (90.0 - theta) * np.cos(np.radians(phi))
+        kernel = stats.gaussian_kde(np.vstack([a.flatten(), b.flatten()]))
+
+        phi_out = np.arange(-180.0, 180.0, 1.0)
+        theta_out = np.arange(0.0, 89.0, 0.5)
+        THETA, PHI = np.meshgrid(theta_out, phi_out)
+
+        A = (90.0 - THETA) * np.sin(np.radians(PHI))
+        B = (90.0 - THETA) * np.cos(np.radians(PHI))
+        P = kernel([A.flatten(), B.flatten()])       
+
+        # write this out to file if specified 
+        if output_file is not None:
+            click.echo("  Writing results to file...")
+            np.savetxt(output_file, np.vstack([THETA.flatten(), PHI.flatten(), P / P.max()]).T)
+
+        if show_fig:
+            print("  Plotting terrain on map...")
+            map_proj = cartopy.crs.PlateCarree()
+
+            fig = plt.figure(figsize=(15, 6))
+            ax1 = fig.add_subplot(1, 2, 1, projection=map_proj)
+
+            ax1.set_xlim(ll_corner[1], ur_corner[1])
+            ax1.set_ylim(ll_corner[0], ur_corner[0])
+
+            gl = ax1.gridlines(crs=map_proj, draw_labels=True, linewidth=0.5, color='gray', alpha=0.5, linestyle='--')
+            gl.top_labels = False
+            gl.right_labels = False
+
+            lat_tick, lon_tick = max(3, int((ur_corner[0] - ll_corner[0]) / 5)), max(3, int((ur_corner[1] - ll_corner[1]) / 5))
+            while len(np.arange(ll_corner[0], ur_corner[0], lat_tick)) < 3:
+                lat_tick = lat_tick / 2.0
+            while len(np.arange(ll_corner[1], ur_corner[1], lon_tick)) < 3:
+                lon_tick = lon_tick / 2.0
+
+            gl.xlocator = mticker.FixedLocator(np.arange(ll_corner[1] - np.ceil(lon_tick / 2), ur_corner[1] + lon_tick, lon_tick))
+            gl.ylocator = mticker.FixedLocator(np.arange(ll_corner[0] - np.ceil(lat_tick / 2), ur_corner[0] + lat_tick, lat_tick))
+            gl.xformatter = LONGITUDE_FORMATTER
+            gl.yformatter = LATITUDE_FORMATTER
+
+            # Add features (coast lines, borders)
+            if (ur_corner[1] - ll_corner[0]) < 20.0:
+                ax1.add_feature(cartopy.feature.STATES, linewidth=0.5)
+                ax1.add_feature(cartopy.feature.LAKES, linewidth=0.5)
+                ax1.add_feature(cartopy.feature.RIVERS, linewidth=0.5)
+            ax1.add_feature(cartopy.feature.COASTLINE, linewidth=0.5)
+            ax1.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
+
+            cmesh = ax1.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, transform=map_proj, vmin=-1.4, vmax=5.0)
+
+            vec_norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
+            ax1.quiver(LON[radial_mask], LAT[radial_mask], -dzdx / vec_norm, -dzdy / vec_norm, transform=map_proj)
+
+            divider = make_axes_locatable(ax1)
+            ax_cb = divider.new_horizontal(size="5%", pad=0.1, axes_class=plt.Axes)
+            fig.add_axes(ax_cb)
+            cbar = plt.colorbar(cmesh, cax=ax_cb)
+            cbar.set_label('Elevation [km]')
+            ax1.set_title("Terrain and Normal Vector Projections")
+
+            # plot scatter of normal vector angles
+            ax2 = fig.add_subplot(1, 2, 2, projection='polar')
+            ax2.set_theta_zero_location("N")
+            ax2.set_theta_direction(-1)
+
+            ax2.set_xticks(np.linspace(0, 2 * np.pi, 4, endpoint=False))
+            ax2.set_xticklabels(['N', 'E', 'S', 'W'])
+
+            bnd_thresh = 0.01
+            phi_bnd = np.arange(-180.0, 180.0, 1.0)
+            th_bnd = []
+            for phi_k in phi_bnd:
+                TH2, PH2 = np.meshgrid(np.arange(0.0, 89.0, 0.5), [phi_k])
+                A2 = (90.0 - TH2) * np.sin(np.radians(PH2))
+                B2 = (90.0 - TH2) * np.cos(np.radians(PH2))
+                P2 = kernel([A2.flatten(), B2.flatten()]) / P.max()
+                th_bnd = th_bnd + [TH2.flatten()[P2 > bnd_thresh][0]]
+
+            incl_min = 15.0 * np.floor((np.min(th_bnd)) / 15.0)
+
+            ax2.set_ylim(90.0, incl_min)
+            ax2.set_yticks(np.arange(incl_min, 90.0, 15.0))
+            ax2.yaxis.set_major_formatter(mticker.StrMethodFormatter(u"{x}°"))
+
+            ax2.scatter(np.radians(PHI.flatten()), THETA.flatten(), c=P, cmap=plt.cm.gist_stern_r)         
+            ax2.plot(np.radians(phi_bnd), th_bnd, linestyle='dashed', linewidth=1.5, color='slateblue')
+            ax2.plot(np.radians(phi), theta, marker='.', linestyle='none', color='0.4', markersize=1.0)
+            ax2.set_title("Normal Vector Azimuth and Inclination Angles")
+
+            plt.show()               
+
 

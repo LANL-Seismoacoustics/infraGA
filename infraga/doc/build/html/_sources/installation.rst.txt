@@ -68,6 +68,62 @@ To deactivate an active environment, use
 
 Note: in some cases Linux systems require activation via :code:`source activate infraga_env`, so if you're getting an Anaconda error about activating the environment try this alternate method.
 
+
+-------------------------------------------
+Python Geophysics Suite (PyGS) Installation
+-------------------------------------------
+
+Infrasound software tools developed by LANL SMEs have become increasing coupled in usage so that having them in a common Python environment is useful.  An in-development Python Geophysics Suite (PyGS) YML file is included in the InfraPy repository that will build an environment and install InfraPy, infraGA/GeoAc, and stochprop from GitHub.  It can be run using the same syntax as above,
+
+.. code-block:: bash
+
+    >> conda env create -f pygs_env.yml
+
+All dependencies will be installed and the LANL Python libraries pulled from GitHub to complete the environment.  To finish setting up, activate the environment and compile the infraGA/GeoAc software,
+
+.. code-block:: bash
+
+    >> conda activate pygs
+    >> infraga compile 
+
+---------------------------------------------------------
+Python Geophysics Suite (PyGS) Installation - Dev Version
+---------------------------------------------------------
+
+Because the PyGS YML file installs via GitHub cloning, it doesn't copy the examples/ directories from the various libraries for demonstration and also doesn't leave the source code easily accessible for any de-bugging or customization.  A separate developer version is also included that requires a few more steps.  Build an instance of the environment with just InfraPy included using the included YML file,
+
+.. code-block:: bash
+
+    >> conda env create -f pygs-dev_env.yml
+
+Next, clone the other repositories if you don't have them,
+
+.. code-block:: bash
+
+    >> git clone https://github.com/LANL-Seismoacoustics/infrapy.git
+    >> git clone https://github.com/LANL-Seismoacoustics/stochprop.git
+
+If you have SSH keys set up for GitHub, you can alternately clone as,
+
+.. code-block:: bash
+	
+    >> git clone git@github.com:LANL-Seismoacoustics/infrapy.git
+    >> git clone git@github.com:LANL-Seismoacoustics/stochprop.git
+
+Once the PyGS development environment is built, activate it using :code:`conda activate pygs_dev` and then use pip with the :code:`-e` flag to install InfraPy and stochprop and compile the infraGA/GeoAc ray tracing methods,
+
+.. code-block:: bash
+
+    >> cd /path/to/infrapy
+    >> pip install -e .
+
+    >> infraga compile 
+
+    >> cd /path/to/stochprop
+    >> pip install -e .
+
+This installation will clone the example directories with all relevant data and also allow you to interact with other :code:`git` branches for customization.
+
 **Testing**
 
 Once the installation is complete, you can test that the InfraGA/GeoAc methods are set up and accessible by first activating the *infraga* environment with:

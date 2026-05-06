@@ -2066,6 +2066,7 @@ def run_3d_eig_wvfrm(config_file, atmo_file, atmo_prefix, grid_x, grid_y, incl_m
 ##                                ##
 ####################################
 def _extract_loc_from_header(file_name):
+    lat, lon, z_grnd = 30.0, 0.0, 0.0
     with open(file_name, 'r') as file:
         for line in file:
             if "# Location = [" in line:
