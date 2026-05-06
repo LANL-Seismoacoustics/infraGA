@@ -86,7 +86,7 @@ In addition to building a standard grid, the methods allow one to include atmosp
 
 **Extracting Terrain Profiles**
 
-Terrain files for use in propagation simulations require some specified geometry (lines for the 2D methods, Cartesian grids for the 3D methods, and latitude/longitude grids for spherical atmospheric layer methods).  The built-in utility for generating such terrain files downloads the `ETOPO1 model file <https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz>`_ and extracts the appropriate geometry.  Usage of the method is summarized below.
+Terrain files for use in propagation simulations require some specified geometry (lines for the 2D methods, Cartesian grids for the 3D methods, and latitude/longitude grids for spherical atmospheric layer methods).  The built-in utility for generating such terrain files downloads the `ETOPO 2022 model file <https://www.ncei.noaa.gov/products/etopo-global-relief-model>`_ and extracts the appropriate geometry.  Usage of the method is summarized below.
 
   .. code-block:: none 
 
@@ -95,10 +95,11 @@ Terrain files for use in propagation simulations require some specified geometry
       Extract lines or grids of terrain information from an ETOPO1 file
 
       Examples:
-          infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth -90.0 --range 750.0 --output-file line_topo.dat
-          infraga utils extract-terrain --geom pnt2pnt --lat1 40.0 --lon1 -102.5 --lat2 40.0 --lon2 -110.0 --output-file line_topo.dat
-          infraga utils extract-terrain --geom xy-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --ref-lat 40.0 --ref-lon -105.0 --output-file xy_topo.dat
-          infraga utils extract-terrain --geom latlon-grid --lat1 35.0 --lon1 -110.0 --lat2 45.0 --lon2 -100.0 --output-file sph_topo.dat
+        infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth -90.0 --range 750.0 --output-file line_topo.dat
+        infraga utils extract-terrain --geom pnt2pnt --lat1 40.0 --lon1 -102.5 --lat2 40.0 --lon2 -110.0 --output-file line_topo.dat
+        infraga utils extract-terrain --geom nx2d --lat1 40.0 --lon1 -102.5 --range 500.0 --nx2d-resol 3.0 --output-file nx2d_test
+        infraga utils extract-terrain --geom xy-grid --lat1 37.5 --lon1 -107.5 --lat2 42.5 --lon2 -102.5 --lat-ref 40.0 --lon-ref -105.0 --output-file xy_topo.dat
+        infraga utils extract-terrain --geom latlon-grid --lat1 37.5 --lon1 -107.5 --lat2 42.5 --lon2 -102.5 --output-file sph_topo.dat
 
     Options:
       --geom TEXT              Geometry option ('line', 'pnt2pnt', 'xy-grid' or 'latlon-grid')
@@ -106,8 +107,8 @@ Terrain files for use in propagation simulations require some specified geometry
       --lon1 FLOAT             Longitude of first point (starting point for 'pnt2pnt', lower-left corner for grids)
       --lat2 FLOAT             Latitude of second point (end point for 'pnt2pnt', upper-right corner for grids)
       --lon2 FLOAT             Longitude of second point (end point for 'pnt2pnt', upper-right corner for grids)
-      --ref-lat FLOAT          Reference latitude of second point (0.0 for xy-grid option)
-      --ref-lon FLOAT          Reference longitude of second point (0.0 for xy-grid option)
+      --lat-ref FLOAT          Reference latitude of second point (0.0 for xy-grid option)
+      --lon-ref FLOAT          Reference longitude of second point (0.0 for xy-grid option)
       --azimuth FLOAT          Azimuth of great circle path for line option
       --range FLOAT            Great circle distance for line option
       --output-file TEXT       Output file
@@ -129,30 +130,42 @@ The 3D and latitude/longitude grids require specifying the lower-left and upper-
       :align: center
 
 
-**Extracting Atmosphere Data from ECMWF**
+The ETOPO 2022 model that is automatically downloaded is 30 arc-second resolution (roughly 1 km) and covers the entire globe.  Higher resolution (15 arc-second) model files can be downloaded (`15 arc-second Ice surface elevation netCDF files <https://www.ngdc.noaa.gov/thredds/catalog/global/ETOPO2022/15s/15s_surface_elev_netcdf/catalog.html>`_) and used to generate terrain files for use in ray tracing.  For example, a higher resolution terrain line in the western US can be defined by downloading the model for 45 degrees north and 105 degrees west and specifying:
 
-A tool for extracting G2S-format atmospheric files from an ECMWF netCDF format file has been developed, but not robustly evaluated.  Usage info is summarized below, but ongoing evaluation and de-bugging of the method is needed. 
 
-.. code-block:: none 
+  .. code-block:: none
+    
+    infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth 90.0 --range 250.0 --output-file line_topo.dat --custom-topo ETOPO_2022_v1_15s_N45W105_surface.nc 
 
-  Usage: infraga utils extract-ecmwf [OPTIONS]
 
-    Extract G2S-format atmospheric file(s) from an ECMWF netCDF format file.
+Note that the higher resolution models aren't global and extracting terrain from a region covered by multiple .nc files will require the user to appropriately concatenate the .nc files.
 
-    Note: method needs evaluation with current ECMWF ERA5 sample files (might be 
-    out of date)
 
-    Examples:
-        infraga utils extract-ecmwf --ecmwf-file EN19110100.nc --option single  --lat1 30.0 --lon1 -120.0 --output-path test.met
-        infraga utils extract-ecmwf --ecmwf-file EN19110100.nc --option grid  --lat1 30.0 --lon1 -120.0 --lat2 40.0 --lon2 -110.0 --output-path test_grid
 
-  Options:
-    --ecmwf-file TEXT       ECMWF netCDF file
-    --option TEXT           Extraction option ('single' or 'grid')
-    --lat1 FLOAT            Latitude of first point (latitude for 'single', lower-left corner for 'grid')
-    --lon1 FLOAT            Longitude of first point (longitude for 'single', lower-left corner for 'grid')
-    --lat2 FLOAT            Latitude of second point (not used for 'single', upper-right corner for 'grid')
-    --lon2 FLOAT            Longitude of second point (not used for 'single', upper-right corner for grids)
-    --sample_skips INTEGER  Frequency of samples in the grid option (defaults to 1 to keep every node)
-    --output-path TEXT      Output file
-    -h, --help              Show this message and exit.
+.. **Extracting Atmosphere Data from ECMWF**
+
+..  A tool for extracting G2S-format atmospheric files from an ECMWF netCDF format file has been developed, but not robustly evaluated.  Usage info is summarized below, but ongoing evaluation and de-bugging of the method is needed. 
+
+.. .. code-block:: none 
+
+..  Usage: infraga utils extract-ecmwf [OPTIONS]
+
+..    Extract G2S-format atmospheric file(s) from an ECMWF netCDF format file.
+
+..    Note: method needs evaluation with current ECMWF ERA5 sample files (might be 
+..    out of date)
+
+..    Examples:
+..        infraga utils extract-ecmwf --ecmwf-file EN19110100.nc --option single  --lat1 30.0 --lon1 -120.0 --output-path test.met
+..        infraga utils extract-ecmwf --ecmwf-file EN19110100.nc --option grid  --lat1 30.0 --lon1 -120.0 --lat2 40.0 --lon2 -110.0 --output-path test_grid
+
+..  Options:
+..    --ecmwf-file TEXT       ECMWF netCDF file
+..    --option TEXT           Extraction option ('single' or 'grid')
+..    --lat1 FLOAT            Latitude of first point (latitude for 'single', lower-left corner for 'grid')
+..    --lon1 FLOAT            Longitude of first point (longitude for 'single', lower-left corner for 'grid')
+..    --lat2 FLOAT            Latitude of second point (not used for 'single', upper-right corner for 'grid')
+..    --lon2 FLOAT            Longitude of second point (not used for 'single', upper-right corner for grids)
+..    --sample_skips INTEGER  Frequency of samples in the grid option (defaults to 1 to keep every node)
+..    --output-path TEXT      Output file
+..    -h, --help              Show this message and exit.

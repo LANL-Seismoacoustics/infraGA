@@ -243,6 +243,11 @@ def _interp_etopo(ll_corner, ur_corner, user_topo=None):
     # load etopo_file and extract grid information
     if user_topo is not None:
         topo_data = Dataset(user_topo)
+
+        print("Loaded custom topo file:", user_topo)
+        print("Latitude bounds:", np.round(topo_data.variables['lat'][0], 2), ",", np.round(topo_data.variables['lat'][-1], 2))
+        print("Longitude bounds:", np.round(topo_data.variables['lon'][0], 2), ",", np.round(topo_data.variables['lon'][-1], 2))
+
     else:
         topo_data = Dataset(etopo_2022_file)
 
