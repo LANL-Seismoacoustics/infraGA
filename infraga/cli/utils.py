@@ -35,6 +35,7 @@ from pyproj import Geod
 from scipy import interpolate, stats
 
 from netCDF4 import Dataset
+from osgeo import gdal
 
 sph_proj = Geod(ellps='sphere')
 
@@ -846,7 +847,8 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
         gl.top_labels = False
         gl.right_labels = False
 
-        lat_tick, lon_tick = int((ur_corner[0] - ll_corner[0]) / 5), int((ur_corner[1] - ll_corner[1]) / 5)
+        lat_tick, lon_tick = max(2, int((ur_corner[0] - ll_corner[0]) / 5.0)), max(2, int((ur_corner[1] - ll_corner[1]) / 5.0))
+
         while len(np.arange(ll_corner[0], ur_corner[0], lat_tick)) < 3:
             lat_tick = lat_tick / 2.0
         while len(np.arange(ll_corner[1], ur_corner[1], lon_tick)) < 3:
@@ -1035,13 +1037,14 @@ def nearby_arrivals(arrivals, rcvr_lat, rcvr_lon, dr_tolerance, arrival_toleranc
 @click.option("--lon", help="Longitude of source region center", default=129.08)
 @click.option("--radius", help="Radius of source region [km]", default=20.0)
 @click.option("--steepening", help="Steepening percentage [%] (default 50)", default=50.0)
-@click.option("--output-file", help="Output file", default=None)
+@click.option("--mask-incl", help="Mask inclination [deg] (default 80)", default=80.0)
+@click.option("--output-id", help="Output file", default=None)
 @click.option("--show-fig", help="Visualize results", default=True)
 @click.option("--offline-maps-dir", help="Use directory for offline cartopy maps", default=None)
 @click.option("--custom-topo", help="User specified topography files", default=None)
-def normal_projection(lat, lon, radius, steepening, output_file, show_fig, offline_maps_dir, custom_topo):
+def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_fig, offline_maps_dir, custom_topo):
     '''
-    Extract lines or grids of terrain information from an ETOPO1 file
+    Load orography and compute normal vector angles to map into surface motion radiation pattern
 
     \b
     Examples:
@@ -1050,6 +1053,10 @@ def normal_projection(lat, lon, radius, steepening, output_file, show_fig, offli
     '''
 
     click.echo("Extracting normal vector angles to estimate surface-motion induced radiation pattern")
+
+    if offline_maps_dir is not None:
+        use_offline_maps(offline_maps_dir)
+
     # load etopo_file and extract grid information
     if custom_topo is None:
         if os.path.isfile(etopo_2022_file):
@@ -1065,13 +1072,44 @@ def normal_projection(lat, lon, radius, steepening, output_file, show_fig, offli
     if continue_check:
         click.echo("  Extracting terrain from file and masking to source region...")
         if custom_topo is not None:
-            topo_data = Dataset(custom_topo)
+            if custom_topo.lower().endswith('.nc'):
+                print("    Loading data from " + custom_topo)
+                topo_data = Dataset(custom_topo)
+
+                grid_lats = topo_data.variables['lat'][:]
+                grid_lons = topo_data.variables['lon'][:]
+                grid_elev = topo_data.variables['z'][:]
+
+            elif custom_topo.lower().endswith('.tif'):
+                print("    Loading data from " + custom_topo)
+
+                gdal.UseExceptions()
+                gdal.PushErrorHandler('CPLQuietErrorHandler')
+
+                ds = gdal.Open(custom_topo)
+                gt = ds.GetGeoTransform()
+
+                lat_min, lat_max = gt[3] + ds.RasterXSize * gt[4] + ds.RasterYSize * gt[5], gt[3]     
+                lon_min, lon_max = gt[0], gt[0] + ds.RasterXSize * gt[1] + ds.RasterYSize * gt[2]
+
+                grid_lats = lat_min + (lat_max - lat_min) * np.arange(ds.RasterYSize) / (ds.RasterYSize - 1)
+                grid_lons = lon_min + (lon_max - lon_min) * np.arange(ds.RasterXSize) / (ds.RasterXSize - 1)
+                grid_elev = np.flip(ds.ReadAsArray(), axis=0)
+
+            else:
+                print('\n' + "Unsupported custom topography file: " + custom_topo)
+                return 
+
+            print("    Extracted latitude bounds:", grid_lats[0], "--> ", grid_lats[-1])
+            print("    Extracted longitude bounds:", grid_lons[0], "--> ", grid_lons[-1])
+            print("    If these don't make sense, check your file format or region indexing")
+
         else:
             topo_data = Dataset(etopo_2022_file)
 
-        grid_lats = topo_data.variables['lat'][:]
-        grid_lons = topo_data.variables['lon'][:]
-        grid_elev = topo_data.variables['z'][:]
+            grid_lats = topo_data.variables['lat'][:]
+            grid_lons = topo_data.variables['lon'][:]
+            grid_elev = topo_data.variables['z'][:]
         
         # Determine region bounds
         bnd_lons, bnd_lats, _ = sph_proj.fwd([lon] * 359, [lat] * 359, np.arange(0.0, 359.0, 1.0), [radius * 1.0e3] * 359, radians=False)
@@ -1104,22 +1142,26 @@ def normal_projection(lat, lon, radius, steepening, output_file, show_fig, offli
         phi = np.degrees(np.arctan2(-dzdx, -dzdy))
         theta = np.degrees(np.arctan(1.0 / np.sqrt(dzdx**2 + dzdy**2)))
 
-        a = (90.0 - theta) * np.sin(np.radians(phi))
-        b = (90.0 - theta) * np.cos(np.radians(phi))
+        upward_mask = theta <= mask_incl
+        a = (90.0 - theta[upward_mask]) * np.sin(np.radians(phi[upward_mask]))
+        b = (90.0 - theta[upward_mask]) * np.cos(np.radians(phi[upward_mask]))
+
         kernel = stats.gaussian_kde(np.vstack([a.flatten(), b.flatten()]))
 
+        # Evaluate the PDF on a grid
         phi_out = np.arange(-180.0, 180.0, 1.0)
         theta_out = np.arange(0.0, 89.0, 0.5)
         THETA, PHI = np.meshgrid(theta_out, phi_out)
 
         A = (90.0 - THETA) * np.sin(np.radians(PHI))
         B = (90.0 - THETA) * np.cos(np.radians(PHI))
-        P = kernel([A.flatten(), B.flatten()])       
+        P = kernel([A.flatten(), B.flatten()])   
+
 
         # write this out to file if specified 
-        if output_file is not None:
+        if output_id is not None:
             click.echo("  Writing results to file...")
-            np.savetxt(output_file, np.vstack([THETA.flatten(), PHI.flatten(), P / P.max()]).T)
+            np.savetxt(output_id + ".dat", np.vstack([THETA.flatten(), PHI.flatten(), P / P.max()]).T)
 
         if show_fig:
             print("  Plotting terrain on map...")
@@ -1154,7 +1196,11 @@ def normal_projection(lat, lon, radius, steepening, output_file, show_fig, offli
             ax1.add_feature(cartopy.feature.COASTLINE, linewidth=0.5)
             ax1.add_feature(cartopy.feature.BORDERS, linewidth=0.5)
 
-            cmesh = ax1.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, transform=map_proj, vmin=-1.4, vmax=5.0)
+            z_min, z_max = np.min(region_elev) / 1.0e3, np.max(region_elev) / 1.0e3
+            if (z_max - z_min) < 1.0:
+                cmesh = ax1.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.cool, transform=map_proj, vmin=z_min, vmax=z_max)
+            else:
+                cmesh = ax1.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, transform=map_proj, vmin=-1.4, vmax=5.0)
 
             vec_norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
             ax1.quiver(LON[radial_mask], LAT[radial_mask], -dzdx / vec_norm, -dzdy / vec_norm, transform=map_proj)
@@ -1190,11 +1236,18 @@ def normal_projection(lat, lon, radius, steepening, output_file, show_fig, offli
             ax2.set_yticks(np.arange(incl_min, 90.0, 15.0))
             ax2.yaxis.set_major_formatter(mticker.StrMethodFormatter(u"{x}°"))
 
-            ax2.scatter(np.radians(PHI.flatten()), THETA.flatten(), c=P, cmap=plt.cm.gist_stern_r)         
-            ax2.plot(np.radians(phi_bnd), th_bnd, linestyle='dashed', linewidth=1.5, color='slateblue')
-            ax2.plot(np.radians(phi), theta, marker='.', linestyle='none', color='0.4', markersize=1.0)
+            ax2.scatter(np.radians(PHI.flatten()), THETA.flatten(), c=P, cmap=plt.cm.nipy_spectral_r)         
+            circle = plt.Circle((0.0, 0.0), (90.0 - mask_incl), transform=ax2.transData._b, color="black", alpha=0.8)
+            ax2.add_artist(circle)
+
+            ax2.plot(np.radians(phi_bnd), th_bnd, linestyle='dashed', linewidth=2.0, color='slateblue')
+            if len(a) < 1.0e3:
+                ax2.plot(np.radians(phi), theta, marker='.', linestyle='none', color='0.25', markersize=1.0)
+
             ax2.set_title("Normal Vector Azimuth and Inclination Angles")
 
-            plt.show()               
+            if output_id is not None:
+                plt.savefig(output_id + ".png", dpi=250.0)           
+            plt.show()
 
 
