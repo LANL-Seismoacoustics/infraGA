@@ -19,6 +19,8 @@ import fnmatch
 import subprocess
 import shlex
 import webbrowser
+import gzip
+import json
 
 from importlib.util import find_spec 
 
@@ -267,8 +269,6 @@ def _interp_etopo(ll_corner, ur_corner, user_topo=None):
     region_elev[region_elev < 0.0] = 0.0
 
     return interpolate.RegularGridInterpolator((region_lat, region_lon), region_elev / 1000.0)
-
-
 
 
 ############################
@@ -1030,8 +1030,6 @@ def nearby_arrivals(arrivals, rcvr_lat, rcvr_lon, dr_tolerance, arrival_toleranc
         print('\t' + "Predicted attenuation (transport, S&B) [dB rel. 1 km]: " + str(line[10]) + ", " + str(line[11]) + '\n')
 
 
-
-
 @click.command('normal-projection', short_help="Compute normal vectors to terrain into launch angles")
 @click.option("--lat", help="Latitude of source region center", default=41.30)
 @click.option("--lon", help="Longitude of source region center", default=129.08)
@@ -1048,7 +1046,7 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
 
     \b
     Examples:
-    \t infraga utils normal-projection --lat 41.3 --lon 129.08 --radius 20.0 --output-file norm_proj.dat
+    \t infraga utils normal-projection --lat 41.3 --lon 129.08 --radius 10.0 --steepening 100.0 --output-id ETOPO_30s
 
     '''
 
@@ -1157,14 +1155,29 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
         B = (90.0 - THETA) * np.cos(np.radians(PHI))
         P = kernel([A.flatten(), B.flatten()])   
 
-
         # write this out to file if specified 
         if output_id is not None:
-            click.echo("  Writing results to file...")
-            np.savetxt(output_id + ".dat", np.vstack([THETA.flatten(), PHI.flatten(), P / P.max()]).T)
+            click.echo('\nWriting results to file...')
+
+            output_dict = {}
+            output_dict['epicenter'] = [lat, lon]
+            output_dict['region radius'] = radius
+            if custom_topo is None:
+                output_dict['terrain model'] = "ETOPO 2022 30-arc second"
+            else:
+                output_dict['terrain model'] = custom_topo
+            output_dict['steepening'] = steepening
+            output_dict['inclination mask'] = mask_incl
+            output_dict['theta'] = list(theta_out)
+            output_dict['phi'] = list(phi_out)
+            output_dict['P'] = list(P)
+
+            with open(output_id + ".json", 'w') as output_file:
+                json.dump(output_dict, output_file, indent=4)
 
         if show_fig:
-            print("  Plotting terrain on map...")
+            print('\nPlotting results...\n  Plotting map view of terrain...')
+
             map_proj = cartopy.crs.PlateCarree()
 
             fig = plt.figure(figsize=(15, 6))
@@ -1198,7 +1211,7 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
 
             z_min, z_max = np.min(region_elev) / 1.0e3, np.max(region_elev) / 1.0e3
             if (z_max - z_min) < 1.0:
-                cmesh = ax1.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.cool, transform=map_proj, vmin=z_min, vmax=z_max)
+                cmesh = ax1.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.BrBG, transform=map_proj, vmin=z_min, vmax=z_max)
             else:
                 cmesh = ax1.pcolormesh(LON, LAT, region_elev / 1.0e3, cmap=plt.cm.terrain, transform=map_proj, vmin=-1.4, vmax=5.0)
 
@@ -1213,6 +1226,7 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
             ax1.set_title("Terrain and Normal Vector Projections")
 
             # plot scatter of normal vector angles
+            print('  Plotting normal vector distribution...')
             ax2 = fig.add_subplot(1, 2, 2, projection='polar')
             ax2.set_theta_zero_location("N")
             ax2.set_theta_direction(-1)
@@ -1247,7 +1261,10 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
             ax2.set_title("Normal Vector Azimuth and Inclination Angles")
 
             if output_id is not None:
+                print('  Saving figure')
                 plt.savefig(output_id + ".png", dpi=250.0)           
-            plt.show()
+            
+            if show_fig:
+                plt.show()
 
 
