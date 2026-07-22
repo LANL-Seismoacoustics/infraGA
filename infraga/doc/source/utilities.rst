@@ -135,7 +135,7 @@ The ETOPO 2022 model that is automatically downloaded is 30 arc-second resolutio
 
   .. code-block:: none
     
-    infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth 90.0 --range 250.0 --output-file line_topo.dat --custom-topo ETOPO_2022_v1_15s_N45W105_surface.nc 
+    infraga utils extract-terrain --geom line --lat1 40.0 --lon1 -102.5 --azimuth 90.0 --range 250.0 --output-file line_topo.dat --custom-topo etopo2022_v1_15s_N45W105_surface.nc 
 
 
 Note that the higher resolution models aren't global and extracting terrain from a region covered by multiple .nc files will require the user to appropriately concatenate the .nc files.

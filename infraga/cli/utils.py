@@ -1,5 +1,5 @@
 #!which python
-"""
+'''
 topo_extractor.py
 
 Methods to extract topography information
@@ -8,7 +8,7 @@ path (line) or a grid (Cartesian or
 latitude/longitude)
 
 Author: pblom@lanl.gov    
-"""
+'''
 
 import click
 import os
@@ -63,8 +63,10 @@ def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
 def open_doc():
 
     filename = (pkg_loc + '/doc/build/html/index.html')
-    print(filename)
-    
+    if not os.path.isfile(filename):      
+        print("Compiling manual...")
+        subprocess.run(shlex.split("make html -C " + pkg_loc + "/doc/"), shell=False)
+
     webbrowser.open('file://' + os.path.realpath(filename), new=2)
 
 
@@ -246,7 +248,7 @@ def _download_etopo2022():
         return False 
 
 def _interp_etopo(ll_corner, ur_corner, use_etopo1=False, user_topo=None):
-    """
+    '''
         Loads and interpolates the ETOPO1 topography
             data within a region specified by low-left
             and upper-right corner latitude, longitudes
@@ -264,7 +266,7 @@ def _interp_etopo(ll_corner, ur_corner, use_etopo1=False, user_topo=None):
         elev_interp : scipy.interpolate.RegularGridInterpolator
             A 2d interpolation of the elevation within 
                 the specified region
-    """
+    '''
 
     # load etopo_file and extract grid information
     if user_topo is not None:
@@ -318,7 +320,7 @@ coeffs_B = np.array([-4.9244637e-3,  -1.2984142e-6, -1.5701595e-6, 1.5535974e-8,
                         -2.7221769e-2, 4.247473e-4, -3.9583181e-6, 1.7295795e-8])
 
 def density(z):
-    """
+    '''
         Computes the atmospheric density according to 
             the US standard atmosphere model using a 
             polynomial fit
@@ -331,7 +333,7 @@ def density(z):
         Returns:
         density : float
             Density of the atmosphere at altitude z [g/cm^3] 
-    """
+    '''
 
     poly_A, poly_B = 0.0, 1.0
     for n in range(4):
@@ -342,7 +344,7 @@ def density(z):
 
 
 def pressure(z, T):
-    """
+    '''
         Computes the atmospheric pressure according to 
             the US standard atmosphere model using a 
             polynomial fit assuming an ideal gas
@@ -355,13 +357,13 @@ def pressure(z, T):
         Returns:
         pressure : float
             Pressure of the atmosphere at altitude z [mbar] 
-    """
+    '''
      
     return density(z) * gasR * T * 10.0
 
 
 def extract_single(ecmwf_file, lat, lon, output):
-    """
+    '''
         Extracts the nearest node vertical profile from
             an ECMWF netCDF4 format file at a specified
             latitude and longitude location and saves
@@ -378,7 +380,7 @@ def extract_single(ecmwf_file, lat, lon, output):
             Longitude where the vertical profile will be extracted [deg]
         output : string
             Path and name of the zTuvdp format output file
-    """
+    '''
 
     ecmwf = Dataset(ecmwf_file)
 
@@ -408,7 +410,7 @@ def extract_single(ecmwf_file, lat, lon, output):
 
 
 def extract_grid(ecmwf_file, lat_llc, lon_llc, lat_urc, lon_urc, output_id, grid_skip=1):
-    """
+    '''
         Extracts a set of vertical profiles from an 
             ECMWF netCDF4 format file onto a specified
             grid of latitude and longitude locations 
@@ -433,7 +435,7 @@ def extract_grid(ecmwf_file, lat_llc, lon_llc, lat_urc, lon_urc, output_id, grid
             Path and prefix of the grid loccation files and zTuvdp format output files
         grid_skip : int
             Frequency of skips in sampling the grid (sampled numpy array as [::grid_skip])
-    """
+    '''
 
     ecmwf = Dataset(ecmwf_file)
 
@@ -521,7 +523,7 @@ def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, outp
 ##     Terrain Extraction     ##
 ################################   
 def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=0.1, show_fig=True, use_etopo1=False, user_topo=None):
-    """
+    '''
         Extract topography information along a line defined
             by source and receiver locations (latitude, 
             longitude) into file_out
@@ -541,7 +543,7 @@ def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=0.1, show_fig=True, use_etop
                 minute = 1.852 km, this can modified to
                 increase the resolution
 
-    """
+    '''
 
     print('Defining planar topography from source at ' + str(src_loc[0]) + ', ' + str(src_loc[1]) + ' to receiver at ' + str(rcvr_loc[0]) + ', ' + str(rcvr_loc[1]) + '.')
 
@@ -584,7 +586,7 @@ def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=0.1, show_fig=True, use_etop
 
 
 def pull_line(src_loc, azimuth, rng_max, file_out, resol=0.1, show_fig=True, use_etopo1=False, user_topo=None):
-    """
+    '''
         Extract topography information along a line defined
             by a great circle path from a source location 
             (latitude, longitude) along a specified azimuth
@@ -608,7 +610,7 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=0.1, show_fig=True, use
                 minute = 1.852 km, this can modified to
                 increase the resolution
 
-    """
+    '''
     print('Defining planar topography from source at ' + str(src_loc[0]) + ', ' + str(src_loc[1]) + ' along azimuth ' + str(azimuth) + ' out to a range of ' + str(rng_max))
 
     # project lat/lon at end of line and determine grid corners
@@ -657,7 +659,7 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=0.1, show_fig=True, use
     
 
 def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=0.2, show_fig=False, use_etopo1=False, user_topo=None):
-    """
+    '''
         Extract topography information along a series of lines
             defined by great circle paths from a source location 
             (latitude, longitude) along all azimuths
@@ -681,7 +683,7 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=0.2, show_fig=F
                 minute = 1.852 km, this can modified to
                 increase the resolution
 
-    """
+    '''
     print('Defining N-by-2D planar topography lines from source at ' + str(src_loc[0]) + ', ' + str(src_loc[1]) + ' using azimuth resolution of ' + str(az_resol) + ' out to a range of ' + str(rng_max))
 
     # project lat/lon at end of line and determine grid corners
@@ -742,7 +744,7 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=0.2, show_fig=F
 
 
 def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=0.2, show_fig=True, use_etopo1=False, user_topo=None):
-    """
+    '''
         Extract topography information across a region defined
             by the lower-left and upper-right corner latitudes
             and longitudes.  Cartesian distances are computed
@@ -766,7 +768,7 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=0.2, show_fig=Tr
                 minute = 1.852 km, this can modified to
                 increase the resolution
 
-    """
+    '''
 
     print("Extracting Cartesian grid from " + str(ll_corner[0]) + ", " + str(ll_corner[1]), end='')
     print(" to " + str(ur_corner[0]) + ", " + str(ur_corner[1]) + " with source at " + str(src_loc[0]) + ", " + str(src_loc[1]))
@@ -813,7 +815,7 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=0.2, show_fig=Tr
 
 
 def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None, rcvr_file=None, use_etopo1=False, user_topo=None):
-    """
+    '''
         Extract topography information across a region defined
             by the lower-left and upper-right corner latitudes
             and longitudes.
@@ -828,7 +830,7 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
                 of the upper-right corner of the region
         file_out : str
             Destination for the topography information
-    """
+    '''
 
     print("Extracting lat/lon grid from " + str(ll_corner[0]) + ", " + str(ll_corner[1]), end='')
     print(" to " + str(ur_corner[0]) + ", " + str(ur_corner[1]))
