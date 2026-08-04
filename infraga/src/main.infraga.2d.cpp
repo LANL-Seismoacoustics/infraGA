@@ -21,7 +21,7 @@
 using namespace std;
 
 void version(){
-    cout << '\n' << '\t' << "infraga v 1.3.0" << '\n';
+    cout << '\n' << '\t' << "infraga v 1.4.0" << '\n';
     cout << '\t' << "Copyright (c) 2014, Triad National Security, LLC.  All rights reserved." << '\n';
     cout << '\t' << "This software was produced under U.S. Government contract 89233218CNA000001 "<< '\n';
     cout << '\t' << "for Los Alamos National Laboratory (LANL), which is operated by Triad" << '\n';
