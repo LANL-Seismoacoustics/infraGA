@@ -4,17 +4,19 @@ channels:
   - conda-forge
 
 dependencies:
+  - python<=3.12
   - cartopy
   - click
+  - gdal
+  - matplotlib
   - netCDF4
   - numpy
-  - matplotlib
-  - python
-  - pyproj
-  - scipy
-  - ipython
   - pip
-  - python-wget
+  - pyproj
+  - requests
+  - scipy
+  - sphinx
+  - sphinx-rtd-theme
 
   - pip:
     - -e .

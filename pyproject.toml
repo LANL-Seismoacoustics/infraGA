@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "infraga"
+version = "1.3.0"
+description = "A tool for modeling infrasound propagation using geometric acoustics"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "LANL Seismoacoustics Infrasound (LANL-SA) Team", email = "pblom@lanl.gov"}
+]
+keywords = ["infrasound", "geophysics", "propagation", "ray tracing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "cartopy",
+    "click",
+    "gdal",
+    "matplotlib",
+    "netcdf4",
+    "numpy",
+    "pyproj",
+    "requests",
+    "scipy",
+]
+
+[project.urls]
+Homepage = "https://https://github.com/LANL-Seismoacoustics/infraga"
+Repository = "https://github.com/LANL-Seismoacoustics/infraga.git"
+Issues = "https://github.com/LANL-Seismoacoustics/infraga/issues"
+
+[project.scripts]
+infraga = "infraga.cli.__main__:main"
+
+[tool.setuptools]
+    packages = [
+        'infraga',
+        'infraga.cli',
+        'infraga.doc',
+        'infraga.src',
+        'infraga.src.atmo',
+        'infraga.src.geoac',
+        'infraga.src.util',
+]
+
+[tool.setuptools.package-data]
+'infraga' = ['makefile']
+'infraga.src' = ['*.cpp']
+'infraga.src.atmo' = ['*.cpp', '*.h']
+'infraga.src.geoac' = ['*.cpp', '*.h']
+'infraga.src.util' = ['*.cpp', '*.h']
+

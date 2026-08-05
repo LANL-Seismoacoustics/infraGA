@@ -1,11 +1,11 @@
 #!which python
-"""
+'''
 run_infraga.py
 
 Run the various infraga methods using a simplified Python Click interface
 
 Author: pblom@lanl.gov    
-"""
+'''
 
 import os 
 import warnings
@@ -86,7 +86,7 @@ def set_param(command, param, param_label):
 ########################
 
 def kg_op(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
-    """
+    '''
         Kinney & Graham scaling law peak overpressure model
                 
         Parameters
@@ -106,7 +106,7 @@ def kg_op(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
         -------
         p0 : float
             Peak overpressure [Pa]    
-    """
+    '''
     
     fd = (p_amb / 101.325)**(1.0 / 3.0) * (288.15 / T_amb)**(1.0 / 3.0)
     
@@ -131,7 +131,7 @@ def kg_op(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
 
 
 def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
-    """
+    '''
         Kinney & Graham scaling law positive phase duration model
                 
         Parameters
@@ -151,7 +151,7 @@ def kg_ppd(W, r, p_amb=101.325, T_amb=288.15, exp_type="chemical"):
         -------
         t0 : float
             Positive phase duration [s]
-    """
+    '''
 
     fd = (p_amb / 101.325)**(1.0 / 3.0) * (288.15 / T_amb)**(1.0 / 3.0)
     

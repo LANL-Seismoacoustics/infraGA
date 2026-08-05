@@ -12,6 +12,7 @@ examples/*/*.dat
 dev_tests/*
 infraga/__pycache*
 infraga/grid/
+infraga/doc/build/
 infraga/*.grd
 doc/*.aux
 doc/*.log

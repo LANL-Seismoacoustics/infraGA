@@ -1,5 +1,5 @@
 #!which python
-"""
+'''
 plot_on_map.py
 
 Methods to plot spherical coordinate
@@ -11,7 +11,7 @@ usage: python plot_on_map.py output.arrivals.dat figure.png
 Fill in 
 
 Author: pblom@lanl.gov    
-"""
+'''
 
 import os 
 import re 
@@ -77,7 +77,7 @@ def plot_atmo(atmo_file, max_alt, format, grnd_elev, polar_plot):
     else:
         for line in open(atmo_file, 'r'):
             if "Ground Height" in line:
-                grnd_ht = float(re.findall("\d+\.\d+",line)[0])
+                grnd_ht = float(re.findall("\\d+\\.\\d+",line)[0])
                 break
 
     if max_alt is None:
@@ -86,7 +86,6 @@ def plot_atmo(atmo_file, max_alt, format, grnd_elev, polar_plot):
         max_alt = float(max_alt)
 
     ht_mask = np.logical_and(grnd_ht <= z, z <= max_alt)
-
 
     if polar_plot:
         f, (ax1, ax2, ax3) = plt.subplots(1, 3, gridspec_kw={'width_ratios': [1, 1, 3]}, figsize=(9, 5))
