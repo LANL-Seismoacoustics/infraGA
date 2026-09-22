@@ -4,10 +4,10 @@ topo_extractor.py
 
 Methods to extract topography information
 from ETOPO1 netCDF file into great circle
-path (line) or a grid (Cartesian or 
+path (line) or a grid (Cartesian or
 latitude/longitude)
 
-Author: pblom@lanl.gov    
+Author: pblom@lanl.gov
 '''
 
 import click
@@ -21,7 +21,7 @@ import webbrowser
 import gzip
 import json
 
-from importlib.util import find_spec 
+from importlib.util import find_spec
 
 import numpy as np
 
@@ -63,7 +63,7 @@ def use_offline_maps(self, pre_existing_data_dir, turn_on=True):
 def open_doc():
 
     filename = (pkg_loc + '/doc/build/html/index.html')
-    if not os.path.isfile(filename):      
+    if not os.path.isfile(filename):
         print("Compiling manual...")
         subprocess.run(shlex.split("make html -C " + pkg_loc + "/doc/"), shell=False)
 
@@ -111,7 +111,7 @@ def build_g2s_grid(g2s_path, output_path, src_info=None, celerity_est=0.29):
     dt_vals = []
     grid_lats = []
     grid_lons = []
-    
+
     dir_files = os.listdir(g2s_path)
     for file in np.sort(dir_files):
         if fnmatch.fnmatch(file, "g2stxt_*.dat"):
@@ -176,7 +176,7 @@ def build_g2s_grid(g2s_path, output_path, src_info=None, celerity_est=0.29):
                 command = command + " " + output_path + "." + str(prof_index) + ".met"
 
             subprocess.call(command, shell=True)
-            prof_index = prof_index + 1 
+            prof_index = prof_index + 1
 
     file_out = open(output_path + ".lats.dat", 'w')
     for lat in grid_lats:
@@ -199,7 +199,7 @@ etopo1_file = find_spec('infraga').submodule_search_locations[0] + "/resources/E
 etopo2022_file = find_spec('infraga').submodule_search_locations[0] + "/resources/ETOPO_2022_v1_30s_N90W180_surface.nc"
 
 def _download_etopo1():
-    print('\n' + "*" * 25 +'\n' + "ETOPO 2022 file not found" + '\n' + "Downloading from https://www.ngdc.noaa.gov/thredds/fileServer/global/")
+    print('\n' + "*" * 25 +'\n' + "ETOPO1 file not found" + '\n' + "Downloading from https://www.ngdc.noaa.gov/thredds/fileServer/global/")
     etopo1_url = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"
     destination = etopo1_file
 
@@ -208,24 +208,24 @@ def _download_etopo1():
             os.mkdir(os.path.split(destination)[0])
 
         with requests.get(etopo1_url, stream=True) as response:
-            response.raise_for_status() 
+            response.raise_for_status()
             with gzip.GzipFile(fileobj=response.raw) as decompressor:
                 with open(etopo1_file, "wb") as f_out:
                     shutil.copyfileobj(decompressor, f_out)
 
         print("ETOPO1 file successfully downloaded." + '\n' + "*" * 25 +'\n')
-        return True 
-    
+        return True
+
     except:
         print("Download failed.")
         print("Try manual download: " + etopo1_url)
         print("Place .grd file in " + find_spec('infraga').submodule_search_locations[0] + "/resources/")
         print("*" * 25 +'\n')
-        return False 
+        return False
 
 
 def _download_etopo2022():
-    print('\n' + "*" * 25 +'\n' + "ETOPO 2022 file not found" + '\n' + "Downloading from https://www.ngdc.noaa.gov/thredds/fileServer/global/")
+    print('\n' + "*" * 25 +'\n' + "ETOPO2022 file not found" + '\n' + "Downloading from https://www.ngdc.noaa.gov/thredds/fileServer/global/")
     etopo2022_url = "https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/30s/30s_surface_elev_netcdf/etopo2022_v1_30s_N90W180_surface.nc"
 
     try:
@@ -233,19 +233,19 @@ def _download_etopo2022():
             os.mkdir(os.path.split(etopo2022_file)[0])
 
         with requests.get(etopo2022_url, stream=True) as response:
-            response.raise_for_status() 
+            response.raise_for_status()
             with open(etopo2022_file, "wb") as file:
                 file.write(response.content)
 
         print("ETOPO2022 file successfully downloaded." + '\n' + "*" * 25 +'\n')
-        return True 
-    
+        return True
+
     except:
         print("Download failed.")
         print("Try manual download: " + etopo2022_url)
         print("Place .nc file in " + find_spec('infraga').submodule_search_locations[0] + "/resources/")
         print("*" * 25 +'\n')
-        return False 
+        return False
 
 def _interp_etopo(ll_corner, ur_corner, use_etopo1=False, user_topo=None):
     '''
@@ -264,7 +264,7 @@ def _interp_etopo(ll_corner, ur_corner, use_etopo1=False, user_topo=None):
 
         Returns:
         elev_interp : scipy.interpolate.RegularGridInterpolator
-            A 2d interpolation of the elevation within 
+            A 2d interpolation of the elevation within
                 the specified region
     '''
 
@@ -308,8 +308,8 @@ def _interp_etopo(ll_corner, ur_corner, use_etopo1=False, user_topo=None):
 
 #  US standard atmosphere  #
 #      polynomial fit      #
-# From: Lingevitch, J. F., Collins, M. D., & Siegmann, W. L. (1999). 
-# Parabolic equations for gravity and acousto-gravity waves. 
+# From: Lingevitch, J. F., Collins, M. D., & Siegmann, W. L. (1999).
+# Parabolic equations for gravity and acousto-gravity waves.
 # The Journal of the Acoustical Society of America, 105(6), 3049-3056.
 
 gasR = 287.0
@@ -321,8 +321,8 @@ coeffs_B = np.array([-4.9244637e-3,  -1.2984142e-6, -1.5701595e-6, 1.5535974e-8,
 
 def density(z):
     '''
-        Computes the atmospheric density according to 
-            the US standard atmosphere model using a 
+        Computes the atmospheric density according to
+            the US standard atmosphere model using a
             polynomial fit
 
         Parameters
@@ -332,7 +332,7 @@ def density(z):
 
         Returns:
         density : float
-            Density of the atmosphere at altitude z [g/cm^3] 
+            Density of the atmosphere at altitude z [g/cm^3]
     '''
 
     poly_A, poly_B = 0.0, 1.0
@@ -345,8 +345,8 @@ def density(z):
 
 def pressure(z, T):
     '''
-        Computes the atmospheric pressure according to 
-            the US standard atmosphere model using a 
+        Computes the atmospheric pressure according to
+            the US standard atmosphere model using a
             polynomial fit assuming an ideal gas
 
         Parameters
@@ -356,9 +356,9 @@ def pressure(z, T):
 
         Returns:
         pressure : float
-            Pressure of the atmosphere at altitude z [mbar] 
+            Pressure of the atmosphere at altitude z [mbar]
     '''
-     
+
     return density(z) * gasR * T * 10.0
 
 
@@ -367,7 +367,7 @@ def extract_single(ecmwf_file, lat, lon, output):
         Extracts the nearest node vertical profile from
             an ECMWF netCDF4 format file at a specified
             latitude and longitude location and saves
-            the profile in a specified file using the 
+            the profile in a specified file using the
             zTuvdp format for infraGA/GeoAc analysis
 
         Parameters
@@ -386,7 +386,7 @@ def extract_single(ecmwf_file, lat, lon, output):
 
     lat0, dlat = float(ecmwf.variables['ylat0'][:].data), float(ecmwf.variables['dy'][:].data)
     lon0, dlon = float(ecmwf.variables['xlon0'][:].data), float(ecmwf.variables['dx'][:].data)
-    
+
     lat_vals = np.arange(lat0, lat0 + dlat * ecmwf.variables['T'].shape[1], dlat)
     lon_vals = np.arange(lon0, lon0 + dlon * ecmwf.variables['T'].shape[2], dlon)
 
@@ -397,24 +397,24 @@ def extract_single(ecmwf_file, lat, lon, output):
     z_gl = grnd_lvl_interp(lon, lat)[0]
 
     print("Extracting profile at " + str(lat) + ", " + str(lon) + " into " + output + " with ground elevation " + str(z_gl))
-    
+
     z_vals = ecmwf.variables['height'][:].data / 1000.0 + z_gl
 
     atmo = z_vals
-    atmo = np.vstack((atmo, ecmwf.variables['T'][:, n_lat, n_lon].data))   
-    atmo = np.vstack((atmo, ecmwf.variables['U'][:, n_lat, n_lon].data))   
-    atmo = np.vstack((atmo, ecmwf.variables['V'][:, n_lat, n_lon].data))   
-    atmo = np.vstack((atmo, density(z_vals)))   
-    atmo = np.vstack((atmo, pressure(z_vals, ecmwf.variables['T'][:, n_lat, n_lon].data)))   
+    atmo = np.vstack((atmo, ecmwf.variables['T'][:, n_lat, n_lon].data))
+    atmo = np.vstack((atmo, ecmwf.variables['U'][:, n_lat, n_lon].data))
+    atmo = np.vstack((atmo, ecmwf.variables['V'][:, n_lat, n_lon].data))
+    atmo = np.vstack((atmo, density(z_vals)))
+    atmo = np.vstack((atmo, pressure(z_vals, ecmwf.variables['T'][:, n_lat, n_lon].data)))
     np.savetxt(output, atmo.T)
 
 
 def extract_grid(ecmwf_file, lat_llc, lon_llc, lat_urc, lon_urc, output_id, grid_skip=1):
     '''
-        Extracts a set of vertical profiles from an 
+        Extracts a set of vertical profiles from an
             ECMWF netCDF4 format file onto a specified
-            grid of latitude and longitude locations 
-            using the zTuvdp format for infraGA/GeoAc 
+            grid of latitude and longitude locations
+            using the zTuvdp format for infraGA/GeoAc
             analysis.  Grid skip allows decreasing the
             resolution of the grid sampling from the
             source file.
@@ -448,8 +448,8 @@ def extract_grid(ecmwf_file, lat_llc, lon_llc, lat_urc, lon_urc, output_id, grid
     grid_lats = lat_vals[np.logical_and(lat_llc <= lat_vals, lat_vals <= lat_urc)][::grid_skip]
     grid_lons = lon_vals[np.logical_and(lon_llc <= lon_vals, lon_vals <= lon_urc)][::grid_skip]
 
-    grid_n_lats = np.array([np.where(lat_vals==val)[0] for val in grid_lats]).flatten() 
-    grid_n_lons = np.array([np.where(lon_vals==val)[0] for val in grid_lons]).flatten() 
+    grid_n_lats = np.array([np.where(lat_vals==val)[0] for val in grid_lats]).flatten()
+    grid_n_lons = np.array([np.where(lon_vals==val)[0] for val in grid_lons]).flatten()
 
     np.savetxt(output_id + "lats.dat", grid_lats)
     np.savetxt(output_id + "lons.dat", grid_lons)
@@ -458,7 +458,7 @@ def extract_grid(ecmwf_file, lat_llc, lon_llc, lat_urc, lon_urc, output_id, grid
 
     z_min = 100.0
     for n1, n_lat in enumerate(grid_n_lats):
-        for n2, n_lon in enumerate(grid_n_lons):            
+        for n2, n_lon in enumerate(grid_n_lons):
             z_min = min(z_min, grnd_lvl_interp(lon_vals[n_lon], lat_vals[n_lat])[0])
 
     z_agl = ecmwf.variables['height'][:].data / 1000.0
@@ -476,8 +476,8 @@ def extract_grid(ecmwf_file, lat_llc, lon_llc, lat_urc, lon_urc, output_id, grid
             atmo = np.vstack((atmo, T_interp(z_vals)))
             atmo = np.vstack((atmo, U_interp(z_vals)))
             atmo = np.vstack((atmo, V_interp(z_vals)))
-            atmo = np.vstack((atmo, density(z_vals)))   
-            atmo = np.vstack((atmo, pressure(z_vals, T_interp(z_vals))))   
+            atmo = np.vstack((atmo, density(z_vals)))
+            atmo = np.vstack((atmo, pressure(z_vals, T_interp(z_vals))))
 
             np.savetxt(output_id + str(n1 * len(grid_n_lons) + n2) + ".met", atmo.T)
 
@@ -521,11 +521,11 @@ def extract_ecmwf(ecmwf_file, option, lat1, lon1, lat2, lon2, sample_skips, outp
 
 ################################
 ##     Terrain Extraction     ##
-################################   
+################################
 def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=0.1, show_fig=True, use_etopo1=False, user_topo=None):
     '''
         Extract topography information along a line defined
-            by source and receiver locations (latitude, 
+            by source and receiver locations (latitude,
             longitude) into file_out
 
         Parameters
@@ -588,7 +588,7 @@ def pull_pnt2pnt(src_loc, rcvr_loc, file_out, resol=0.1, show_fig=True, use_etop
 def pull_line(src_loc, azimuth, rng_max, file_out, resol=0.1, show_fig=True, use_etopo1=False, user_topo=None):
     '''
         Extract topography information along a line defined
-            by a great circle path from a source location 
+            by a great circle path from a source location
             (latitude, longitude) along a specified azimuth
             to a maximum specified range into file_out.
 
@@ -622,7 +622,7 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=0.1, show_fig=True, use
     elev_interp = _interp_etopo(ll_corner, ur_corner, use_etopo1=use_etopo1, user_topo=user_topo)
 
     # Etopo1 has resolution of 1 arc minute = 1.852 kms, so write that resolution to file
-    N = int(rng_max / resol)   
+    N = int(rng_max / resol)
     line_pnts = sph_proj.npts(src_loc[1], src_loc[0], end_loc[0], end_loc[1], N, radians=False)
     rng_vals, elev_vals = np.empty(N), np.empty(N)
 
@@ -651,17 +651,17 @@ def pull_line(src_loc, azimuth, rng_max, file_out, resol=0.1, show_fig=True, use
         for n in range(N):
             rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
             elev_vals[n] = elev_interp((line_pnts[n][1], line_pnts[n][0]))
-    
+
         plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.25')
         plt.xlabel("Range [km]")
         plt.ylabel("Elevation [km]")
         plt.show()
-    
+
 
 def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=0.2, show_fig=False, use_etopo1=False, user_topo=None):
     '''
         Extract topography information along a series of lines
-            defined by great circle paths from a source location 
+            defined by great circle paths from a source location
             (latitude, longitude) along all azimuths
             to a maximum specified range into file_out.
 
@@ -694,7 +694,7 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=0.2, show_fig=F
     W_lim = sph_proj.fwd(src_loc[1], src_loc[0], 270.0, rng_max * 1.0e3, radians=False)
 
     ll_corner = S_lim[1] - 0.5, W_lim[0] - 0.5
-    ur_corner = N_lim[1] + 0.5, E_lim[0] + 0.5 
+    ur_corner = N_lim[1] + 0.5, E_lim[0] + 0.5
 
     elev_interp = _interp_etopo(ll_corner, ur_corner, use_etopo1=use_etopo1, user_topo=user_topo)
 
@@ -708,7 +708,7 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=0.2, show_fig=F
     for az_val in np.arange(0, 360.0 - az_resol / 2.0, az_resol):
         end_pnt = sph_proj.fwd(src_loc[1], src_loc[0], az_val, rng_max * 1.0e3, radians=False)
         line_pnts = sph_proj.npts(src_loc[1], src_loc[0], end_pnt[0], end_pnt[1], N, radians=False)
-        
+
         output = open(output_path + "_" + "%06.2f" % az_val + "deg.line.dat", 'w')
         print("# 'infraga utils extract-terrain --geom Nx2d' summary:", file=output)
         print("# lat: " + str(src_loc[0]), file=output)
@@ -734,7 +734,7 @@ def pull_Nx2d(src_loc, rng_max, output_path, az_resol=3.0, resol=0.2, show_fig=F
             for n in range(N):
                 rng_vals[n] = sph_proj.inv(src_loc[1], src_loc[0], line_pnts[n][0], line_pnts[n][1], radians=False)[2] / 1000.0
                 elev_vals[n] = elev_interp((line_pnts[n][1], line_pnts[n][0]))
-        
+
             plt.fill_between(rng_vals, elev_vals, y2=0.0, color='0.25')
             plt.xlabel("Range [km]")
             plt.ylabel("Elevation [km]")
@@ -791,17 +791,17 @@ def pull_xy_grid(src_loc, ll_corner, ur_corner, file_out, resol=0.2, show_fig=Tr
 
     x_vals = np.arange(ll_x, ur_x, resol)
     y_vals = np.arange(ll_y, ur_y, resol)
-    
+
     print("Evaluating terrain across grid...")
     # note: infraGA methods to ingest topo file can't recognize header notation yet, so no header in these files
-    
+
     X,Y = np.meshgrid(x_vals, y_vals, indexing='ij')
     x_grid = X.flatten()
     y_grid = Y.flatten()
 
     pnts = np.array(sph_proj.fwd([src_loc[1]] * len(x_grid), [src_loc[0]] * len(y_grid), np.degrees(np.arctan2(x_grid, y_grid)), np.sqrt(x_grid**2 + y_grid**2) * 1.0e3, radians=False))
     z_grid = elev_interp((pnts[1], pnts[0]))
-    
+
     print("Writing terrain info into file:", file_out)
     np.savetxt(file_out, np.vstack((x_grid, y_grid, z_grid)).T)
 
@@ -867,7 +867,7 @@ def pull_latlon_grid(ll_corner, ur_corner, file_out, show_fig=True, src_loc=None
     print("Writing terrain info into file:", file_out)
     LAT, LON = np.meshgrid(region_lat, region_lon, indexing='ij')
     lat_grid, lon_grid = LAT.flatten(), LON.flatten()
-    
+
     z_grid = region_elev.flatten() / 1.0e3
     z_grid[z_grid < 0.0] = 0.0
 
@@ -978,7 +978,7 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, ran
         continue_check = True
     else:
         click.echo("Specified topography file is invalid.")
-        continue_check = False 
+        continue_check = False
 
     if continue_check:
         if geom == "line":
@@ -992,7 +992,7 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, ran
         elif geom == "latlon-grid":
             pull_latlon_grid((lat1, lon1), (lat2, lon2), output_file, show_fig=show_terrain, src_loc=(lat_ref, lon_ref), rcvr_file=rcvr_file, use_etopo1=use_etopo1, user_topo=custom_topo)
         else:
-            print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'nx2d', 'xy-grid' or 'latlon-grid')")        
+            print("Invalid geometry.  Options are ('line', 'pnt2pnt', 'nx2d', 'xy-grid' or 'latlon-grid')")
 
 
 
@@ -1004,12 +1004,12 @@ def extract_terrain(geom, lat1, lat2, lon1, lon2, lat_ref, lon_ref, azimuth, ran
 @click.option("--arrival-tolerance", help="Parameter for removing duplicates (see manual)", default=10.0)
 def nearby_arrivals(arrivals, rcvr_lat, rcvr_lon, dr_tolerance, arrival_tolerance):
     '''
-    Identify arrival information near a specified receiver.  
+    Identify arrival information near a specified receiver.
     Useful for scenarios where eigenrays have trouble converging (large distances, terrain interactions, etc.)
 
     \b
     Examples:
-    \t infraga utils nearby-arrivals  --arrivals-file ToyAtmo.arrivals.ddat --rcvr-lat 40.0 --rccvr-lon -102.5 
+    \t infraga utils nearby-arrivals  --arrivals-file ToyAtmo.arrivals.ddat --rcvr-lat 40.0 --rccvr-lon -102.5
 
     '''
 
@@ -1041,7 +1041,7 @@ def nearby_arrivals(arrivals, rcvr_lat, rcvr_lon, dr_tolerance, arrival_toleranc
                 arrival_diff = arrival_diff + (nearby_arrivals[ref_index][2] - line[2])**2
                 arrival_diff = arrival_diff + (nearby_arrivals[ref_index][5] - line[5])**2
                 arrival_diff = np.sqrt(arrival_diff)
-                
+
                 if arrival_diff < arrival_tolerance and n != ref_index:
                     unique_mask[n] = False
 
@@ -1107,7 +1107,7 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
         continue_check = True
     else:
         click.echo("  Specified topography file is invalid.")
-        continue_check = False 
+        continue_check = False
 
     if continue_check:
         click.echo("  Extracting terrain from file and masking to source region...")
@@ -1129,7 +1129,7 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
                 ds = gdal.Open(custom_topo)
                 gt = ds.GetGeoTransform()
 
-                lat_min, lat_max = gt[3] + ds.RasterXSize * gt[4] + ds.RasterYSize * gt[5], gt[3]     
+                lat_min, lat_max = gt[3] + ds.RasterXSize * gt[4] + ds.RasterYSize * gt[5], gt[3]
                 lon_min, lon_max = gt[0], gt[0] + ds.RasterXSize * gt[1] + ds.RasterYSize * gt[2]
 
                 grid_lats = lat_min + (lat_max - lat_min) * np.arange(ds.RasterYSize) / (ds.RasterYSize - 1)
@@ -1138,7 +1138,7 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
 
             else:
                 print('\n' + "Unsupported custom topography file: " + custom_topo)
-                return 
+                return
 
             print("    Extracted latitude bounds:", grid_lats[0], "--> ", grid_lats[-1])
             print("    Extracted longitude bounds:", grid_lons[0], "--> ", grid_lons[-1])
@@ -1150,7 +1150,7 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
             grid_lats = topo_data.variables['lat'][:]
             grid_lons = topo_data.variables['lon'][:]
             grid_elev = topo_data.variables['z'][:]
-        
+
         # Determine region bounds
         bnd_lons, bnd_lats, _ = sph_proj.fwd([lon] * 359, [lat] * 359, np.arange(0.0, 359.0, 1.0), [radius * 1.0e3] * 359, radians=False)
         ll_corner = [min(bnd_lats), min(bnd_lons)]
@@ -1195,9 +1195,9 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
 
         A = (90.0 - THETA) * np.sin(np.radians(PHI))
         B = (90.0 - THETA) * np.cos(np.radians(PHI))
-        P = kernel([A.flatten(), B.flatten()])   
+        P = kernel([A.flatten(), B.flatten()])
 
-        # write this out to file if specified 
+        # write this out to file if specified
         if output_id is not None:
             click.echo('\nWriting results to file...')
 
@@ -1292,7 +1292,7 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
             ax2.set_yticks(np.arange(incl_min, 90.0, 15.0))
             ax2.yaxis.set_major_formatter(mticker.StrMethodFormatter(u"{x}°"))
 
-            ax2.scatter(np.radians(PHI.flatten()), THETA.flatten(), c=P, cmap=plt.cm.nipy_spectral_r)         
+            ax2.scatter(np.radians(PHI.flatten()), THETA.flatten(), c=P, cmap=plt.cm.nipy_spectral_r)
             circle = plt.Circle((0.0, 0.0), (90.0 - mask_incl), transform=ax2.transData._b, color="black", alpha=0.8)
             ax2.add_artist(circle)
 
@@ -1304,8 +1304,8 @@ def normal_projection(lat, lon, radius, steepening, mask_incl, output_id, show_f
 
             if output_id is not None:
                 print('  Saving figure')
-                plt.savefig(output_id + ".png", dpi=250.0)           
-            
+                plt.savefig(output_id + ".png", dpi=250.0)
+
             if show_fig:
                 plt.show()
 
