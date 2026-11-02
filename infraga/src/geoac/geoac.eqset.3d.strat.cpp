@@ -980,9 +980,9 @@ double geoac::wnl_wvfrm(double** solution, double** & u, int k1, int k2, double 
 
         // Apply absorption and apply Heun's Method step using symmetry of rft
         for(int n = 0; n < fft_len; n++){
-            // Absorpotion computed in dB as: 10 * log10(p(s + ds)) - 10 * log10(p(s)) = alpha * ds [dB] -> p(s + ds) = p(s) * 10^(alpha(s) * ds / 10) with c/c0 factor from Lonzaga paper
+            // Absorption: SB_alpha is the pressure-amplitude coefficient in dB/km, so 20 * log10(p(s + ds)) - 20 * log10(p(s)) = - alpha * ds [dB] -> p(s + ds) = p(s) * 10^(- alpha * ds / 20), with c/c0 factor from Lonzaga paper
             double freq = 1.0 / dt * n / wvfrm::len;
-            double absorp = pow(10.0, - atmo::c(interp::eval_f(s, ray_x), interp::eval_f(s, ray_y), interp::eval_f(s, ray_z)) / c0 * atmo::SB_alpha(interp::eval_f(s, ray_x), interp::eval_f(s, ray_y), interp::eval_f(s, ray_z), freq) * ds / 10.0);
+            double absorp = pow(10.0, - atmo::c(interp::eval_f(s, ray_x), interp::eval_f(s, ray_y), interp::eval_f(s, ray_z)) / c0 * atmo::SB_alpha(interp::eval_f(s, ray_x), interp::eval_f(s, ray_y), interp::eval_f(s, ray_z), freq) * ds / 20.0);
 
             U[n][0] -= Pi * freq * (ds * (beta_curr + beta_next) / 2.0 * A[n][1] + pow(ds, 2) / 2.0 * beta_curr * beta_next * B[n][1] + pow(ds, 3) / 8.0 * pow(beta_curr, 2) * beta_next * C[n][1]) * filter1[n];
             U[n][1] += Pi * freq * (ds * (beta_curr + beta_next) / 2.0 * A[n][0] + pow(ds, 2) / 2.0 * beta_curr * beta_next * B[n][0] + pow(ds, 3) / 8.0 * pow(beta_curr, 2) * beta_next * C[n][0]) * filter1[n];
