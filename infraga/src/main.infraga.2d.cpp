@@ -347,7 +347,7 @@ void run_prop(char* inputs[], int count){
                     raypath << '\t' << max(solution[m][1], topo::z(solution[m][0]));
                     if(geoac::calc_amp){    raypath << '\t' << 20.0 * log10(geoac::amp(solution, m));}
                     else{                   raypath << '\t' << 0.0;}
-                    raypath << '\t' << -2.0 * attenuation;
+                    raypath << '\t' << -attenuation;
                     raypath << '\t' << travel_time_sum;
                     raypath << '\n';
                 }
@@ -382,7 +382,7 @@ void run_prop(char* inputs[], int count){
                 results << '\t' <<  - asin(atmo::c(0.0, 0.0, topo::z(solution[k][0])) / atmo::c(0.0, 0.0, z_src) * solution[k][3]) * (180.0 / Pi);
                 if(geoac::calc_amp){    results << '\t' << 20.0 * log10(geoac::amp(solution, k));}
                 else{                   results << '\t' << 0.0;}
-                results << '\t' << -2.0 * attenuation;
+                results << '\t' << -attenuation;
                 results << '\t' << geoac::est_dev(solution,k);
                 results << '\n';
             }
@@ -581,7 +581,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
                 raypath << solution[m][0];
                 raypath << '\t' << max(solution[m][1], topo::z(solution[m][1]));
                 raypath << '\t' << 20.0 * log10(geoac::amp(solution, m));
-                raypath << '\t' << -2.0 * attenuation;
+                raypath << '\t' << -attenuation;
                 raypath << '\t' << travel_time_sum;
                 raypath << '\t' << geoac::est_dev(solution, k);
                 raypath << '\n';
@@ -635,7 +635,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         cout << '\t' << '\t' << "turning height [km] = " << z_max << '\n';
         cout << '\t' << '\t' << "inclination [deg] = " << - asin(atmo::c(0.0, 0.0, topo::z(solution[k][0])) / atmo::c(0.0, 0.0, z_src) * solution[k][3]) * (180.0 / Pi) << '\n';
         cout << '\t' << '\t' << "trans. coeff. [dB] = " << 20.0 * log10(geoac::amp(solution, k)) << '\n';
-        cout << '\t' << '\t' << "absorption [dB] = " << -2.0 * attenuation << '\n' << '\n';
+        cout << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
     } else {
         cout << '\t' << '\t' << "Ray path does not return to the ground." << '\n' << '\n';
     }

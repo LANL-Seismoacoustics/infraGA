@@ -423,7 +423,7 @@ void run_prop(char* inputs[], int count){
                                         } else {
                                            ray_buffer[3] = 0.0;
                                         }
-                                        ray_buffer[4] = -2.0 * attenuation;
+                                        ray_buffer[4] = -attenuation;
                                         ray_buffer[5] = travel_time_sum;
                                     }
                             
@@ -503,7 +503,7 @@ void run_prop(char* inputs[], int count){
                             } else {
                                 results_buffer[10] = 0.0;
                             }
-                            results_buffer[11] = -2.0 * attenuation;
+                            results_buffer[11] = -attenuation;
                         }
   
                         if(world_rank == j && j!=0){

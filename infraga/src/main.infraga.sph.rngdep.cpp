@@ -472,7 +472,7 @@ void run_prop(char* inputs[], int count){
                             } else {
                                 raypath << '\t' << 0.0;
                             }
-                            raypath << '\t' << -2.0 * attenuation;
+                            raypath << '\t' << -attenuation;
                             raypath << '\t' << travel_time_sum << '\n';
                         }
                         
@@ -535,7 +535,7 @@ void run_prop(char* inputs[], int count){
                 } else {
                     results << '\t' << 0.0;
                 }
-                results << '\t' << -2.0 * attenuation;
+                results << '\t' << -attenuation;
                 results << '\n';
             
                 geoac::set_refl(solution,k);
@@ -762,7 +762,7 @@ void run_back_proj(char* inputs[], int count){
         cout << '\t' << '\t' << "arrival inclination [deg] = " << inclination << '\n';
         cout << '\t' << '\t' << "back azimuth [deg] = " << back_az << '\n';
         cout << '\t' << '\t' << "trans. coeff. [dB] = " << 20.0 * log10(geoac::amp(solution,k)) << '\n';
-        cout << '\t' << '\t' << "absorption [dB] = " << -2.0 * attenuation << '\n' << '\n';
+        cout << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
     } else {
         cout << '\n';
         cout << '\t' << '\t' << "Ray path does not return to the ground." << '\n' << '\n';
@@ -1291,7 +1291,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
                 raypath << '\t' << setprecision(8) << solution[m][2] * (180.0 / Pi);
                 raypath << '\t' << solution[m][0] - globe::r0;
                 raypath << '\t' << 20.0 * log10(geoac::amp(solution, m));
-                raypath << '\t' << -2.0 * attenuation;
+                raypath << '\t' << -attenuation;
                 raypath << '\t' << travel_time_sum;
                 raypath << '\n';
             }
@@ -1358,7 +1358,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         cout << '\t' << '\t' << "arrival inclination [deg] = " << '\t' << inclination << '\n';
         cout << '\t' << '\t' << "back azimuth [deg] = " << '\t' << back_az << '\n';
         cout << '\t' << '\t' << "trans. coeff. [dB] = " << '\t' << 20.0 * log10(geoac::amp(solution,k)) << '\n';
-        cout << '\t' << '\t' << "absorption [dB] = " << '\t' << -2.0 * attenuation << '\n' << '\n';
+        cout << '\t' << '\t' << "absorption [dB] = " << '\t' << -attenuation << '\n' << '\n';
     } else {
         cout << '\n';
         cout << '\t' << '\t' << "Ray path does not return to the ground " << '\n' << '\n';
@@ -1645,7 +1645,7 @@ void run_mach_cone(char* inputs[], int count){
                         } else {
                             raypath << '\t' << 0.0;
                         }
-                        raypath << '\t' << -2.0 * attenuation;
+                        raypath << '\t' << -attenuation;
                         raypath << '\t' << travel_time_sum << '\n';
                     }
                     
@@ -1686,7 +1686,7 @@ void run_mach_cone(char* inputs[], int count){
             } else {
                 results << '\t' << 0.0;
             }
-            results << '\t' << -2.0 * attenuation;
+            results << '\t' << -attenuation;
             results << '\t' << lat_src * (180.0 / Pi);
             results << '\t' << lon_src * (180.0 / Pi);
             results << '\t' << z_src;

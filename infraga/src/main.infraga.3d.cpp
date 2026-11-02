@@ -464,7 +464,7 @@ void run_prop(char* inputs[], int count){
                             } else{
                                 raypath << '\t' << 0.0;
                             }
-                            raypath << '\t' << -2.0 * attenuation;
+                            raypath << '\t' << -attenuation;
                             raypath << '\t' << travel_time_sum;
                             raypath << '\n';
                         }
@@ -531,7 +531,7 @@ void run_prop(char* inputs[], int count){
                 } else{
                     results << '\t' << 0.0;
                 }
-                results << '\t' << -2.0 * attenuation;
+                results << '\t' << -attenuation;
                 results << '\n';           
 
                 geoac::set_refl(solution,k);
@@ -756,7 +756,7 @@ void run_back_proj(char* inputs[], int count){
         cout << '\t' << '\t' << "arrival inclination [deg] = " << inclination << '\n';
         cout << '\t' << '\t' << "back azimuth = " << back_az  << '\n';
         cout << '\t' << '\t' << "trans. coeff. [dB] = " << 20.0 * log10(geoac::amp(solution, k)) << '\n';
-        cout << '\t' << '\t' << "absorption [dB] = " << -2.0 * attenuation << '\n' << '\n';
+        cout << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
     } else {
         cout << '\n';
         cout << '\t' << '\t' << "Ray path does not return to the ground." << '\n' << '\n';
@@ -1288,7 +1288,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
                 raypath << '\t' << solution[m][1];
                 raypath << '\t' << max(solution[m][2], topo::z(solution[m][0], solution[m][1]));
                 raypath << '\t' << 20.0 * log10(geoac::amp(solution, m));
-                raypath << '\t' << -2.0 * attenuation;
+                raypath << '\t' << -attenuation;
                 raypath << '\t' << travel_time_sum;
 
                 // Uncomment these to output the necessary items to compare with NCPAprop wnl_wvfrm methods
@@ -1362,7 +1362,7 @@ void run_wnl_wvfrm(char* inputs[], int count){
         cout << '\t' << '\t' << "arrival inclination [deg] = " << inclination << '\n';
         cout << '\t' << '\t' << "back azimuth = " << back_az  << '\n';
         cout << '\t' << '\t' << "attenuation (geometric) [dB] = " << 20.0 * log10(geoac::amp(solution, k)) << '\n';
-        cout << '\t' << '\t' << "absorption [dB] = " << -2.0 * attenuation << '\n' << '\n';
+        cout << '\t' << '\t' << "absorption [dB] = " << -attenuation << '\n' << '\n';
     } else {
         cout << '\n';
         cout << '\t' << '\t' << "Ray path does not return to the ground." << '\n' << '\n';
